@@ -17,6 +17,7 @@ import cryptacular.bcrypt
 import re
 
 from datetime import datetime
+from datetime import timedelta
 from datetime import date
 
 from pyramid_signup.lib import gen_hash_key
@@ -94,7 +95,7 @@ class Activation(Entity):
         if valid_until:
             self.valid_until = valid_until
         else:
-             datetime.now + datetime.timedelta(days=3)
+             self.valid_until = datetime.utcnow() + timedelta(days=3)
 
 class Organization(Entity):
     """ Represents an organization a user can be attached to """
@@ -110,9 +111,8 @@ class Organization(Entity):
     owner = relation('User', backref='owned_organizations')
     users = relation('User', secondary=org_member_table, backref='member_accounts')
 
-    def __init__(self, company_name, tier_name, owner):
-        self.company_name = company_name
-        self.tier_name = tier_name
+    def __init__(self, name, owner):
+        self.name = name
         self.owner = owner
         self.users.append(owner)
 
@@ -158,10 +158,3 @@ class User(Entity):
             return '%s %s' % (self.first_name, self.last_name)
         else:
             return self.username
-
-    def in_group(self, group):
-        for g in self.groups:
-            if g.name == group:
-                return True
-            else:
-                return False
