@@ -1,4 +1,8 @@
 pyramid
+colander
+deform
+
 sqlalchemy
+
 pytest
 pytest-xdist
