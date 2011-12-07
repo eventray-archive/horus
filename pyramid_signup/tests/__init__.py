@@ -47,24 +47,24 @@ class UnitTestBase(BaseTestCase):
         self.config = testing.setUp(request=testing.DummyRequest())
         super(UnitTestBase, self).setUp()
 
-    def get_csrf_request(self, post=None):
-        csrf = 'abc'
-
-        #if not post:
-        #    post = {}
-
-        if not u'csrf_token' in post.keys():
-            post.update({
-                'csrf_token': csrf
-            })
-
-        request = testing.DummyRequest(post)
-
-        request.session = Mock()
-        csrf_token = Mock()
-        csrf_token.return_value = csrf
-
-        request.session.get_csrf_token = csrf_token
-
-        return request
-
+#    def get_csrf_request(self, post=None):
+#        csrf = 'abc'
+#
+#        #if not post:
+#        #    post = {}
+#
+#        if not u'csrf_token' in post.keys():
+#            post.update({
+#                'csrf_token': csrf
+#            })
+#
+#        request = testing.DummyRequest(post)
+#
+#        request.session = Mock()
+#        csrf_token = Mock()
+#        csrf_token.return_value = csrf
+#
+#        request.session.get_csrf_token = csrf_token
+#
+#        return request
+#

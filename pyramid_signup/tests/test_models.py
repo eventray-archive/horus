@@ -55,7 +55,7 @@ class TestOrganizations(UnitTestBase):
         assert organization.name == 'foo'
         assert organization.create_date != None
 
-    def test_create_organization(self):
+    def test_organization_acl(self):
         from pyramid_signup.models import Organization
         from pyramid_signup.models import User
         from pyramid.security import Allow
