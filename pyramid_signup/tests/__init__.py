@@ -3,13 +3,14 @@ from sqlalchemy import engine_from_config
 from pyramid import testing
 from paste.deploy.loadwsgi import appconfig
 
-from pyramid_signup.models import Entity
-
 from sqlalchemy.orm import sessionmaker
 
 from mock import Mock
 
 import os
+
+from pyramid_signup.models import Entity
+from pyramid_signup.interfaces import ISUSession
 
 here = os.path.dirname(__file__)
 settings = appconfig('config:' + os.path.join(here, '../../', 'test.ini'))
@@ -31,6 +32,8 @@ class BaseTestCase(unittest.TestCase):
 
         # bind an individual Session to the connection
         self.session = self.Session(bind=connection)
+
+        self.config.registry.registerUtility(self.session, ISUSession)
 
         Entity.metadata.bind=connection
 

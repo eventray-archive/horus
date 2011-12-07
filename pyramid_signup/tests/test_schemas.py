@@ -26,8 +26,10 @@ class TestModels(UnitTestBase):
                 schema.deserialize({})
             except Invalid as exc:
                 assert len(exc.children) == 3
+                errors = ['csrf_token', 'Username', 'Password']
 
                 for child in exc.children:
+                    assert child.node.name in errors
                     assert child.msg == u'Required'
 
                 raise

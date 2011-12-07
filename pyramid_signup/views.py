@@ -11,7 +11,7 @@ import deform
 from pyramid_signup.interfaces import ISULoginForm
 from pyramid_signup.interfaces import ISULoginSchema
 from pyramid_signup.schemas import LoginSchema
-from pyramid_signup.models import User
+from pyramid_signup.managers import UserManager
 
 _ = TranslationStringFactory('pyramid_signup')
 
@@ -24,29 +24,33 @@ class AuthController(object):
     def __init__(self, request):
         self._request  = request
 
-        schema = request.registry.getUtility(ISULoginSchema)
-        if not schema:
+        if request.registry.queryUtility(ISULoginSchema):
+            schema = request.registry.getUtility(ISULoginSchema)
+        else:
             schema = LoginSchema
 
         self.schema = schema().bind(request=self.request)
 
-        form = request.registry.getUtility(ISULoginForm)
-
-        if not form:
+        if request.registry.queryUtility(ISULoginForm):
+            form = request.registry.getUtility(ISULoginForm)
+        else:
             form = deform.Form
+
+        settings = request.registry.settings
+
+        self.login_redirect_view = route_url(settings.get('su.login_redirect', 'index'), request)
+        self.logout_redirect_view = route_url(settings.get('su.logout_redirect', 'index'), request)
 
         self.form = form(self.schema)
 
-    def authenticated(request, pk):
+    def authenticated(self, request, pk):
         """ This sets the auth cookies and redirects to the page defined
             in su.login_redirect, defaults to a view named 'index'
         """
         headers = remember(request, pk)
-        settings = request.registry.settings
-        redirect_view = route_url(settings.get('su.login_redirect', 'index'), request)
         request.session.flash(_('Logged in successfully.'), 'success')
 
-        return HTTPFound(location=redirect_view, headers=headers)
+        return HTTPFound(location=self.login_redirect_view, headers=headers)
 
     @view_config(permission='view', route_name='login', request_method='POST', renderer='pyramid_signup:templates/login.mako')
     def post(self):
@@ -60,7 +64,9 @@ class AuthController(object):
             username = captured['Username']
             password = captured['Password']
 
-            user = User.check_password(username, password)
+            mgr = UserManager(self.request)
+
+            user = mgr.get_user(username, password)
 
             if user:
                 if not user.activated:
@@ -76,7 +82,7 @@ class AuthController(object):
     @view_config(permission='view', route_name='login', request_method='GET', renderer='pyramid_signup:templates/login.mako')
     def get(self):
         if self.request.user:
-            return HTTPFound(location=self.get_main_view())
+            return HTTPFound(location=self.login_redirect_view)
 
         return {'form': self.form.render()}
 
@@ -90,9 +96,4 @@ class AuthController(object):
         self.request.session.flash(_('Logged out successfully.'), 'success')
         headers = forget(self.request)
 
-        settings = self.request.registry.settings
-        redirect_view = route_url(settings.get('su.logout_redirect', 'index'),
-            self.request)
-
-        return HTTPFound(location=route_url(redirect_view, self.request),
-                        headers=headers)
+        return HTTPFound(location=self.logout_redirect_view, headers=headers)
