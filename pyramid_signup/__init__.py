@@ -58,4 +58,3 @@ def includeme(config):
 
     config.include(build_routes)
     config.scan('pyramid_signup')
-
