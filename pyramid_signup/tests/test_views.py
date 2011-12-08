@@ -429,3 +429,67 @@ class TestRegisterController(UnitTestBase):
         controller.post()
 
         flash.assert_called_with('I broke!', 'error')
+
+    def test_activate(self):
+        from pyramid_signup.views import RegisterController
+        from pyramid_signup.models import User
+        from pyramid_signup.models import Activation
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_mailer.mailer import DummyMailer
+        from pyramid_signup.managers import UserManager
+        self.config.include('pyramid_signup')
+        self.config.add_route('index', '/')
+
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        user = User(username='sontek', password='temp')
+        user.activation = Activation()
+
+        self.session.add(user)
+        self.session.flush()
+
+        request = testing.DummyRequest()
+        request.matchdict = Mock()
+        get = Mock()
+        get.return_value = user.activation.code
+        request.matchdict.get = get
+
+        controller = RegisterController(request)
+        response = controller.activate()
+        mgr = UserManager(request)
+        user = mgr.get_by_username('sontek')
+
+        assert user.activated
+        assert response.status_int == 302
+
+    def test_activate_invalid(self):
+        from pyramid_signup.views import RegisterController
+        from pyramid_signup.models import User
+        from pyramid_signup.models import Activation
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_mailer.mailer import DummyMailer
+        from pyramid_signup.managers import UserManager
+        self.config.include('pyramid_signup')
+        self.config.add_route('index', '/')
+
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        user = User(username='sontek', password='temp')
+        user.activation = Activation()
+
+        self.session.add(user)
+        self.session.flush()
+
+        request = testing.DummyRequest()
+        request.matchdict = Mock()
+        get = Mock()
+        get.return_value = 'invalid'
+        request.matchdict.get = get
+
+        controller = RegisterController(request)
+        response = controller.activate()
+        mgr = UserManager(request)
+        user = mgr.get_by_username('sontek')
+
+        assert not user.activated
+        assert response.status_int == 404

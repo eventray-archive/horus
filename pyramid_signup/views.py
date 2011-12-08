@@ -206,6 +206,6 @@ class RegisterController(BaseController):
                 self.request.session.flash(_('Your e-mail address has been verified.'))
                 return HTTPFound(location=self.activate_redirect_view)
 
-#            return HTTPNotFound()
+        return HTTPNotFound()
 
 
