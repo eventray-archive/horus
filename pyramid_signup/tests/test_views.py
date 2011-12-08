@@ -479,6 +479,7 @@ class TestRegisterController(UnitTestBase):
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_signup.managers import UserManager
+        from pyramid_signup.managers import ActivationManager
         self.config.include('pyramid_signup')
         self.config.add_route('index', '/')
 
@@ -504,6 +505,10 @@ class TestRegisterController(UnitTestBase):
         mgr = UserManager(request)
         user = mgr.get_by_username('sontek1')
 
+        act_mgr = ActivationManager(request)
+        activations = act_mgr.get_all()
+
+        assert len(activations) == 1
         assert user.activated
         assert response.status_int == 302
 

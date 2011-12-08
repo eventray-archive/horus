@@ -39,3 +39,6 @@ class UserManager(BaseManager):
 class ActivationManager(BaseManager):
     def get_by_code(self, code):
         return self.session.query(Activation).filter(Activation.code == code).first()
+
+    def get_all(self):
+        return self.session.query(Activation).all()

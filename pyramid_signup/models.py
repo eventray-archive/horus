@@ -30,6 +30,7 @@ class Base(object):
     """Base class which auto-generates tablename, and surrogate
     primary key column.
     """
+    __table_args__ = {"sqlite_autoincrement": True}
 
     @declared_attr
     def __tablename__(cls):

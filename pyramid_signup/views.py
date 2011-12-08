@@ -23,6 +23,7 @@ from pyramid_signup.models import User
 from pyramid_signup.models import Activation
 from pyramid_signup.lib import get_session
 from pyramid_signup.events import NewRegistrationEvent
+from pyramid_signup.events import RegistrationActivatedEvent
 
 _ = TranslationStringFactory('pyramid_signup')
 
@@ -36,7 +37,6 @@ class BaseController(object):
         self._request  = request
 
         self.settings = request.registry.settings
-        self.using_tm = asbool(self.settings.get('su.using_tm', False))
         self.db = get_session(request)
 
 class AuthController(BaseController):
@@ -162,7 +162,7 @@ class RegisterController(BaseController):
                     activation = Activation()
                     self.db.add(activation)
 
-                    user.activation = Activation()
+                    user.activation = activation
 
                     body = pystache.render(_("Please activate your e-mail address by visiting {{ link }}"),
                         {
@@ -206,9 +206,11 @@ class RegisterController(BaseController):
                 self.db.delete(activation)
                 user.activated = True
                 self.db.add(user)
+                self.db.flush()
 
-                if not self.using_tm:
-                    self.db.commit()
+                self.request.registry.notify(
+                    RegistrationActivatedEvent(self.request, user, activation)
+                )
 
                 self.request.session.flash(_('Your e-mail address has been verified.'), 'success')
                 return HTTPFound(location=self.activate_redirect_view)
