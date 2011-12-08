@@ -8,7 +8,7 @@ class TestUserManager(UnitTestBase):
 
         user = User(username='sontek', password='temp')
         self.session.add(user)
-        self.session.flush()
+        self.session.commit()
 
         request = testing.DummyRequest()
         mgr = UserManager(request)
@@ -23,7 +23,7 @@ class TestUserManager(UnitTestBase):
 
         user = User(username='sontek1', password='temp')
         self.session.add(user)
-        self.session.flush()
+        self.session.commit()
 
         request = testing.DummyRequest()
         mgr = UserManager(request)
@@ -38,7 +38,7 @@ class TestUserManager(UnitTestBase):
 
         user = User(username='sontek', password='temp')
         self.session.add(user)
-        self.session.flush()
+        self.session.commit()
 
         request = testing.DummyRequest()
         mgr = UserManager(request)
@@ -53,7 +53,7 @@ class TestUserManager(UnitTestBase):
 
         user = User(username='sontek', password='temp')
         self.session.add(user)
-        self.session.flush()
+        self.session.commit()
 
         request = testing.DummyRequest()
         mgr = UserManager(request)
@@ -68,7 +68,7 @@ class TestUserManager(UnitTestBase):
 
         user = User(username='sontek', password='temp')
         self.session.add(user)
-        self.session.flush()
+        self.session.commit()
 
         request = testing.DummyRequest()
         mgr = UserManager(request)
@@ -83,7 +83,7 @@ class TestUserManager(UnitTestBase):
 
         user = User(username='sontek', password='temp')
         self.session.add(user)
-        self.session.flush()
+        self.session.commit()
 
         request = testing.DummyRequest()
         mgr = UserManager(request)
@@ -91,3 +91,52 @@ class TestUserManager(UnitTestBase):
         new_user = mgr.get_by_username('sontek1')
 
         assert new_user == None
+
+    def test_get_user_by_email(self):
+        from pyramid_signup.models import User
+        from pyramid_signup.managers import UserManager
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        self.session.add(user)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+        mgr = UserManager(request)
+
+        new_user = mgr.get_by_email(user.email)
+
+        assert new_user == user
+
+    def test_get_user_by_invalid_email(self):
+        from pyramid_signup.models import User
+        from pyramid_signup.managers import UserManager
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        self.session.add(user)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+        mgr = UserManager(request)
+
+        new_user = mgr.get_by_email('sontek1@gmail.com')
+
+        assert new_user == None
+
+    def test_get_user_by_activation(self):
+        from pyramid_signup.models import User
+        from pyramid_signup.models import Activation
+        from pyramid_signup.managers import UserManager
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        activation = Activation()
+        user.activation = activation
+
+        self.session.add(user)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+        mgr = UserManager(request)
+
+        new_user = mgr.get_by_activation(activation)
+
+        assert new_user == user

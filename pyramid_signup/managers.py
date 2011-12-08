@@ -16,7 +16,7 @@ class UserManager(object):
         return self.session.query(User).filter(User.username == username).first()
 
     def get_by_activation(self, activation):
-        user = User.query.filter(User.activation == activation).first()
+        user = self.session.query(User).filter(User.activation == activation).first()
         return user
 
     def get_by_pk(self, pk):
