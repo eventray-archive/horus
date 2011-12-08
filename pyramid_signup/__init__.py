@@ -50,11 +50,11 @@ def includeme(config):
     if not config.registry.queryUtility(ISULoginForm):
         config.registry.registerUtility(SubmitForm, ISULoginForm)
 
-    if not config.registry.queryUtility(ISURegisterForm):
-        config.registry.registerUtility(SubmitForm, ISURegisterForm)
-
     if not config.registry.queryUtility(ISURegisterSchema):
         config.registry.registerUtility(RegisterSchema, ISURegisterSchema)
+
+    if not config.registry.queryUtility(ISURegisterForm):
+        config.registry.registerUtility(SubmitForm, ISURegisterForm)
 
     prefix = config.registry.settings.get('su.routes_prefix', '')
 

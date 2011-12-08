@@ -194,7 +194,7 @@ class TestAuthController(UnitTestBase):
                 assert HTTPFound.called
 
 class TestRegisterController(UnitTestBase):
-    def test_auth_controller_extensions_with_mail(self):
+    def test_register_controller_extensions_with_mail(self):
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
         from pyramid_signup.views import RegisterController
@@ -213,7 +213,7 @@ class TestRegisterController(UnitTestBase):
 
         self.config.registry.registerUtility(schema, ISURegisterSchema)
         self.config.registry.registerUtility(form, ISURegisterForm)
-        self.config.registry.registerUtility(DummyMailer, IMailer)
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         with patch('pyramid_signup.views.get_mailer') as get_mailer:
             RegisterController(request)
@@ -222,7 +222,7 @@ class TestRegisterController(UnitTestBase):
         assert schema.called
         assert form.called
 
-    def test_auth_controller_extensions_without_mail(self):
+    def test_register_controller_extensions_without_mail(self):
         from pyramid_signup.views import RegisterController
         from pyramid_signup.interfaces import ISURegisterSchema
         from pyramid_signup.interfaces import ISURegisterForm
@@ -247,3 +247,61 @@ class TestRegisterController(UnitTestBase):
 
         schema.assert_called_once_with()
         assert form.called
+
+    def test_register_loads_not_logged_in(self):
+        from pyramid_signup.views import RegisterController
+        from pyramid_mailer.mailer import DummyMailer
+        from pyramid_mailer.interfaces import IMailer
+
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        self.config.add_route('index', '/')
+
+        request = testing.DummyRequest()
+        request.user = None
+        controller = RegisterController(request)
+        response = controller.get()
+
+        assert response.get('form', None)
+
+    def test_register_redirects_if_logged_in(self):
+        from pyramid_signup.views import RegisterController
+        from pyramid_mailer.mailer import DummyMailer
+        from pyramid_mailer.interfaces import IMailer
+
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        self.config.add_route('index', '/')
+
+        request = testing.DummyRequest()
+        request.user = Mock()
+        controller = RegisterController(request)
+        response = controller.get()
+
+        assert response.status_int == 302
+
+    def test_register_creates_user(self):
+        from pyramid_signup.views import RegisterController
+        from pyramid_mailer.mailer import DummyMailer
+        from pyramid_mailer.interfaces import IMailer
+
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        self.config.add_route('index', '/')
+
+        request = self.get_csrf_request(post={
+            'Username': 'admin',
+            'Password': {
+                'value': 'test123',
+                'confirm': 'test123',
+            },
+            'Email': 'sontek@gmail.com'
+        }, request_method='POST')
+
+        request.user = Mock()
+        controller = RegisterController(request)
+        response = controller.post()
+        assert response.status_int == 302
