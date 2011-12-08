@@ -56,8 +56,6 @@ def includeme(config):
     if not config.registry.queryUtility(ISURegisterForm):
         config.registry.registerUtility(SubmitForm, ISURegisterForm)
 
-    prefix = config.registry.settings.get('su.routes_prefix', '')
-
-    config.include(build_routes, route_prefix=prefix)
-
+    config.include(build_routes)
     config.scan('pyramid_signup')
+

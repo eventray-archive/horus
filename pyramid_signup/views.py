@@ -4,6 +4,7 @@ from pyramid.i18n import TranslationStringFactory
 from pyramid.security import remember
 from pyramid.security import forget
 from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.settings import asbool
 
 import deform
@@ -17,6 +18,7 @@ from pyramid_signup.interfaces import ISULoginSchema
 from pyramid_signup.interfaces import ISURegisterForm
 from pyramid_signup.interfaces import ISURegisterSchema
 from pyramid_signup.managers import UserManager
+from pyramid_signup.managers import ActivationManager
 from pyramid_signup.models import User
 from pyramid_signup.models import Activation
 from pyramid_signup.lib import get_session
@@ -34,6 +36,7 @@ class BaseController(object):
 
         self.settings = request.registry.settings
         self.using_tm = asbool(self.settings.get('su.using_tm', False))
+        self.db = get_session(request)
 
 class AuthController(BaseController):
     def __init__(self, request):
@@ -116,7 +119,6 @@ class RegisterController(BaseController):
         self.register_redirect_view = route_url(self.settings.get('su.register_redirect', 'index'), request)
         self.activate_redirect_view = route_url(self.settings.get('su.activate_redirect', 'index'), request)
 
-        self.db = get_session(request)
         self.require_activation = asbool(self.settings.get('su.require_activation', True))
 
         if self.require_activation:
@@ -163,7 +165,7 @@ class RegisterController(BaseController):
 
                     body = pystache.render(_("Please activate your e-mail address by visiting {{ link }}"),
                         {
-                            'link': route_url('activation', self.request, code=user.activation.code)
+                            'link': route_url('activate', self.request, code=user.activation.code)
                         }
                     )
 
@@ -182,30 +184,28 @@ class RegisterController(BaseController):
 
             return HTTPFound(location=self.register_redirect_view)
 
-        @view_config(route_name='activate')
-        def activate(self):
-            code = self.request.matchdict.get('code', None)
-            activation = Activation.query.filter(Activation.code == code).first()
+    @view_config(route_name='activate')
+    def activate(self):
+        code = self.request.matchdict.get('code', None)
+        act_mgr = ActivationManager(self.request)
+        user_mgr = UserManager(self.request)
 
-            mgr = UserManager(self.request)
+        activation = act_mgr.get_by_code(code)
 
-            if activation:
-                user = mgr.get_by_activation(activation)
+        if activation:
+            user = user_mgr.get_by_activation(activation)
 
-                main_view = route_url('dashboard', self.request)
+            if user:
+                self.db.delete(activation)
+                user.activated = True
+                self.db.add(user)
 
-                if email:
-                    if not self.request.user:
-                        user = User.query.filter(User.pk == email.user_id).first()
-                        user.activated = True
-                        request.db.flush()
-                        main_view = route_url('login', request)
+                if not self.using_tm:
+                    self.db.commit()
 
-                    activation.activate(request)
-                    request.session.flash(_('Your e-mail address has been verified.'))
+                self.request.session.flash(_('Your e-mail address has been verified.'))
+                return HTTPFound(location=self.activate_redirect_view)
 
-                    return HTTPFound(location=main_view)
-
-            return HTTPNotFound()
+#            return HTTPNotFound()
 
 
