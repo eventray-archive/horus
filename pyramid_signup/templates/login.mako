@@ -1,5 +1,5 @@
 <html>
   <body>
-    ${form}
+    ${form|n}
   </body>
 </html>

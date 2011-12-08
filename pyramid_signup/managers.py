@@ -15,6 +15,11 @@ class UserManager(object):
     def get_by_username(self, username):
         return self.session.query(User).filter(User.username == username).first()
 
+    def get_by_pk(self, pk):
+        """Gets an object by its primary key"""
+        return self.session.query(User).filter(User.pk == pk).first()
+
+
     def get_user(self, username, password):
         user = self.get_by_username(username)
 
