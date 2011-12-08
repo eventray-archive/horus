@@ -16,14 +16,10 @@ from pyramid_signup.interfaces import ISUSession
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
-def index(request):
-    return Response('Index!' % request.matchdict)
-
 def main(global_config, **settings):
     config = Configurator(settings=settings)
 
     config.add_route('index', '/')
-    config.add_view(index, route_name='index')
 
     authn_policy = AuthTktAuthenticationPolicy('secret')
     config.set_authentication_policy(authn_policy)
@@ -45,8 +41,8 @@ def main(global_config, **settings):
     if settings.get('su.require_activation', True):
         config.include('pyramid_mailer')
 
+    config.scan('demo')
     config.include('pyramid_signup')
-
 
     app = config.make_wsgi_app()
 

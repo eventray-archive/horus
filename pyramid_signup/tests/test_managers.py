@@ -141,6 +141,29 @@ class TestUserManager(UnitTestBase):
 
         assert new_user == user
 
+    def test_get_user_by_activation_with_multiple_users(self):
+        from pyramid_signup.models import User
+        from pyramid_signup.models import Activation
+        from pyramid_signup.managers import UserManager
+
+        user1 = User(username='sontek1', password='temp', email='sontek@gmail.com')
+        user2 = User(username='sontek2', password='temp', email='sontek@gmail.com')
+
+        activation = Activation()
+        user2.activation = activation
+
+        self.session.add(user1)
+        self.session.add(user2)
+
+        self.session.commit()
+
+        request = testing.DummyRequest()
+        mgr = UserManager(request)
+
+        new_user = mgr.get_by_activation(activation)
+
+        assert new_user == user2
+
 class TestManager(UnitTestBase):
     def test_get_activation(self):
         from pyramid_signup.models import Activation
@@ -156,3 +179,30 @@ class TestManager(UnitTestBase):
         new_activation = mgr.get_by_code(activation.code)
 
         assert activation == new_activation
+
+    def test_get_user_activation(self):
+        from pyramid_signup.models import Activation
+        from pyramid_signup.managers import ActivationManager
+        from pyramid_signup.managers import UserManager
+        from pyramid_signup.models import User
+
+        user1 = User(username='sontek1', password='temp', email='sontek@gmail.com')
+        user2 = User(username='sontek2', password='temp', email='sontek@gmail.com')
+
+        activation = Activation()
+        user2.activation = activation
+
+        self.session.add(user1)
+        self.session.add(user2)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+        mgr = ActivationManager(request)
+        user_mgr = UserManager(request)
+
+        new_user = user_mgr.get_by_username('sontek2')
+
+        new_activation = mgr.get_by_code(activation.code)
+
+        assert activation == new_activation
+        assert new_user.activation == new_activation

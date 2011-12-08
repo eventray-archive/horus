@@ -178,6 +178,9 @@ class RegisterController(BaseController):
                 else:
                     user.activated = True
 
+                    if not self.using_tm:
+                        self.db.commit()
+
             except Exception as exc:
                 self.request.session.flash(exc.message, 'error')
                 return {'form': self.form.render()}
@@ -203,7 +206,7 @@ class RegisterController(BaseController):
                 if not self.using_tm:
                     self.db.commit()
 
-                self.request.session.flash(_('Your e-mail address has been verified.'))
+                self.request.session.flash(_('Your e-mail address has been verified.'), 'success')
                 return HTTPFound(location=self.activate_redirect_view)
 
         return HTTPNotFound()
