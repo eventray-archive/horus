@@ -34,7 +34,7 @@ class AuthController(object):
         self.login_redirect_view = route_url(settings.get('su.login_redirect', 'index'), request)
         self.logout_redirect_view = route_url(settings.get('su.logout_redirect', 'index'), request)
 
-        self.form = form(self.schema)
+        self.form = form(self.schema, buttons=('submit',))
 
     def authenticated(self, request, pk):
         """ This sets the auth cookies and redirects to the page defined
