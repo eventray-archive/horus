@@ -6,7 +6,7 @@ from mock import patch
 from pyramid_signup.tests import UnitTestBase
 from pyramid_signup.models import User
 
-class TestAuthViews(UnitTestBase):
+class TestAuthController(UnitTestBase):
     def test_auth_controller_extensions(self):
         from pyramid_signup.views import AuthController
         from pyramid_signup.interfaces import ISULoginSchema
@@ -27,9 +27,8 @@ class TestAuthViews(UnitTestBase):
 
         AuthController(request)
 
-        assert schema.is_called
-        assert schema.bind.is_called
-        assert form.is_called
+        assert schema.called
+        assert form.called
 
 
     def test_login_loads(self):
@@ -193,3 +192,58 @@ class TestAuthViews(UnitTestBase):
                 forget.assert_called_with(request)
                 assert invalidate.called
                 assert HTTPFound.called
+
+class TestRegisterController(UnitTestBase):
+    def test_auth_controller_extensions_with_mail(self):
+        from pyramid_mailer.mailer import DummyMailer
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_signup.views import RegisterController
+        from pyramid_signup.interfaces import ISURegisterSchema
+        from pyramid_signup.interfaces import ISURegisterForm
+
+        self.config.add_route('index', '/')
+
+        request = testing.DummyRequest()
+
+        getUtility = Mock()
+        getUtility.return_value = True
+
+        schema = Mock()
+        form = Mock()
+
+        self.config.registry.registerUtility(schema, ISURegisterSchema)
+        self.config.registry.registerUtility(form, ISURegisterForm)
+        self.config.registry.registerUtility(DummyMailer, IMailer)
+
+        with patch('pyramid_signup.views.get_mailer') as get_mailer:
+            RegisterController(request)
+            assert get_mailer.called
+
+        assert schema.called
+        assert form.called
+
+    def test_auth_controller_extensions_without_mail(self):
+        from pyramid_signup.views import RegisterController
+        from pyramid_signup.interfaces import ISURegisterSchema
+        from pyramid_signup.interfaces import ISURegisterForm
+
+        self.config.add_route('index', '/')
+
+        request = testing.DummyRequest()
+
+        getUtility = Mock()
+        getUtility.return_value = True
+
+        schema = Mock()
+        form = Mock()
+        
+        self.config.registry.settings['su.require_activation'] = False
+        self.config.registry.registerUtility(schema, ISURegisterSchema)
+        self.config.registry.registerUtility(form, ISURegisterForm)
+
+        with patch('pyramid_signup.views.get_mailer') as get_mailer:
+            RegisterController(request)
+            assert not get_mailer.called
+
+        schema.assert_called_once_with()
+        assert form.called
