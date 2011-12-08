@@ -6,9 +6,6 @@ from pyramid.security import forget
 from pyramid.httpexceptions import HTTPFound
 from pyramid.settings import asbool
 
-
-from sqlalchemy.exc import IntegrityError
-
 import deform
 import pystache
 

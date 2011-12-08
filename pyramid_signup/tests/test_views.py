@@ -4,7 +4,6 @@ from mock import Mock
 from mock import patch
 
 from pyramid_signup.tests import UnitTestBase
-from pyramid_signup.models import User
 
 class TestAuthController(UnitTestBase):
     def test_auth_controller_extensions(self):
@@ -121,6 +120,7 @@ class TestAuthController(UnitTestBase):
 
     def test_login_succeeds(self):
         """ Make sure we can login """
+        from pyramid_signup.models import User
         admin = User(username='sontek', password='temp')
         admin.activated = True
 
@@ -145,6 +145,7 @@ class TestAuthController(UnitTestBase):
 
     def test_inactive_login_fails(self):
         """ Make sure we can't login with an inactive user """
+        from pyramid_signup.models import User
         user = User(username='sontek', password='temp')
 
         self.session.add(user)
@@ -286,6 +287,7 @@ class TestRegisterController(UnitTestBase):
         from pyramid_signup.views import RegisterController
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
+        from pyramid_signup.managers import UserManager
 
         self.config.include('pyramid_signup')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
@@ -304,4 +306,126 @@ class TestRegisterController(UnitTestBase):
         request.user = Mock()
         controller = RegisterController(request)
         response = controller.post()
+
         assert response.status_int == 302
+
+        mgr = UserManager(request)
+        user = mgr.get_by_username('admin')
+
+        assert user != None
+
+    def test_register_validation(self):
+        from pyramid_signup.views import RegisterController
+        from pyramid_mailer.mailer import DummyMailer
+        from pyramid_mailer.interfaces import IMailer
+
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        self.config.add_route('index', '/')
+
+        request = self.get_csrf_request(request_method='POST')
+
+        request.user = Mock()
+        controller = RegisterController(request)
+        response = controller.post()
+
+        assert len(response['errors']) == 3
+        assert 'There was a problem with your submission' in response['form']
+
+    def test_register_existing_user(self):
+        from pyramid_signup.views import RegisterController
+        from pyramid_mailer.mailer import DummyMailer
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_signup.models import User
+
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        self.config.add_route('index', '/')
+
+        admin = User(username='sontek', password='temp')
+        self.session.add(admin)
+        self.session.flush()
+
+        request = self.get_csrf_request(post={
+            'Username': 'sontek',
+            'Password': {
+                'value': 'test123',
+                'confirm': 'test123',
+            },
+            'Email': 'sontek@gmail.com'
+        }, request_method='POST')
+
+        flash = Mock()
+        request.session.flash = flash
+
+        controller = RegisterController(request)
+        controller.post()
+
+        flash.assert_called_with(u'That username is already used.', 'error')
+
+    def test_register_no_email_validation(self):
+        from pyramid_signup.views import RegisterController
+        from pyramid_mailer.mailer import DummyMailer
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_signup.managers import UserManager
+
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        self.config.add_route('index', '/')
+        self.config.registry.settings['su.require_activation'] = False
+
+        request = self.get_csrf_request(post={
+            'Username': 'admin',
+            'Password': {
+                'value': 'test123',
+                'confirm': 'test123',
+            },
+            'Email': 'sontek@gmail.com'
+        }, request_method='POST')
+
+        request.user = Mock()
+        controller = RegisterController(request)
+        response = controller.post()
+
+        assert response.status_int == 302
+
+        mgr = UserManager(request)
+        user = mgr.get_by_username('admin')
+
+        assert user.activated == True
+
+    def test_registration_craps_out(self):
+        from pyramid_signup.views import RegisterController
+        from pyramid_mailer.interfaces import IMailer
+
+        def send(message):
+            raise Exception("I broke!")
+
+        mailer = Mock()
+        mailer.send = send
+
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(mailer, IMailer)
+
+        self.config.add_route('index', '/')
+
+        request = self.get_csrf_request(post={
+            'Username': 'admin',
+            'Password': {
+                'value': 'test123',
+                'confirm': 'test123',
+            },
+            'Email': 'sontek@gmail.com'
+        }, request_method='POST')
+
+        flash = Mock()
+        request.session.flash = flash
+
+        request.user = Mock()
+        controller = RegisterController(request)
+        controller.post()
+
+        flash.assert_called_with('I broke!', 'error')
