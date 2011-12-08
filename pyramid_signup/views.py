@@ -5,13 +5,15 @@ from pyramid.security import remember
 from pyramid.security import forget
 from pyramid.httpexceptions import HTTPFound
 
-
 import deform
 
 from pyramid_signup.interfaces import ISULoginForm
 from pyramid_signup.interfaces import ISULoginSchema
-
+from pyramid_signup.interfaces import ISURegisterForm
+from pyramid_signup.interfaces import ISURegisterSchema
 from pyramid_signup.managers import UserManager
+from pyramid_signup.models import User
+from pyramid_signup.lib import get_session
 
 _ = TranslationStringFactory('pyramid_signup')
 
@@ -34,7 +36,7 @@ class AuthController(object):
         self.login_redirect_view = route_url(settings.get('su.login_redirect', 'index'), request)
         self.logout_redirect_view = route_url(settings.get('su.logout_redirect', 'index'), request)
 
-        self.form = form(self.schema, buttons=('submit',))
+        self.form = form(self.schema)
 
     def authenticated(self, request, pk):
         """ This sets the auth cookies and redirects to the page defined
@@ -45,9 +47,9 @@ class AuthController(object):
 
         return HTTPFound(location=self.login_redirect_view, headers=headers)
 
-    @view_config(permission='view', route_name='login', request_method='POST', renderer='pyramid_signup:templates/login.mako')
+    @view_config(route_name='login', request_method='POST', renderer='pyramid_signup:templates/login.mako')
     def post(self):
-        if 'submit' in self.request.POST:
+        if self.request.method == 'POST':
             try:
                 controls = self.request.POST.items()
                 captured = self.form.validate(controls)
@@ -72,14 +74,14 @@ class AuthController(object):
 
             return {'form': self.form.render(appstruct=captured)}
 
-    @view_config(permission='view', route_name='login', request_method='GET', renderer='pyramid_signup:templates/login.mako')
+    @view_config(route_name='login', request_method='GET', renderer='pyramid_signup:templates/login.mako')
     def get(self):
         if self.request.user:
             return HTTPFound(location=self.login_redirect_view)
 
         return {'form': self.form.render()}
 
-    @view_config(permission='authed', route_name='logout')
+    @view_config(permission='view', route_name='logout')
     def logout(self):
         """
         Removes the auth cookies and redirects to the view defined in 
@@ -90,3 +92,59 @@ class AuthController(object):
         headers = forget(self.request)
 
         return HTTPFound(location=self.logout_redirect_view, headers=headers)
+
+class RegisterView(object):
+    def __init__(self, request):
+        self.request  = request
+        schema = request.registry.getUtility(ISURegisterSchema)
+        self.schema = schema().bind(request=self.request)
+
+        form = request.registry.getUtility(ISURegisterForm)
+        self.form = form(self.schema)
+
+        settings = request.registry.settings
+        self.register_redirect_view = route_url(settings.get('su.register_redirect', 'index'), request)
+
+    @view_config(route_name='register', request_method='GET',renderer='pyramid_signup:templates/register.mako')
+    def get(self):
+        if self.request.user:
+            return HTTPFound(location=self.register_redirect_view)
+
+        return {'form': self.form.render()}
+
+    @view_config(route_name='register', request_method='POST', renderer='register.jinja2')
+    def post(self):
+        if self.request.method == 'POST':
+            try:
+                controls = self.request.POST.items()
+                captured = self.form.validate(controls)
+            except deform.ValidationFailure, e:
+                return {'form': e.render(), 'errors': e.error.children}
+
+            email = captured['Email']
+            username = captured['Username']
+            password = captured['Password']
+
+            try:
+                user = User(username=username, password=password,
+                    email=email)
+
+                self.request.db.add(user)
+                self.request.db.flush()
+
+                useremail = UserEmail(email=email, user_id=user.pk)
+                useremail.activation = Activation()
+                self.request.db.add(useremail)
+
+                def run_tasks(session):
+                    self.request.session.flash(_('Please check your E-mail for an activation link'))
+                    send_activation_email(self.request, useremail)
+
+                event.listen(self.request.db, 'after_commit', run_tasks)
+
+                self.request.db.flush()
+            except IntegrityError:
+                self.request.session.flash(_('That username or E-mail is already used.'))
+                return {'form': self.form.render()}
+
+            return HTTPFound(location=self.register_redirect_view)

@@ -1,30 +1,7 @@
 from pyramid_signup.tests import UnitTestBase
 from pyramid import testing
 
-from mock import Mock
-
 class TestUserManager(UnitTestBase):
-    def test_get_session(self):
-        from pyramid_signup.interfaces import ISUSession
-        from pyramid_signup.managers import UserManager
-
-        request = testing.DummyRequest()
-        request.registry = Mock()
-
-        session = Mock()
-
-        getUtility = Mock()
-        getUtility.return_value = session
-
-        request.registry.getUtility = getUtility
-
-        mgr = UserManager(request)
-        new_session = mgr.get_session()
-
-        getUtility.assert_called_with(ISUSession)
-        assert new_session == session
-
-
     def test_get_valid_user(self):
         from pyramid_signup.models import User
         from pyramid_signup.managers import UserManager

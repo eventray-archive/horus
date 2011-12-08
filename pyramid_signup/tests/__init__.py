@@ -50,7 +50,7 @@ class UnitTestBase(BaseTestCase):
         self.config = testing.setUp(request=testing.DummyRequest())
         super(UnitTestBase, self).setUp()
 
-    def get_csrf_request(self, post=None):
+    def get_csrf_request(self, post=None, request_method='GET'):
         csrf = 'abc'
 
         if not post:
@@ -68,6 +68,7 @@ class UnitTestBase(BaseTestCase):
         csrf_token.return_value = csrf
 
         request.session.get_csrf_token = csrf_token
+        request.method = request_method
 
         return request
 

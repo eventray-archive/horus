@@ -8,3 +8,9 @@ class ISULoginSchema(Interface):
 
 class ISULoginForm(Interface):
     pass
+
+class ISURegisterSchema(Interface):
+    pass
+
+class ISURegisterForm(Interface):
+    pass

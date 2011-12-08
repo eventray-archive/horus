@@ -64,7 +64,7 @@ class TestAuthViews(UnitTestBase):
 
         request = testing.DummyRequest(post={
             'submit': True,
-        })
+        }, request_method='POST')
 
         view = AuthController(request)
         response = view.post()
@@ -88,9 +88,10 @@ class TestAuthViews(UnitTestBase):
                     'login': 'admin',
                     'password': 'test123',
                     'csrf_token': 'abc2'
-                })
+                }, request_method='POST')
 
         view = AuthController(request)
+
         response = view.post()
 
         errors = response['errors']
@@ -109,7 +110,7 @@ class TestAuthViews(UnitTestBase):
                 'submit': True,
                 'Username': 'admin',
                 'Password': 'test123',
-            })
+            }, request_method='POST')
 
         flash = Mock()
         request.session.flash = flash
@@ -136,7 +137,7 @@ class TestAuthViews(UnitTestBase):
                 'submit': True,
                 'Username': 'sontek',
                 'Password': 'temp',
-            })
+            }, request_method='POST')
 
         view = AuthController(request)
         response = view.post()
@@ -158,7 +159,7 @@ class TestAuthViews(UnitTestBase):
                 'submit': True,
                 'Username': 'sontek',
                 'Password': 'temp',
-            })
+            }, request_method='POST')
 
         flash = Mock()
 

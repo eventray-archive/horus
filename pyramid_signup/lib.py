@@ -2,6 +2,8 @@ import hashlib
 import random
 import string
 
+from pyramid_signup.interfaces import ISUSession
+
 def gen_hash_key(length):
     """Generate a generic hash key for the user to use"""
     m = hashlib.sha256()
@@ -13,3 +15,8 @@ def gen_hash_key(length):
     m.update(word)
 
     return unicode(m.hexdigest()[:length])
+
+def get_session(request):
+    session = request.registry.getUtility(ISUSession)
+
+    return session

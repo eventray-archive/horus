@@ -20,7 +20,7 @@ def index(request):
     return Response('Index!' % request.matchdict)
 
 def main(global_config, **settings):
-    config = Configurator()
+    config = Configurator(settings=settings)
 
     config.add_route('index', '/')
     config.add_view(index, route_name='index')
@@ -35,10 +35,9 @@ def main(global_config, **settings):
 
     config.set_session_factory(session_factory)
 
-
     engine = engine_from_config(settings, prefix='sqlalchemy.')
     DBSession.configure(bind=engine)
-    
+
     config.registry.registerUtility(DBSession, ISUSession)
 
     config.include('pyramid_signup')

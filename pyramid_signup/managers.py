@@ -2,17 +2,12 @@ import cryptacular.bcrypt
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
 from pyramid_signup.models import User
-from pyramid_signup.interfaces import ISUSession
+from pyramid_signup.lib import get_session
 
 class UserManager(object):
     def __init__(self, request):
         self.request = request
-        self.session = self.get_session()
-
-    def get_session(self):
-        session = self.request.registry.getUtility(ISUSession)
-
-        return session
+        self.session = get_session(request)
 
     def get_by_username(self, username):
         return self.session.query(User).filter(User.username == username).first()

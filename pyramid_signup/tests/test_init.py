@@ -16,17 +16,15 @@ class TestInitCase(UnitTestBase):
 
         root_factory = RootFactory(testing.DummyRequest())
 
-        assert len(root_factory.__acl__) == 3
+        assert len(root_factory.__acl__) == 2
 
         for ace in root_factory.__acl__:
             assert ace[0] == Allow
 
             if ace[1] == 'group:admin':
                 assert ace[2] == ALL_PERMISSIONS
-            elif ace[1] == Everyone:
-                assert ace[2] == 'view'
             elif ace[1] == Authenticated:
-                assert ace[2] == 'authed'
+                assert ace[2] == 'view'
 
     def test_request_factory(self):
         from pyramid_signup import SignUpRequestFactory
