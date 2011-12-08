@@ -1,4 +1,7 @@
 pyramid
+pyramid_mailer
+pyramid_tm
+
 colander
 deform
 

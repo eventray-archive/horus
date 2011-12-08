@@ -40,6 +40,11 @@ def main(global_config, **settings):
 
     config.registry.registerUtility(DBSession, ISUSession)
 
+    config.include('pyramid_tm')
+
+    if settings.get('su.require_activation', True):
+        config.include('pyramid_mailer')
+
     config.include('pyramid_signup')
 
 

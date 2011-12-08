@@ -127,6 +127,7 @@ class Organization(Entity):
 
 class User(Entity):
     username = Column(UnicodeText, unique=True)
+    email = Column(UnicodeText, nullable=True)
     first_name = Column(UnicodeText)
     last_name = Column(UnicodeText)
     activated = Column(Boolean, default=False)

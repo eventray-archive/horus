@@ -4,8 +4,16 @@ from pyramid.i18n import TranslationStringFactory
 from pyramid.security import remember
 from pyramid.security import forget
 from pyramid.httpexceptions import HTTPFound
+from pyramid.settings import asbool
+
+
+from sqlalchemy.exc import IntegrityError
 
 import deform
+import pystache
+
+from pyramid_mailer import get_mailer
+from pyramid_mailer.message import Message
 
 from pyramid_signup.interfaces import ISULoginForm
 from pyramid_signup.interfaces import ISULoginSchema
@@ -13,6 +21,7 @@ from pyramid_signup.interfaces import ISURegisterForm
 from pyramid_signup.interfaces import ISURegisterSchema
 from pyramid_signup.managers import UserManager
 from pyramid_signup.models import User
+from pyramid_signup.models import Activation
 from pyramid_signup.lib import get_session
 
 _ = TranslationStringFactory('pyramid_signup')
@@ -104,15 +113,20 @@ class RegisterView(object):
 
         settings = request.registry.settings
         self.register_redirect_view = route_url(settings.get('su.register_redirect', 'index'), request)
+        self.db = get_session(request)
+        self.require_activation = asbool(settings.get('su.require_activation', True))
 
-    @view_config(route_name='register', request_method='GET',renderer='pyramid_signup:templates/register.mako')
+        if self.require_activation:
+            self.mailer = get_mailer(request)
+
+    @view_config(route_name='register', request_method='GET', renderer='pyramid_signup:templates/register.mako')
     def get(self):
         if self.request.user:
             return HTTPFound(location=self.register_redirect_view)
 
         return {'form': self.form.render()}
 
-    @view_config(route_name='register', request_method='POST', renderer='register.jinja2')
+    @view_config(route_name='register', request_method='POST', renderer='pyramid_signup:templates/register.mako')
     def post(self):
         if self.request.method == 'POST':
             try:
@@ -126,23 +140,29 @@ class RegisterView(object):
             password = captured['Password']
 
             try:
-                user = User(username=username, password=password,
-                    email=email)
+                user = User(username=username, password=password, email=email)
 
-                self.request.db.add(user)
-                self.request.db.flush()
+                self.db.add(user)
 
-                useremail = UserEmail(email=email, user_id=user.pk)
-                useremail.activation = Activation()
-                self.request.db.add(useremail)
+                if self.require_activation:
+                    user.activation = Activation()
+                    body = pystache.render(_("Please activate your e-mail address by visiting {{ link }}"),
+                        {
+                            'link': route_url('activation', self.request, code=user.activation.code)
+                        }
+                    )
 
-                def run_tasks(session):
+                    subject = _("Please active your e-mail address!")
+
+                    message = Message(subject=subject, recipients=[user.email], body=body)
+                    self.mailer.send(message)
+
                     self.request.session.flash(_('Please check your E-mail for an activation link'))
-                    send_activation_email(self.request, useremail)
+                else:
+                    user.activated = True
 
-                event.listen(self.request.db, 'after_commit', run_tasks)
+                self.db.flush()
 
-                self.request.db.flush()
             except IntegrityError:
                 self.request.session.flash(_('That username or E-mail is already used.'))
                 return {'form': self.form.render()}
