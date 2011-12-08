@@ -6,10 +6,12 @@ from pyramid_signup.interfaces import ISUSession
 
 class UserManager(object):
     def __init__(self, request):
-        self.session = self.get_session(request)
+        self.request = request
+        self.session = self.get_session()
 
-    def get_session(self, request):
-        session = request.registry.getUtility(ISUSession)
+    def get_session(self):
+        session = self.request.registry.getUtility(ISUSession)
+
         return session
 
     def get_by_username(self, username):

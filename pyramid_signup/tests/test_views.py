@@ -3,12 +3,8 @@ from pyramid import testing
 from mock import Mock
 from mock import patch
 
-import os
-
 from pyramid_signup.tests import UnitTestBase
 from pyramid_signup.models import User
-
-here = os.path.dirname(__file__)
 
 class TestAuthViews(UnitTestBase):
     def test_auth_controller_extensions(self):
