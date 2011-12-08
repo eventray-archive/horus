@@ -9,8 +9,15 @@ class UserManager(object):
         self.request = request
         self.session = get_session(request)
 
+    def get_by_email(self, email):
+        return self.session.query(User).filter(User.email == email).first()
+
     def get_by_username(self, username):
         return self.session.query(User).filter(User.username == username).first()
+
+    def get_by_activation(self, activation):
+        user = User.query.filter(User.activation == activation).first()
+        return user
 
     def get_by_pk(self, pk):
         """Gets an object by its primary key"""

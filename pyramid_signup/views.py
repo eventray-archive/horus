@@ -26,7 +26,7 @@ from pyramid_signup.lib import get_session
 
 _ = TranslationStringFactory('pyramid_signup')
 
-class AuthController(object):
+class BaseController(object):
     @property
     def request(self):
         # we defined this so that we can override the request in tests easily
@@ -35,15 +35,20 @@ class AuthController(object):
     def __init__(self, request):
         self._request  = request
 
+        self.settings = request.registry.settings
+        self.using_tm = asbool(self.settings.get('su.using_tm', False))
+
+class AuthController(BaseController):
+    def __init__(self, request):
+        super(AuthController, self).__init__(request)
+
         schema = request.registry.getUtility(ISULoginSchema)
         self.schema = schema().bind(request=self.request)
 
         form = request.registry.getUtility(ISULoginForm)
 
-        settings = request.registry.settings
-
-        self.login_redirect_view = route_url(settings.get('su.login_redirect', 'index'), request)
-        self.logout_redirect_view = route_url(settings.get('su.logout_redirect', 'index'), request)
+        self.login_redirect_view = route_url(self.settings.get('su.login_redirect', 'index'), request)
+        self.logout_redirect_view = route_url(self.settings.get('su.logout_redirect', 'index'), request)
 
         self.form = form(self.schema)
 
@@ -102,19 +107,20 @@ class AuthController(object):
 
         return HTTPFound(location=self.logout_redirect_view, headers=headers)
 
-class RegisterView(object):
+class RegisterController(BaseController):
     def __init__(self, request):
-        self.request  = request
+        super(RegisterController, self).__init__(request)
         schema = request.registry.getUtility(ISURegisterSchema)
         self.schema = schema().bind(request=self.request)
 
         form = request.registry.getUtility(ISURegisterForm)
         self.form = form(self.schema)
 
-        settings = request.registry.settings
-        self.register_redirect_view = route_url(settings.get('su.register_redirect', 'index'), request)
+        self.register_redirect_view = route_url(self.settings.get('su.register_redirect', 'index'), request)
+        self.activate_redirect_view = route_url(self.settings.get('su.activate_redirect', 'index'), request)
+
         self.db = get_session(request)
-        self.require_activation = asbool(settings.get('su.require_activation', True))
+        self.require_activation = asbool(self.settings.get('su.require_activation', True))
 
         if self.require_activation:
             self.mailer = get_mailer(request)
@@ -139,6 +145,14 @@ class RegisterView(object):
             username = captured['Username']
             password = captured['Password']
 
+
+            mgr = UserManager(self.request)
+            user = mgr.get_by_username(username)
+
+            if user:
+                self.request.session.flash(_('That username is already used.'), 'error')
+                return {'form': self.form.render(self.request.POST)}
+
             try:
                 user = User(username=username, password=password, email=email)
 
@@ -146,6 +160,10 @@ class RegisterView(object):
 
                 if self.require_activation:
                     user.activation = Activation()
+
+                    if not self.using_tm:
+                        self.db.commit()
+
                     body = pystache.render(_("Please activate your e-mail address by visiting {{ link }}"),
                         {
                             'link': route_url('activation', self.request, code=user.activation.code)
@@ -157,14 +175,40 @@ class RegisterView(object):
                     message = Message(subject=subject, recipients=[user.email], body=body)
                     self.mailer.send(message)
 
-                    self.request.session.flash(_('Please check your E-mail for an activation link'))
+                    self.request.session.flash(_('Please check your E-mail for an activation link'), 'success')
                 else:
                     user.activated = True
 
-                self.db.flush()
-
-            except IntegrityError:
-                self.request.session.flash(_('That username or E-mail is already used.'))
+            except Exception as exc:
+                self.request.session.flash(exc.message, 'error')
                 return {'form': self.form.render()}
 
             return HTTPFound(location=self.register_redirect_view)
+
+        @view_config(route_name='activate')
+        def activate(self):
+            code = self.request.matchdict.get('code', None)
+            activation = Activation.query.filter(Activation.code == code).first()
+
+            mgr = UserManager(self.request)
+
+            if activation:
+                user = mgr.get_by_activation(activation)
+
+                main_view = route_url('dashboard', self.request)
+
+                if email:
+                    if not self.request.user:
+                        user = User.query.filter(User.pk == email.user_id).first()
+                        user.activated = True
+                        request.db.flush()
+                        main_view = route_url('login', request)
+
+                    activation.activate(request)
+                    request.session.flash(_('Your e-mail address has been verified.'))
+
+                    return HTTPFound(location=main_view)
+
+            return HTTPNotFound()
+
+
