@@ -98,7 +98,7 @@ class IntegrationTestBase(unittest.TestCase):
 
         config.set_session_factory(session_factory)
 
-        config.include('pyramid_tm')
+#        config.include('pyramid_tm')
 
         config.registry.registerUtility(DBSession, ISUSession)
 
