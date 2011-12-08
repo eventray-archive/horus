@@ -10,7 +10,7 @@ import deform
 
 from pyramid_signup.interfaces import ISULoginForm
 from pyramid_signup.interfaces import ISULoginSchema
-from pyramid_signup.schemas import LoginSchema
+
 from pyramid_signup.managers import UserManager
 
 _ = TranslationStringFactory('pyramid_signup')
@@ -24,17 +24,10 @@ class AuthController(object):
     def __init__(self, request):
         self._request  = request
 
-        if request.registry.queryUtility(ISULoginSchema):
-            schema = request.registry.getUtility(ISULoginSchema)
-        else:
-            schema = LoginSchema
-
+        schema = request.registry.getUtility(ISULoginSchema)
         self.schema = schema().bind(request=self.request)
 
-        if request.registry.queryUtility(ISULoginForm):
-            form = request.registry.getUtility(ISULoginForm)
-        else:
-            form = deform.Form
+        form = request.registry.getUtility(ISULoginForm)
 
         settings = request.registry.settings
 

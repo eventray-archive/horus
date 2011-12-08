@@ -39,6 +39,7 @@ class TestAuthViews(UnitTestBase):
     def test_login_loads(self):
         from pyramid_signup.views import AuthController
         self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
 
         request = testing.DummyRequest()
         request.user = None
@@ -50,6 +51,8 @@ class TestAuthViews(UnitTestBase):
     def test_login_redirects_if_logged_in(self):
         from pyramid_signup.views import AuthController
         self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+
         request = testing.DummyRequest()
         request.user = Mock()
         view = AuthController(request)
@@ -61,6 +64,7 @@ class TestAuthViews(UnitTestBase):
         """ Make sure we can't login with empty credentials"""
         from pyramid_signup.views import AuthController
         self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
 
         request = testing.DummyRequest(post={
             'submit': True,
@@ -81,6 +85,7 @@ class TestAuthViews(UnitTestBase):
         """ Make sure we can't login with a bad csrf """
         from pyramid_signup.views import AuthController
         self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
 
         request = self.get_csrf_request(post={
                     'submit': True,
@@ -102,6 +107,7 @@ class TestAuthViews(UnitTestBase):
         """ Make sure we can't login with bad credentials"""
         from pyramid_signup.views import AuthController
         self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
 
         request = self.get_csrf_request(post={
                 'submit': True,
@@ -128,6 +134,8 @@ class TestAuthViews(UnitTestBase):
         from pyramid_signup.views import AuthController
         self.config.add_route('index', '/')
 
+        self.config.include('pyramid_signup')
+
         request = self.get_csrf_request(post={
                 'submit': True,
                 'Username': 'sontek',
@@ -148,6 +156,7 @@ class TestAuthViews(UnitTestBase):
 
         from pyramid_signup.views import AuthController
         self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
 
         request = self.get_csrf_request(post={
                 'submit': True,
@@ -168,7 +177,7 @@ class TestAuthViews(UnitTestBase):
     def test_logout(self):
         from pyramid_signup.views import AuthController
         self.config.add_route('index', '/')
-
+        self.config.include('pyramid_signup')
         request = testing.DummyRequest()
 
         flash = Mock()
