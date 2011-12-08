@@ -1,11 +1,19 @@
 pyramid
 pyramid_mailer
 pyramid_tm
+pyramid_beaker
 
+cryptacular
+zope.interface==3.8
+zope.sqlalchemy
 colander
 deform
+pystache
 
 sqlalchemy
 
 pytest
 pytest-xdist
+mock
+
+-e git+https://github.com/Pylons/pyramid_deform.git#egg=pyramid_deform
