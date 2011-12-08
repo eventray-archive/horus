@@ -140,3 +140,19 @@ class TestUserManager(UnitTestBase):
         new_user = mgr.get_by_activation(activation)
 
         assert new_user == user
+
+class TestManager(UnitTestBase):
+    def test_get_activation(self):
+        from pyramid_signup.models import Activation
+        from pyramid_signup.managers import ActivationManager
+
+        activation = Activation()
+        self.session.add(activation)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+        mgr = ActivationManager(request)
+
+        new_activation = mgr.get_by_code(activation.code)
+
+        assert activation == new_activation
