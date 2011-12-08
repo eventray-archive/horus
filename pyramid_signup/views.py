@@ -22,6 +22,7 @@ from pyramid_signup.managers import ActivationManager
 from pyramid_signup.models import User
 from pyramid_signup.models import Activation
 from pyramid_signup.lib import get_session
+from pyramid_signup.events import NewRegistrationEvent
 
 _ = TranslationStringFactory('pyramid_signup')
 
@@ -152,16 +153,16 @@ class RegisterController(BaseController):
                 self.request.session.flash(_('That username is already used.'), 'error')
                 return {'form': self.form.render(self.request.POST)}
 
+            activation = None
+
             try:
                 user = User(username=username, password=password, email=email)
 
-                self.db.add(user)
-
                 if self.require_activation:
-                    user.activation = Activation()
+                    activation = Activation()
+                    self.db.add(activation)
 
-                    if not self.using_tm:
-                        self.db.commit()
+                    user.activation = Activation()
 
                     body = pystache.render(_("Please activate your e-mail address by visiting {{ link }}"),
                         {
@@ -178,12 +179,15 @@ class RegisterController(BaseController):
                 else:
                     user.activated = True
 
-                    if not self.using_tm:
-                        self.db.commit()
-
+                self.db.add(user)
+                self.db.flush()
             except Exception as exc:
                 self.request.session.flash(exc.message, 'error')
                 return {'form': self.form.render()}
+
+            self.request.registry.notify(
+                NewRegistrationEvent(self.request, user, activation, controls)
+            )
 
             return HTTPFound(location=self.register_redirect_view)
 

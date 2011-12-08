@@ -36,7 +36,7 @@ class TestViews(IntegrationTestBase):
         assert "Required" in res.body
         assert res.status_int == 200
 
-    def test_valid_login(self):
+    def test_valid_login(self): 
         """ Call the login view, make sure routes are working """
         from pyramid_signup.models import User
         admin = User(username='sontek', password='temp')

@@ -134,7 +134,7 @@ class User(Entity):
     accounts = relation('Organization', secondary=org_member_table,
                       backref='user')
     activation_pk = Column(Integer, ForeignKey('activation.pk'))
-    activation = relation('Activation')
+    activation = relation('Activation', backref='user')
     salt = Column(UnicodeText)
 
     _password = Column('password', UnicodeText)

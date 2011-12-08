@@ -370,12 +370,22 @@ class TestRegisterController(UnitTestBase):
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
         from pyramid_signup.managers import UserManager
+        from pyramid_signup.interfaces import ISUSession
+        from pyramid_signup.events import NewRegistrationEvent
 
         self.config.include('pyramid_signup')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         self.config.add_route('index', '/')
         self.config.registry.settings['su.require_activation'] = False
+
+        def handle_registration(event):
+            request = event.request
+            session = request.registry.getUtility(ISUSession)
+            session.commit()
+
+        self.config.add_subscriber(handle_registration, NewRegistrationEvent)
+
 
         request = self.get_csrf_request(post={
             'Username': 'admin',
@@ -458,6 +468,41 @@ class TestRegisterController(UnitTestBase):
         response = controller.activate()
         mgr = UserManager(request)
         user = mgr.get_by_username('sontek')
+
+        assert user.activated
+        assert response.status_int == 302
+
+    def test_activate_multiple_users(self):
+        from pyramid_signup.views import RegisterController
+        from pyramid_signup.models import User
+        from pyramid_signup.models import Activation
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_mailer.mailer import DummyMailer
+        from pyramid_signup.managers import UserManager
+        self.config.include('pyramid_signup')
+        self.config.add_route('index', '/')
+
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        user = User(username='sontek', password='temp')
+        user.activation = Activation()
+        user1 = User(username='sontek1', password='temp')
+        user1.activation = Activation()
+
+        self.session.add(user)
+        self.session.add(user1)
+        self.session.flush()
+
+        request = testing.DummyRequest()
+        request.matchdict = Mock()
+        get = Mock()
+        get.return_value = user1.activation.code
+        request.matchdict.get = get
+
+        controller = RegisterController(request)
+        response = controller.activate()
+        mgr = UserManager(request)
+        user = mgr.get_by_username('sontek1')
 
         assert user.activated
         assert response.status_int == 302
