@@ -38,7 +38,7 @@ class TestAuthController(UnitTestBase):
         request = testing.DummyRequest()
         request.user = None
         view = AuthController(request)
-        response = view.get()
+        response = view.login()
 
         assert response.get('form', None)
 
@@ -51,7 +51,7 @@ class TestAuthController(UnitTestBase):
         request.user = Mock()
         view = AuthController(request)
 
-        response = view.get()
+        response = view.login()
         assert response.status_int == 302
 
     def test_login_fails_empty(self):
@@ -65,7 +65,7 @@ class TestAuthController(UnitTestBase):
         }, request_method='POST')
 
         view = AuthController(request)
-        response = view.post()
+        response = view.login()
         errors = response['errors']
 
         assert errors[0].node.name == u'csrf_token'
@@ -90,7 +90,7 @@ class TestAuthController(UnitTestBase):
 
         view = AuthController(request)
 
-        response = view.post()
+        response = view.login()
 
         errors = response['errors']
 
@@ -114,7 +114,7 @@ class TestAuthController(UnitTestBase):
         request.session.flash = flash
 
         view = AuthController(request)
-        view.post()
+        view.login()
 
         flash.assert_called_with(u'Invalid username or password.', 'error')
 
@@ -139,7 +139,7 @@ class TestAuthController(UnitTestBase):
             }, request_method='POST')
 
         view = AuthController(request)
-        response = view.post()
+        response = view.login()
 
         assert response.status_int == 302
 
@@ -166,7 +166,7 @@ class TestAuthController(UnitTestBase):
         request.session.flash = flash
 
         view = AuthController(request)
-        view.post()
+        view.login()
 
         flash.assert_called_with(u'Your account is not active, please check your e-mail.',
             'error')

@@ -14,3 +14,9 @@ class ISURegisterSchema(Interface):
 
 class ISURegisterForm(Interface):
     pass
+
+class ISUForgotPasswordForm(Interface):
+    pass
+
+class ISUForgotPasswordSchema(Interface):
+    pass

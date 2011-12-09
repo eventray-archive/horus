@@ -136,6 +136,12 @@ class User(Entity):
                       backref='user')
     activation_pk = Column(Integer, ForeignKey('activation.pk'))
     activation = relation('Activation', backref='user')
+    suspended = Column(Boolean, default=False)
+    suspended_on = Column(DateTime)
+    suspended_reason = Column(UnicodeText, nullable=True)
+    cancelled = Column(Boolean, default=False)
+    cancelled_on = Column(DateTime)
+    cancelled_reason = Column(UnicodeText, nullable=True)
     salt = Column(UnicodeText)
 
     _password = Column('password', UnicodeText)

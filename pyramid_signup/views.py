@@ -17,6 +17,8 @@ from pyramid_signup.interfaces import ISULoginForm
 from pyramid_signup.interfaces import ISULoginSchema
 from pyramid_signup.interfaces import ISURegisterForm
 from pyramid_signup.interfaces import ISURegisterSchema
+from pyramid_signup.interfaces import ISUForgotPasswordForm
+from pyramid_signup.interfaces import ISUForgotPasswordSchema
 from pyramid_signup.managers import UserManager
 from pyramid_signup.managers import ActivationManager
 from pyramid_signup.models import User
@@ -62,9 +64,14 @@ class AuthController(BaseController):
 
         return HTTPFound(location=self.login_redirect_view, headers=headers)
 
-    @view_config(route_name='login', request_method='POST', renderer='pyramid_signup:templates/login.mako')
-    def post(self):
-        if self.request.method == 'POST':
+    @view_config(route_name='login', renderer='pyramid_signup:templates/login.mako')
+    def login(self):
+        if self.request.method == 'GET':
+            if self.request.user:
+                return HTTPFound(location=self.login_redirect_view)
+
+            return {'form': self.form.render()}
+        elif self.request.method == 'POST':
             try:
                 controls = self.request.POST.items()
                 captured = self.form.validate(controls)
@@ -89,13 +96,6 @@ class AuthController(BaseController):
 
             return {'form': self.form.render(appstruct=captured)}
 
-    @view_config(route_name='login', request_method='GET', renderer='pyramid_signup:templates/login.mako')
-    def get(self):
-        if self.request.user:
-            return HTTPFound(location=self.login_redirect_view)
-
-        return {'form': self.form.render()}
-
     @view_config(permission='view', route_name='logout')
     def logout(self):
         """
@@ -107,6 +107,30 @@ class AuthController(BaseController):
         headers = forget(self.request)
 
         return HTTPFound(location=self.logout_redirect_view, headers=headers)
+
+
+class ForgotPasswordController(BaseController):
+    def __init__(self, request):
+        super(ForgotPasswordController, self).__init__(request)
+
+        self.forgot_password_redirect_view = route_url(self.settings.get('su.forgot_password_redirect', 'index'), request)
+
+        schema = request.registry.getUtility(ISUForgotPasswordSchema)
+        self.schema = schema().bind(request=self.request)
+
+        form = request.registry.getUtility(ISUForgotPasswordForm)
+        self.form = form(self.schema)
+
+    @view_config(route_name='forgot_password', request_method='GET', renderer='pyramid_signup:templates/forgot_password.mako')
+    def forgot_password(self):
+        if self.request.method == 'GET':
+            if self.request.user:
+                return HTTPFound(location=self.forgot_password_redirect_view)
+
+            return {'form': self.form.render()}
+
+        elif self.request.method == 'POST':
+            pass
 
 class RegisterController(BaseController):
     def __init__(self, request):
@@ -216,5 +240,3 @@ class RegisterController(BaseController):
                 return HTTPFound(location=self.activate_redirect_view)
 
         return HTTPNotFound()
-
-

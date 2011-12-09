@@ -1,4 +1,3 @@
-from pyramid.security import Everyone
 from pyramid.security import Authenticated
 from pyramid.security import Allow
 from pyramid.security import ALL_PERMISSIONS
@@ -9,11 +8,14 @@ from pyramid.security import unauthenticated_userid
 from pyramid_signup.managers import UserManager
 from pyramid_signup.schemas import LoginSchema
 from pyramid_signup.schemas import RegisterSchema
+from pyramid_signup.schemas import ForgotPasswordSchema
 from pyramid_signup.forms import SubmitForm
 from pyramid_signup.interfaces import ISULoginForm
 from pyramid_signup.interfaces import ISULoginSchema
 from pyramid_signup.interfaces import ISURegisterForm
 from pyramid_signup.interfaces import ISURegisterSchema
+from pyramid_signup.interfaces import ISUForgotPasswordForm
+from pyramid_signup.interfaces import ISUForgotPasswordSchema
 from pyramid_signup.routes import build_routes
 
 class RootFactory(object):
@@ -55,6 +57,12 @@ def includeme(config):
 
     if not config.registry.queryUtility(ISURegisterForm):
         config.registry.registerUtility(SubmitForm, ISURegisterForm)
+
+    if not config.registry.queryUtility(ISUForgotPasswordSchema):
+        config.registry.registerUtility(ForgotPasswordSchema, ISUForgotPasswordSchema)
+
+    if not config.registry.queryUtility(ISUForgotPasswordForm):
+        config.registry.registerUtility(SubmitForm, ISUForgotPasswordForm)
 
     config.include(build_routes)
     config.scan('pyramid_signup')
