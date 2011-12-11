@@ -14,7 +14,7 @@ from zope.sqlalchemy import ZopeTransactionExtension
 from mock import Mock
 import os
 
-from pyramid_signup.models import Entity
+from pyramid_signup.models import SUEntity
 from pyramid_signup.interfaces import ISUSession
 
 here = os.path.dirname(__file__)
@@ -41,7 +41,7 @@ class BaseTestCase(unittest.TestCase):
 
         self.config.registry.registerUtility(self.session, ISUSession)
 
-        Entity.metadata.bind=connection
+        SUEntity.metadata.bind=connection
 
     def tearDown(self):
         # rollback - everything that happened with the
@@ -123,7 +123,7 @@ class IntegrationTestBase(unittest.TestCase):
         # begin a non-ORM transaction
         self.trans = connection.begin()
 
-        Entity.metadata.bind=connection
+        SUEntity.metadata.bind=connection
 
     def tearDown(self):
         # rollback - everything that happened with the

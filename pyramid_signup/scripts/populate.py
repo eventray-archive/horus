@@ -20,13 +20,13 @@ from zope.sqlalchemy import ZopeTransactionExtension
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
-def usage(argv):
+def usage(argv):# pragma: no cover 
     cmd = os.path.basename(argv[0])
     print('usage: %s <config_uri>\n'
           '(example: "%s development.ini")' % (cmd, cmd)) 
     sys.exit(1)
 
-def main(argv=sys.argv):
+def main(argv=sys.argv): # pragma: no cover
     if len(argv) != 2:
         usage(argv)
     config_uri = argv[1]
@@ -44,5 +44,5 @@ def main(argv=sys.argv):
         admin = User(username=username, password=password)
         session.add(admin)
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     main()

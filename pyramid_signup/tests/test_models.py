@@ -1,12 +1,12 @@
 from pyramid_signup.tests import UnitTestBase
-from pyramid_signup.models import Entity
+from pyramid_signup.models import SUEntity
 from sqlalchemy.types import DateTime
 
 from sqlalchemy import Column
 
 from datetime import datetime
 
-class TestModel(Entity):
+class TestModel(SUEntity):
     start_date = Column(DateTime)
 
 class TestModels(UnitTestBase):
