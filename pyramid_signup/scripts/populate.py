@@ -34,14 +34,16 @@ def main(argv=sys.argv): # pragma: no cover
     settings = get_appsettings(config_uri)
     engine = engine_from_config(settings, 'sqlalchemy.')
     session = DBSession(bind=engine)
+    SUEntity.metadata.drop_all(engine)
     SUEntity.metadata.create_all(engine)
 
     username = raw_input("What is your username?: ").decode('utf-8')
+    email = raw_input("What is your email?: ").decode('utf-8')
     password = getpass("What is your password?: ").decode('utf-8')
 
 
     with transaction.manager:
-        admin = User(username=username, password=password)
+        admin = User(username=username, password=password, email=email, activated=True)
         session.add(admin)
 
 if __name__ == "__main__": # pragma: no cover
