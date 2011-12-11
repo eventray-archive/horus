@@ -19,6 +19,8 @@ from pyramid_signup.interfaces import ISURegisterForm
 from pyramid_signup.interfaces import ISURegisterSchema
 from pyramid_signup.interfaces import ISUForgotPasswordForm
 from pyramid_signup.interfaces import ISUForgotPasswordSchema
+from pyramid_signup.interfaces import ISUResetPasswordForm
+from pyramid_signup.interfaces import ISUResetPasswordSchema
 from pyramid_signup.managers import UserManager
 from pyramid_signup.managers import ActivationManager
 from pyramid_signup.models import User
@@ -114,23 +116,102 @@ class ForgotPasswordController(BaseController):
         super(ForgotPasswordController, self).__init__(request)
 
         self.forgot_password_redirect_view = route_url(self.settings.get('su.forgot_password_redirect', 'index'), request)
+        self.reset_password_redirect_view = route_url(self.settings.get('su.reset_password_redirect', 'index'), request)
 
-        schema = request.registry.getUtility(ISUForgotPasswordSchema)
-        self.schema = schema().bind(request=self.request)
-
-        form = request.registry.getUtility(ISUForgotPasswordForm)
-        self.form = form(self.schema)
-
-    @view_config(route_name='forgot_password', request_method='GET', renderer='pyramid_signup:templates/forgot_password.mako')
+    @view_config(route_name='forgot_password', renderer='pyramid_signup:templates/forgot_password.mako')
     def forgot_password(self):
+        schema = self.request.registry.getUtility(ISUForgotPasswordSchema)
+        schema = schema().bind(request=self.request)
+
+        form = self.request.registry.getUtility(ISUForgotPasswordForm)
+        form = form(schema)
+
         if self.request.method == 'GET':
             if self.request.user:
                 return HTTPFound(location=self.forgot_password_redirect_view)
 
-            return {'form': self.form.render()}
+            return {'form': form.render()}
 
         elif self.request.method == 'POST':
-            pass
+            try:
+                controls = self.request.POST.items()
+                captured = form.validate(controls)
+            except deform.ValidationFailure, e:
+                return {'form': e.render(), 'errors': e.error.children}
+
+            email = captured['Email']
+
+            mgr = UserManager(self.request)
+            user = mgr.get_by_email(email)
+            activation = Activation()
+            self.db.add(activation)
+
+            user.activation = activation
+
+            if user:
+                mailer = get_mailer(self.request)
+                body = pystache.render(_("Someone has tried to reset your password, if this was you click here: {{ link }}"),
+                    {
+                        'link': route_url('reset_password', self.request, code=user.activation.code)
+                    }
+                )
+
+                subject = _("Do you want to reset your password?")
+
+                message = Message(subject=subject, recipients=[user.email], body=body)
+                mailer.send(message)
+
+        # we don't want to say "E-mail not registered" or anything like that
+        # because it gives spammers context
+        self.request.session.flash(_('Please check your e-mail.'), 'success')
+        return {'form': form.render()}
+
+    @view_config(route_name='reset_password', renderer='pyramid_signup:templates/reset_password.mako')
+    def reset_password(self):
+        schema = self.request.registry.getUtility(ISUResetPasswordSchema)
+        schema = schema().bind(request=self.request)
+
+        form = self.request.registry.getUtility(ISUResetPasswordForm)
+        form = form(schema)
+
+        code = self.request.matchdict.get('code', None)
+        act_mgr = ActivationManager(self.request)
+        user_mgr = UserManager(self.request)
+
+        activation = act_mgr.get_by_code(code)
+
+        if activation:
+            user = user_mgr.get_by_activation(activation)
+
+            if user:
+                if self.request.method == 'GET':
+                        return {
+                            'form': form.render(
+                                appstruct=dict(
+                                    Username=user.username
+                                )
+                            )
+                        }
+
+                elif self.request.method == 'POST':
+                    try:
+                        controls = self.request.POST.items()
+                        captured = form.validate(controls)
+                    except deform.ValidationFailure, e:
+                        return {'form': e.render(), 'errors': e.error.children}
+
+                    password = captured['Password']
+
+                    user.password = password
+                    self.db.add(user)
+                    self.db.delete(activation)
+
+                    self.request.session.flash(_('Your password has been reset!'), 'success')
+
+                    return HTTPFound(location=self.reset_password_redirect_view)
+
+        return HTTPNotFound()
+
 
 class RegisterController(BaseController):
     def __init__(self, request):

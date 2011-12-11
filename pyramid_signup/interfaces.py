@@ -20,3 +20,9 @@ class ISUForgotPasswordForm(Interface):
 
 class ISUForgotPasswordSchema(Interface):
     pass
+
+class ISUResetPasswordForm(Interface):
+    pass
+
+class ISUResetPasswordSchema(Interface):
+    pass
