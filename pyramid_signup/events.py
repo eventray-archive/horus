@@ -10,3 +10,9 @@ class RegistrationActivatedEvent(object):
         self.user = user
         self.activation = activation
         self.request = request
+
+class PasswordResetEvent(object):
+    def __init__(self, request, user, password):
+        self.user = user
+        self.request = request
+        self.password = password

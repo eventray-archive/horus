@@ -28,6 +28,7 @@ from pyramid_signup.models import Activation
 from pyramid_signup.lib import get_session
 from pyramid_signup.events import NewRegistrationEvent
 from pyramid_signup.events import RegistrationActivatedEvent
+from pyramid_signup.events import PasswordResetEvent
 
 _ = TranslationStringFactory('pyramid_signup')
 
@@ -163,8 +164,8 @@ class ForgotPasswordController(BaseController):
 
         # we don't want to say "E-mail not registered" or anything like that
         # because it gives spammers context
-        self.request.session.flash(_('Please check your e-mail.'), 'success')
-        return {'form': form.render()}
+        self.request.session.flash(_('Please check your e-mail to reset your password.'), 'success')
+        return HTTPFound(location=self.reset_password_redirect_view)
 
     @view_config(route_name='reset_password', renderer='pyramid_signup:templates/reset_password.mako')
     def reset_password(self):
@@ -205,6 +206,10 @@ class ForgotPasswordController(BaseController):
                     user.password = password
                     self.db.add(user)
                     self.db.delete(activation)
+
+                    self.request.registry.notify(
+                        PasswordResetEvent(self.request, user, password)
+                    )
 
                     self.request.session.flash(_('Your password has been reset!'), 'success')
 

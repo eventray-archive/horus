@@ -543,3 +543,244 @@ class TestRegisterController(UnitTestBase):
 
         assert not user.activated
         assert response.status_int == 404
+
+class TestForgoPasswordController(UnitTestBase):
+    def test_forgot_password_loads(self):
+        from pyramid_signup.views import ForgotPasswordController
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+
+        request = testing.DummyRequest()
+        request.user = None
+        view = ForgotPasswordController(request)
+        response = view.forgot_password()
+
+        assert response.get('form', None)
+
+    def test_forgot_password_logged_in_redirects(self):
+        from pyramid_signup.views import ForgotPasswordController
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+
+        request = testing.DummyRequest()
+        request.user = Mock()
+        view = ForgotPasswordController(request)
+        response = view.forgot_password()
+
+        assert response.status_int == 302
+
+    def test_forgot_password_valid_user(self):
+        from pyramid_signup.views import ForgotPasswordController
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_mailer.mailer import DummyMailer
+
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        from pyramid_signup.models import User
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+
+        self.session.add(user)
+        self.session.flush()
+
+
+        request = self.get_csrf_request(post={
+            'Email': 'sontek@gmail.com'
+        }, request_method='POST')
+
+        request.user = None
+
+        flash = Mock()
+        request.session.flash = flash
+
+        view = ForgotPasswordController(request)
+        response = view.forgot_password()
+
+        flash.assert_called_with(u'Please check your e-mail to reset your password.', 'success')
+        assert response.status_int == 302
+
+    def test_forgot_password_invalid_password(self):
+        from pyramid_signup.views import ForgotPasswordController
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_mailer.mailer import DummyMailer
+
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        from pyramid_signup.models import User
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+
+        self.session.add(user)
+        self.session.flush()
+
+        request = self.get_csrf_request(post={
+            'Email': 'sontek'
+        }, request_method='POST')
+
+        request.user = None
+
+        view = ForgotPasswordController(request)
+        response = view.forgot_password()
+
+        assert len(response['errors']) == 1
+
+    def test_reset_password_loads(self):
+        from pyramid_signup.views import ForgotPasswordController
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_mailer.mailer import DummyMailer
+
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        from pyramid_signup.models import User
+        from pyramid_signup.models import Activation
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        user.activation = Activation()
+
+        self.session.add(user)
+        self.session.flush()
+
+        request = testing.DummyRequest()
+
+        request.matchdict = Mock()
+        get = Mock()
+        get.return_value = user.activation.code
+        request.matchdict.get = get
+
+        request.user = None
+
+        view = ForgotPasswordController(request)
+        response = view.reset_password()
+
+        assert response.get('form', None)
+        assert 'sontek' in response['form']
+
+    def test_reset_password_valid_user(self):
+        from pyramid_signup.views import ForgotPasswordController
+        from pyramid_signup.interfaces import ISUSession
+        from pyramid_signup.events import PasswordResetEvent
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_mailer.mailer import DummyMailer
+
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        from pyramid_signup.models import User
+        from pyramid_signup.models import Activation
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        user.activation = Activation()
+
+        self.session.add(user)
+        self.session.flush()
+
+        request = self.get_csrf_request(post={
+            'Password': {
+                'value': 'test123',
+                'confirm': 'test123',
+            },
+        }, request_method='POST')
+
+        request.matchdict = Mock()
+        get = Mock()
+        get.return_value = user.activation.code
+        request.matchdict.get = get
+
+        request.user = None
+
+        flash = Mock()
+        request.session.flash = flash
+
+        def handle_password_reset(event):
+            request = event.request
+            session = request.registry.getUtility(ISUSession)
+            session.commit()
+
+        self.config.add_subscriber(handle_password_reset, PasswordResetEvent)
+
+        view = ForgotPasswordController(request)
+        response = view.reset_password()
+        old_pass = user.hash_password('temp')
+
+
+        assert user.password != old_pass
+        assert response.status_int == 302
+
+    def test_reset_password_invalid_password(self):
+        from pyramid_signup.views import ForgotPasswordController
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_mailer.mailer import DummyMailer
+
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        from pyramid_signup.models import User
+        from pyramid_signup.models import Activation
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        user.activation = Activation()
+
+        self.session.add(user)
+        self.session.flush()
+
+        request = self.get_csrf_request(post={
+            'Password': {
+                'value': 't',
+                'confirm': 't',
+            },
+        }, request_method='POST')
+
+        request.matchdict = Mock()
+        get = Mock()
+        get.return_value = user.activation.code
+        request.matchdict.get = get
+
+        request.user = None
+
+        flash = Mock()
+        request.session.flash = flash
+
+        view = ForgotPasswordController(request)
+        response = view.reset_password()
+
+        assert len(response['errors']) == 1
+
+    def test_invalid_reset_gets_404(self):
+        from pyramid_signup.views import ForgotPasswordController
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_mailer.mailer import DummyMailer
+
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        from pyramid_signup.models import User
+        from pyramid_signup.models import Activation
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        user.activation = Activation()
+
+        self.session.add(user)
+        self.session.flush()
+
+        request = testing.DummyRequest()
+
+        request.matchdict = Mock()
+        get = Mock()
+        get.return_value = 'b'
+        request.matchdict.get = get
+
+        request.user = None
+
+        view = ForgotPasswordController(request)
+        response = view.reset_password()
+
+        assert response.status_int == 404

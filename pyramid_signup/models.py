@@ -153,7 +153,8 @@ class User(Entity):
         self._password = self.hash_password(password)
 
     def hash_password(self, password):
-        self.salt = gen_hash_key(24)
+        if not self.salt:
+            self.salt = gen_hash_key(24)
 
         return unicode(crypt.encode(password + self.salt))
 
