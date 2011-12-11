@@ -56,6 +56,8 @@ setup(name='pyramid_signup',
       entry_points = """\
       [paste.app_factory]
       main = pyramid_signup:main
+      [console_scripts]
+      su_setup = pyramid_signup.scripts.populate:main
       """,
       paster_plugins=['pyramid'],
       )

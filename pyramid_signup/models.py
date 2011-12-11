@@ -26,7 +26,7 @@ _ = TranslationStringFactory('pyramid_signup')
 
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
-class Base(object):
+class SUBase(object):
     """Base class which auto-generates tablename, and surrogate
     primary key column.
     """
@@ -61,9 +61,9 @@ class Base(object):
 
         return props
 
-Entity = declarative_base(cls=Base)
+SUEntity = declarative_base(cls=SUBase)
 
-org_member_table = Table('organization_member', Entity.metadata,
+org_member_table = Table('organization_member', SUEntity.metadata,
     Column('user_pk', Integer(),
         ForeignKey('user.pk', onupdate='CASCADE', ondelete='CASCADE')
     ),
@@ -73,7 +73,7 @@ org_member_table = Table('organization_member', Entity.metadata,
     )
 )
 
-class Activation(Entity):
+class Activation(SUEntity):
     """
     Handle activations/password reset items for users
 
@@ -98,7 +98,7 @@ class Activation(Entity):
         else:
              self.valid_until = datetime.utcnow() + timedelta(days=3)
 
-class Organization(Entity):
+class Organization(SUEntity):
     """ Represents an organization a user can be attached to """
     name = Column(UnicodeText, unique=True, nullable=False)
     create_date = Column(DateTime, default=datetime.utcnow)
@@ -126,7 +126,7 @@ class Organization(Entity):
                 (Allow, 'organization:%s' % self.pk, 'access_organization')
         ]
 
-class User(Entity):
+class User(SUEntity):
     username = Column(UnicodeText, unique=True)
     email = Column(UnicodeText, nullable=True)
     first_name = Column(UnicodeText)

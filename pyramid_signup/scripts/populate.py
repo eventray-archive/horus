@@ -14,7 +14,7 @@ from pyramid.paster import (
 )
 
 from pyramid_signup.models import User
-from pyramid_signup.models import Entity
+from pyramid_signup.models import SUEntity
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
@@ -34,7 +34,7 @@ def main(argv=sys.argv):
     settings = get_appsettings(config_uri)
     engine = engine_from_config(settings, 'sqlalchemy.')
     session = DBSession(bind=engine)
-    Entity.metadata.create_all(engine)
+    SUEntity.metadata.create_all(engine)
 
     username = raw_input("What is your username?: ").decode('utf-8')
     password = getpass("What is your password?: ").decode('utf-8')
@@ -45,5 +45,4 @@ def main(argv=sys.argv):
         session.add(admin)
 
 if __name__ == "__main__":
-    print 'in main'
     main()
