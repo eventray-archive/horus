@@ -32,11 +32,13 @@ this also gives you the ability to do some extra processing before processing is
 > from pyramid_signup.events import PasswordResetEvent
 > from pyramid_signup.events import NewRegistrationEvent
 
-> def handle_request(event):
-    request = event.request
-    session = request.registry.getUtility(ISUSession)
-    session.commit()
->
+``` python
+def handle_request(event):
+  request = event.request
+  session = request.registry.getUtility(ISUSession)
+  session.commit()
+```
+
 >    self.config.add_subscriber(handle_request, PasswordResetEvent)
 >    self.config.add_subscriber(handle_request, NewRegistrationEvent)
 
