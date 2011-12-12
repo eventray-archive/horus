@@ -126,6 +126,27 @@ class Organization(SUEntity):
                 (Allow, 'organization:%s' % self.pk, 'access_organization')
         ]
 
+
+group_member_table = Table('usergroupmember', SUEntity.metadata,
+    Column('user_id', Integer(),
+        ForeignKey('user.pk', onupdate='CASCADE', ondelete='CASCADE')
+    ),
+
+    Column('group_id', Integer(),
+        ForeignKey('user_group.pk', onupdate='CASCADE', ondelete='CASCADE')
+    )
+)
+
+class UserGroup(SUEntity):
+    name = Column(UnicodeText)
+    description = Column(UnicodeText)
+
+    users = relation('User', secondary=group_member_table, backref='groups')
+
+    def __init__(self, name, desc):
+        self.name = name
+        self.description = desc
+
 class User(SUEntity):
     username = Column(UnicodeText, unique=True)
     email = Column(UnicodeText, nullable=True)

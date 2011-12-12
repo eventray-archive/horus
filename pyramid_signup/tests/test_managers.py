@@ -164,7 +164,7 @@ class TestUserManager(UnitTestBase):
 
         assert new_user == user2
 
-class TestManager(UnitTestBase):
+class TestActivationManager(UnitTestBase):
     def test_get_activation(self):
         from pyramid_signup.models import Activation
         from pyramid_signup.managers import ActivationManager
@@ -206,3 +206,61 @@ class TestManager(UnitTestBase):
 
         assert activation == new_activation
         assert new_user.activation == new_activation
+
+class TestOrganizationManager(UnitTestBase):
+    def test_get_organization(self):
+        from pyramid_signup.models import Organization
+        from pyramid_signup.models import User
+        from pyramid_signup.managers import OrganizationManager
+
+        user = User(username='sontek', password='temp')
+        self.session.add(user)
+
+        organization = Organization('test org', user)
+        self.session.add(organization)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+        mgr = OrganizationManager(request)
+
+        new_org = mgr.get_by_pk(organization.pk)
+
+        assert organization == new_org
+
+    def test_get_organization_bad_pk(self):
+        from pyramid_signup.models import Organization
+        from pyramid_signup.models import User
+        from pyramid_signup.managers import OrganizationManager
+
+        user = User(username='sontek', password='temp')
+        self.session.add(user)
+
+        organization = Organization('test org', user)
+        self.session.add(organization)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+        mgr = OrganizationManager(request)
+
+        new_org = mgr.get_by_pk(99999)
+
+        assert new_org == None
+
+    def test_get_organization_get_all(self):
+        from pyramid_signup.models import Organization
+        from pyramid_signup.models import User
+        from pyramid_signup.managers import OrganizationManager
+
+        user = User(username='sontek', password='temp')
+        self.session.add(user)
+
+        organization = Organization('test org', user)
+        self.session.add(organization)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+        mgr = OrganizationManager(request)
+
+        orgs = mgr.get_all()
+
+        assert len(orgs) == 1
