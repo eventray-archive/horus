@@ -2,7 +2,7 @@ from pyramid.security import Authenticated
 from pyramid.security import Allow
 from pyramid.security import ALL_PERMISSIONS
 
-from pyramid_signup.models import Organization
+from pyramid_signup.managers import OrganizationManager
 
 class RootFactory(object):
     @property
@@ -22,10 +22,12 @@ class OrganizationFactory(RootFactory):
         self.request = request
 
     def __getitem__(self, key):
-        account = Organization.get_by_pk(key)
+        mgr = OrganizationManager(self.request)
 
-        if account:
-            account.__parent__ = self
-            account.__name__ = key
+        org = mgr.get_by_pk(key)
 
-        return account
+        if org:
+            org.__parent__ = self
+            org.__name__ = key
+
+        return org
