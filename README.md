@@ -102,13 +102,12 @@ If you would like to help make any changes to pyramid_signup, you can run its
 unit tests with py.test:
 
 > $ py.test
->
 
 and to check test coverage:
+
 > $ py.test --cov-report term-missing --cov pyramid_signup
->
 
 you might also consider running the tests in parallel:
+
 > $ py.test -n4
->
 
