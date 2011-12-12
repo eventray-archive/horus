@@ -235,16 +235,14 @@ class RegisterController(BaseController):
         if self.require_activation:
             self.mailer = get_mailer(request)
 
-    @view_config(route_name='register', request_method='GET', renderer='pyramid_signup:templates/register.mako')
-    def get(self):
-        if self.request.user:
-            return HTTPFound(location=self.register_redirect_view)
+    @view_config(route_name='register', renderer='pyramid_signup:templates/register.mako')
+    def register(self):
+        if self.request.method == 'GET':
+            if self.request.user:
+                return HTTPFound(location=self.register_redirect_view)
 
-        return {'form': self.form.render()}
-
-    @view_config(route_name='register', request_method='POST', renderer='pyramid_signup:templates/register.mako')
-    def post(self):
-        if self.request.method == 'POST':
+            return {'form': self.form.render()}
+        elif self.request.method == 'POST':
             try:
                 controls = self.request.POST.items()
                 captured = self.form.validate(controls)

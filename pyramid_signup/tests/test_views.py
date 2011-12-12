@@ -262,7 +262,7 @@ class TestRegisterController(UnitTestBase):
         request = testing.DummyRequest()
         request.user = None
         controller = RegisterController(request)
-        response = controller.get()
+        response = controller.register()
 
         assert response.get('form', None)
 
@@ -279,7 +279,7 @@ class TestRegisterController(UnitTestBase):
         request = testing.DummyRequest()
         request.user = Mock()
         controller = RegisterController(request)
-        response = controller.get()
+        response = controller.register()
 
         assert response.status_int == 302
 
@@ -305,7 +305,7 @@ class TestRegisterController(UnitTestBase):
 
         request.user = Mock()
         controller = RegisterController(request)
-        response = controller.post()
+        response = controller.register()
 
         assert response.status_int == 302
 
@@ -328,7 +328,7 @@ class TestRegisterController(UnitTestBase):
 
         request.user = Mock()
         controller = RegisterController(request)
-        response = controller.post()
+        response = controller.register()
 
         assert len(response['errors']) == 3
         assert 'There was a problem with your submission' in response['form']
@@ -361,7 +361,7 @@ class TestRegisterController(UnitTestBase):
         request.session.flash = flash
 
         controller = RegisterController(request)
-        controller.post()
+        controller.register()
 
         flash.assert_called_with(u'That username is already used.', 'error')
 
@@ -398,7 +398,7 @@ class TestRegisterController(UnitTestBase):
 
         request.user = Mock()
         controller = RegisterController(request)
-        response = controller.post()
+        response = controller.register()
 
         assert response.status_int == 302
 
@@ -436,7 +436,7 @@ class TestRegisterController(UnitTestBase):
 
         request.user = Mock()
         controller = RegisterController(request)
-        controller.post()
+        controller.register()
 
         flash.assert_called_with('I broke!', 'error')
 
