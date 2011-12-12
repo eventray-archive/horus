@@ -2,8 +2,9 @@ Getting Started
 =====================
 First, Install the dependencies of the project:
 
-  $ pip install -r requirements.txt
-  $ python setup.py develop
+>  $ pip install -r requirements.txt
+>
+>  $ python setup.py develop
 
 Next, run our console script to setup the database:
 
