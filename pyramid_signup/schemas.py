@@ -28,6 +28,5 @@ class ResetPasswordSchema(CSRFSchema):
     )
     Password = colander.SchemaNode(colander.String(),
         validator=colander.Length(min=2),
-        widget=deform.widget.CheckedPasswordWidget(),
-        missing=colander.null)
+        widget=deform.widget.CheckedPasswordWidget())
 

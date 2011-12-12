@@ -753,6 +753,42 @@ class TestForgoPasswordController(UnitTestBase):
 
         assert len(response['errors']) == 1
 
+    def test_reset_password_empty_password(self):
+        from pyramid_signup.views import ForgotPasswordController
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_mailer.mailer import DummyMailer
+
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        from pyramid_signup.models import User
+        from pyramid_signup.models import Activation
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        user.activation = Activation()
+
+        self.session.add(user)
+        self.session.flush()
+
+        request = self.get_csrf_request(request_method='POST')
+
+        request.matchdict = Mock()
+        get = Mock()
+        get.return_value = user.activation.code
+        request.matchdict.get = get
+
+        request.user = None
+
+        flash = Mock()
+        request.session.flash = flash
+
+        view = ForgotPasswordController(request)
+
+        response = view.reset_password()
+
+        assert len(response['errors']) == 1
+
     def test_invalid_reset_gets_404(self):
         from pyramid_signup.views import ForgotPasswordController
         from pyramid_mailer.interfaces import IMailer
