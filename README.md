@@ -70,6 +70,7 @@ functionality:
 >    config.override_asset(to_override='pyramid_signup:templates/template.mako', override_with='your_package:templates/anothertemplate.mako')
 
 The templates you have available to override are:
+
 >  login.mako
 >
 >  register.mako
