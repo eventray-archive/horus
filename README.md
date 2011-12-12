@@ -84,10 +84,14 @@ the view configuration:
 
 ``` python
 
-config.add_view('pyramid_signup.views.AuthController', attr='login', route_name='login', renderer='yourapp:templates/login.jinja2')
-config.add_view('pyramid_signup.views.ForgotPasswordController', attr='forgot_password', route_name='forgot_password', renderer='yourapp:templates/forgot_password.jinja2')
-config.add_view('pyramid_signup.views.ForgotPasswordController', attr='reset_password', route_name='reset_password', renderer='yourapp:templates/reset_password.jinja2')
-config.add_view('pyramid_signup.views.RegisterController', attr='register', route_name='register', renderer='yourapp:templates/register.jinja2')
+config.add_view('pyramid_signup.views.AuthController', attr='login', route_name='login',
+    renderer='yourapp:templates/login.jinja2')
+config.add_view('pyramid_signup.views.ForgotPasswordController', attr='forgot_password',
+    route_name='forgot_password', renderer='yourapp:templates/forgot_password.jinja2')
+config.add_view('pyramid_signup.views.ForgotPasswordController', attr='reset_password',
+    route_name='reset_password', renderer='yourapp:templates/reset_password.jinja2')
+config.add_view('pyramid_signup.views.RegisterController', attr='register',
+    route_name='register', renderer='yourapp:templates/register.jinja2')
 
 ```
 
