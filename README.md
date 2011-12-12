@@ -45,12 +45,7 @@ This is how you would do it (uniform being a custom deform Form class):
 If you would like to override the templates you can use pyramid's override asset 
 functionality:
 
->    config.override_asset(
->
->         to_override='pyramid_signup:templates/template.mako',
->
->         override_with='your_package:templates/anothertemplate.mako')
->
+>    config.override_asset(to_override='pyramid_signup:templates/template.mako', override_with='your_package:templates/anothertemplate.mako')
 
 The templates you have available to override are:
 >  login.mako
@@ -65,23 +60,12 @@ The templates you have available to override are:
 If you would like to override the templates with Jinja2, you just have to override
 the view configuration:
 
->    config.add_view('pyramid_signup.views.AuthController', attr='login', route_name='login',
+>    config.add_view('pyramid_signup.views.AuthController', attr='login', route_name='login', renderer='yourapp:templates/login.jinja2')
 >
->            renderer='yourapp:templates/login.jinja2')
+>    config.add_view('pyramid_signup.views.ForgotPasswordController', attr='forgot_password', route_name='forgot_password', renderer='yourapp:templates/forgot_password.jinja2')
 >
+>    config.add_view('pyramid_signup.views.ForgotPasswordController', attr='reset_password', route_name='reset_password', renderer='yourapp:templates/reset_password.jinja2')
 >
->    config.add_view('pyramid_signup.views.ForgotPasswordController', attr='forgot_password', route_name='forgot_password',
->
->            renderer='yourapp:templates/forgot_password.jinja2')
->
->
->    config.add_view('pyramid_signup.views.ForgotPasswordController', attr='reset_password', route_name='reset_password',
->
->            renderer='yourapp:templates/reset_password.jinja2')
->
->
->    config.add_view('pyramid_signup.views.RegisterController', attr='register', route_name='register',
->
->            renderer='yourapp:templates/register.jinja2')
+>    config.add_view('pyramid_signup.views.RegisterController', attr='register', route_name='register', renderer='yourapp:templates/register.jinja2')
 >
 
