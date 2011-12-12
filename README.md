@@ -37,8 +37,8 @@ def handle_request(event):
   session = request.registry.getUtility(ISUSession)
   session.commit()
 
-  self.config.add_subscriber(handle_request, PasswordResetEvent)
-  self.config.add_subscriber(handle_request, NewRegistrationEvent)
+self.config.add_subscriber(handle_request, PasswordResetEvent)
+self.config.add_subscriber(handle_request, NewRegistrationEvent)
 ```
 
 
