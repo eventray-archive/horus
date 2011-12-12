@@ -22,6 +22,26 @@ password e-mail and tell pyramid_signup which session to use for the database ob
 >
 >  config.include('pyramid_signup')
 
+pyramid_signup does not require pyramid_tm or the ZopeTransactionManager with your
+session but if you do not use them you do have to take one extra step, we don't commit
+transactions for you because that just wouldn't be nice!
+
+All you have to do is to subscribe to the extension events and commit the session yourself,
+this also gives you the ability to do some extra processing before processing is finished:
+
+> from pyramid_signup.events import PasswordResetEvent
+> from pyramid_signup.events import NewRegistrationEvent
+
+> def handle_request(event):
+>    request = event.request
+>    session = request.registry.getUtility(ISUSession)
+>    session.commit()
+>
+>    self.config.add_subscriber(handle_request, PasswordResetEvent)
+>    self.config.add_subscriber(handle_request, NewRegistrationEvent)
+
+
+
 Extending pyramid_signup
 =============================
 If you would like to modify any of the forms in pyramid signup, you just need
@@ -69,4 +89,3 @@ the view configuration:
 >
 >    config.add_view('pyramid_signup.views.RegisterController', attr='register', route_name='register', renderer='yourapp:templates/register.jinja2')
 >
-
