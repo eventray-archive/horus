@@ -108,4 +108,10 @@ class TestUser(UnitTestBase):
 
         assert user1.display_name == 'sontek'
 
+class TestUserGroup(UnitTestBase):
+    def test_init(self):
+        from pyramid_signup.models import UserGroup
+        group = UserGroup('foo', 'bar')
 
+        assert group.name == 'foo'
+        assert group.description == 'bar'
