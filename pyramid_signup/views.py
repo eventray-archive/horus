@@ -340,7 +340,7 @@ class ProfileController(BaseController):
         self.form = form(self.schema)
 
 
-    @view_config(permission='view', route_name='profile', renderer='profile.mako')
+    @view_config(permission='view', route_name='profile', renderer='pyramid_signup:templates/profile.mako')
     def profile(self):
         if self.request.method == 'GET':
             username = self.request.user.username
