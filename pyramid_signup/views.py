@@ -389,6 +389,7 @@ class ProfileController(BaseController):
                     'form': self.form.render(
                         appstruct= dict(
                             Username=user.username,
+                            Email=user.email,
                             First_Name=user.first_name,
                             Last_Name=user.last_name,
                             Password=password,
