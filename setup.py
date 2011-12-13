@@ -16,8 +16,7 @@ def _read(path):
 README = _read(os.path.join(here, 'README.txt'))
 CHANGES = _read(os.path.join(here, 'CHANGES.txt'))
 
-requires = [
-    ]
+requires = open('requirements.txt').readlines()
 
 if sys.version_info[:3] < (2,5,0):
     requires.append('pysqlite')

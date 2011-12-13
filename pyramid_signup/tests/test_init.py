@@ -66,7 +66,7 @@ class TestInitCase(UnitTestBase):
         results = groupfinder(1, request) 
 
         assert 'organization:1' in results
-        assert 'group:1' in results
+        assert 'group:foo' in results
         assert len(results) == 2
 
     def test_group_finder_no_groups(self):
