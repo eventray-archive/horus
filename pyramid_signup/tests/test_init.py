@@ -1,6 +1,4 @@
 from pyramid import testing
-
-from pyramid_signup.models import User
 from pyramid_signup.tests import UnitTestBase
 
 from mock import patch
@@ -9,7 +7,6 @@ from mock import Mock
 class TestInitCase(UnitTestBase):
     def test_root_factory(self):
         from pyramid_signup import RootFactory
-        from pyramid.security import Everyone
         from pyramid.security import Authenticated
         from pyramid.security import Allow
         from pyramid.security import ALL_PERMISSIONS
@@ -28,6 +25,7 @@ class TestInitCase(UnitTestBase):
 
     def test_request_factory(self):
         from pyramid_signup import SignUpRequestFactory
+        from pyramid_signup.models import User
         user1 = User(username='sontek', first_name='john')
         self.session.add(user1)
         self.session.flush()
@@ -45,3 +43,53 @@ class TestInitCase(UnitTestBase):
             user = request.user
 
             assert user == user1
+
+    def test_group_finder(self):
+        from pyramid_signup import groupfinder
+        from pyramid_signup.models import User
+        from pyramid_signup.models import UserGroup
+        from pyramid_signup.models import Organization
+        
+        group = UserGroup('foo', 'bar')
+        user1 = User(username='sontek', first_name='john')
+        organization = Organization('foo', user1)
+        group.users.append(user1)
+
+        self.session.add(organization)
+        self.session.add(group)
+        self.session.add(user1)
+        self.session.flush()
+
+        request = Mock()
+        request.user = user1
+
+        results = groupfinder(1, request) 
+
+        assert 'organization:1' in results
+        assert 'group:1' in results
+        assert len(results) == 2
+
+    def test_group_finder_no_groups(self):
+        from pyramid_signup import groupfinder
+        from pyramid_signup.models import User
+        from pyramid_signup.models import UserGroup
+        from pyramid_signup.models import Organization
+        
+        group = UserGroup('foo', 'bar')
+        user1 = User(username='sontek', first_name='john')
+        user2 = User(username='sontek2', first_name='john')
+        organization = Organization('foo', user1)
+        group.users.append(user1)
+
+        self.session.add(organization)
+        self.session.add(group)
+        self.session.add(user1)
+        self.session.add(user2)
+        self.session.flush()
+
+        request = Mock()
+        request.user = user2
+
+        results = groupfinder(2, request)
+
+        assert len(results) == 0

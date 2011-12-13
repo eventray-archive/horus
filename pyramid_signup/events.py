@@ -1,18 +1,27 @@
-class NewRegistrationEvent(object):
-    def __init__(self, request, user, activation, values):
+class BaseEvent(object):
+    def __init__(self, request, user):
+        self.request = request
         self.user = user
+
+class NewRegistrationEvent(BaseEvent):
+    def __init__(self, request, user, activation, values):
+        super(NewRegistrationEvent, self).__init__(request, user)
+
         self.activation = activation
         self.values = values
-        self.request = request
 
-class RegistrationActivatedEvent(object):
+class RegistrationActivatedEvent(BaseEvent):
     def __init__(self, request, user, activation):
-        self.user = user
+        super(RegistrationActivatedEvent, self).__init__(request, user)
         self.activation = activation
-        self.request = request
 
-class PasswordResetEvent(object):
+class PasswordResetEvent(BaseEvent):
     def __init__(self, request, user, password):
-        self.user = user
-        self.request = request
+        super(PasswordResetEvent, self).__init__(request, user)
         self.password = password
+
+class ProfileUpdatedEvent(BaseEvent):
+    def __init__(self, request, user, password):
+        super(ProfileUpdatedEvent, self).__init__(request, user)
+        self.password = password
+

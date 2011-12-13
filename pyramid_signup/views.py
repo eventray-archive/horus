@@ -31,6 +31,7 @@ from pyramid_signup.lib import get_session
 from pyramid_signup.events import NewRegistrationEvent
 from pyramid_signup.events import RegistrationActivatedEvent
 from pyramid_signup.events import PasswordResetEvent
+from pyramid_signup.events import ProfileUpdatedEvent
 
 _ = TranslationStringFactory('pyramid_signup')
 
@@ -330,13 +331,13 @@ class RegisterController(BaseController):
 
 class ProfileController(BaseController):
     def __init__(self, request):
-        super(RegisterController, self).__init__(request)
+        super(ProfileController, self).__init__(request)
 
         schema = self.request.registry.getUtility(ISUProfileSchema)
         self.schema = schema().bind(request=self.request)
 
         form = self.request.registry.getUtility(ISUProfileForm)
-        self.form = form(schema)
+        self.form = form(self.schema)
 
 
     @view_config(permission='view', route_name='profile', renderer='profile.mako')
@@ -357,7 +358,7 @@ class ProfileController(BaseController):
                         )
                     )
                 }
-        if self.request.method == 'POST':
+        elif self.request.method == 'POST':
             try:
                 controls = self.request.POST.items()
                 captured = self.form.validate(controls)
@@ -370,24 +371,27 @@ class ProfileController(BaseController):
 
             user.first_name = captured.get('First_Name', '')
             user.last_name = captured.get('Last_Name', '')
-            user.last_name = captured.get('Email', '')
+            user.email = captured.get('Email', '')
 
             password = captured.get('Password')
 
             if password:
                 user.password = password
 
-        self.request.session.flash(_('Profile successfully updated.'), 'success')
+            self.request.session.flash(_('Profile successfully updated.'), 'success')
 
-        self.db.add(user)
+            self.db.add(user)
+            self.request.registry.notify(
+                ProfileUpdatedEvent(self.request, user, password)
+            )
 
-        return {
-                'form': self.form.render(
-                    appstruct= dict(
-                        Username=user.username,
-                        First_Name=user.first_name,
-                        Last_Name=user.last_name,
-                        Password=password,
+            return {
+                    'form': self.form.render(
+                        appstruct= dict(
+                            Username=user.username,
+                            First_Name=user.first_name,
+                            Last_Name=user.last_name,
+                            Password=password,
+                        )
                     )
-                )
-            }
+                }

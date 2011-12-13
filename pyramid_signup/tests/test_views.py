@@ -544,7 +544,7 @@ class TestRegisterController(UnitTestBase):
         assert not user.activated
         assert response.status_int == 404
 
-class TestForgoPasswordController(UnitTestBase):
+class TestForgotPasswordController(UnitTestBase):
     def test_forgot_password_loads(self):
         from pyramid_signup.views import ForgotPasswordController
         self.config.add_route('index', '/')
@@ -667,13 +667,14 @@ class TestForgoPasswordController(UnitTestBase):
         from pyramid_signup.events import PasswordResetEvent
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
+        from pyramid_signup.models import User
+        from pyramid_signup.models import Activation
+        from pyramid_signup.models import crypt
+
 
         self.config.add_route('index', '/')
         self.config.include('pyramid_signup')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
-
-        from pyramid_signup.models import User
-        from pyramid_signup.models import Activation
 
         user = User(username='sontek', password='temp', email='sontek@gmail.com')
         user.activation = Activation()
@@ -707,10 +708,8 @@ class TestForgoPasswordController(UnitTestBase):
 
         view = ForgotPasswordController(request)
         response = view.reset_password()
-        old_pass = user.hash_password('temp')
 
-
-        assert user.password != old_pass
+        assert not crypt.check(user.password, 'temp' + user.salt)
         assert response.status_int == 302
 
     def test_reset_password_invalid_password(self):
@@ -820,3 +819,155 @@ class TestForgoPasswordController(UnitTestBase):
         response = view.reset_password()
 
         assert response.status_int == 404
+
+class TestProfileController(UnitTestBase):
+    def test_profile_loads(self):
+        from pyramid_signup.views import ProfileController
+
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+
+        from pyramid_signup.models import User
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com',
+            activated=True)
+
+        self.session.add(user)
+        self.session.flush()
+
+        request = testing.DummyRequest()
+        request.user = Mock()
+
+        flash = Mock()
+        request.session.flash = flash
+
+        view = ProfileController(request)
+
+        response = view.profile()
+
+        assert response.get('form', None)
+
+    def test_profile_update_profile_invalid(self):
+        from pyramid_signup.views import ProfileController
+
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+
+        from pyramid_signup.models import User
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com',
+            activated=True)
+
+        self.session.add(user)
+        self.session.flush()
+
+        request = self.get_csrf_request(request_method='POST') 
+        request.user = user
+
+        flash = Mock()
+        request.session.flash = flash
+
+        view = ProfileController(request)
+
+        response = view.profile()
+
+        assert len(response['errors']) == 3
+
+    def test_profile_update_profile(self):
+        from pyramid_signup.views import ProfileController
+        from pyramid_signup.managers import UserManager
+        from pyramid_signup.interfaces import ISUSession
+        from pyramid_signup.events import ProfileUpdatedEvent
+        from pyramid_signup.models import crypt
+
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+
+        from pyramid_signup.models import User
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com',
+            activated=True)
+
+        self.session.add(user)
+        self.session.flush()
+
+        def handle_profile_updated(event):
+            request = event.request
+            session = request.registry.getUtility(ISUSession)
+            session.commit()
+
+        self.config.add_subscriber(handle_profile_updated, ProfileUpdatedEvent)
+
+        request = self.get_csrf_request(post={
+            'First_Name': 'John',
+            'Last_Name': 'Anderson',
+            'Email': 'sontek@gmail.com',
+        }, request_method='POST')
+
+        request.user = user
+
+        flash = Mock()
+        request.session.flash = flash
+
+        view = ProfileController(request)
+
+        view.profile()
+        mgr = UserManager(request)
+        new_user = mgr.get_by_pk(user.pk)
+
+        assert new_user.first_name == 'John'
+        assert new_user.last_name == 'Anderson'
+        assert new_user.email == 'sontek@gmail.com'
+        assert crypt.check(user.password, 'temp' + user.salt)
+
+    def test_profile_update_password(self):
+        from pyramid_signup.views import ProfileController
+        from pyramid_signup.managers import UserManager
+        from pyramid_signup.interfaces import ISUSession
+        from pyramid_signup.events import ProfileUpdatedEvent
+        from pyramid_signup.models import crypt
+
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+
+        from pyramid_signup.models import User
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com',
+            activated=True)
+
+        self.session.add(user)
+        self.session.flush()
+
+        def handle_profile_updated(event):
+            request = event.request
+            session = request.registry.getUtility(ISUSession)
+            session.commit()
+
+        self.config.add_subscriber(handle_profile_updated, ProfileUpdatedEvent)
+
+
+        request = self.get_csrf_request(post={
+            'First_Name': 'John',
+            'Last_Name': 'Anderson',
+            'Email': 'sontek@gmail.com',
+            'Password': {
+                'value': 'test123',
+                'confirm': 'test123',
+            },
+        }, request_method='POST')
+
+        request.user = user
+
+        flash = Mock()
+        request.session.flash = flash
+
+        view = ProfileController(request)
+
+        view.profile()
+        mgr = UserManager(request)
+        new_user = mgr.get_by_pk(user.pk)
+
+        assert new_user.first_name == 'John'
+        assert new_user.last_name == 'Anderson'
+        assert new_user.email == 'sontek@gmail.com'
+        assert not crypt.check(user.password, 'temp' + user.salt)

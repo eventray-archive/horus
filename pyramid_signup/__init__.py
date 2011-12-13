@@ -7,6 +7,7 @@ from pyramid_signup.schemas import LoginSchema
 from pyramid_signup.schemas import RegisterSchema
 from pyramid_signup.schemas import ForgotPasswordSchema
 from pyramid_signup.schemas import ResetPasswordSchema
+from pyramid_signup.schemas import ProfileSchema
 from pyramid_signup.forms import SubmitForm
 from pyramid_signup.resources import RootFactory
 from pyramid_signup.interfaces import ISULoginForm
@@ -17,6 +18,8 @@ from pyramid_signup.interfaces import ISUForgotPasswordForm
 from pyramid_signup.interfaces import ISUForgotPasswordSchema
 from pyramid_signup.interfaces import ISUResetPasswordForm
 from pyramid_signup.interfaces import ISUResetPasswordSchema
+from pyramid_signup.interfaces import ISUProfileForm
+from pyramid_signup.interfaces import ISUProfileSchema
 
 from pyramid_signup.routes import build_routes
 
@@ -58,29 +61,26 @@ def includeme(config):
 
     config.set_request_factory(SignUpRequestFactory)
 
-    if not config.registry.queryUtility(ISULoginSchema):
-        config.registry.registerUtility(LoginSchema, ISULoginSchema)
+    schemas = [
+        (ISULoginSchema, LoginSchema),
+        (ISURegisterSchema, RegisterSchema),
+        (ISUForgotPasswordSchema, ForgotPasswordSchema),
+        (ISUResetPasswordSchema, ResetPasswordSchema),
+        (ISUProfileSchema, ProfileSchema)
+    ]
 
-    if not config.registry.queryUtility(ISULoginForm):
-        config.registry.registerUtility(SubmitForm, ISULoginForm)
+    forms = [
+        ISULoginForm, ISURegisterForm, ISUForgotPasswordForm,
+        ISUResetPasswordForm, ISUProfileForm
+    ]
 
-    if not config.registry.queryUtility(ISURegisterSchema):
-        config.registry.registerUtility(RegisterSchema, ISURegisterSchema)
+    for iface, schema in schemas:
+        if not config.registry.queryUtility(iface):
+            config.registry.registerUtility(schema, iface)
 
-    if not config.registry.queryUtility(ISURegisterForm):
-        config.registry.registerUtility(SubmitForm, ISURegisterForm)
-
-    if not config.registry.queryUtility(ISUForgotPasswordSchema):
-        config.registry.registerUtility(ForgotPasswordSchema, ISUForgotPasswordSchema)
-
-    if not config.registry.queryUtility(ISUForgotPasswordForm):
-        config.registry.registerUtility(SubmitForm, ISUForgotPasswordForm)
-
-    if not config.registry.queryUtility(ISUResetPasswordSchema):
-        config.registry.registerUtility(ResetPasswordSchema, ISUResetPasswordSchema)
-
-    if not config.registry.queryUtility(ISUResetPasswordForm):
-        config.registry.registerUtility(SubmitForm, ISUResetPasswordForm)
+    for form in forms:
+        if not config.registry.queryUtility(form):
+            config.registry.registerUtility(SubmitForm, form)
 
     config.include(build_routes)
     config.scan('pyramid_signup')
