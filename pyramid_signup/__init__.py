@@ -32,7 +32,7 @@ def groupfinder(userid, request):
             groups.append('organization:%s' % org.pk)
 
         for group in user.groups:
-            groups.append('group:%s' % group.pk)
+            groups.append('group:%s' % group.name)
 
 #        if user.kind == 'admin':
 #            groups.append('group:admin')

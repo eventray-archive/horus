@@ -138,7 +138,7 @@ group_member_table = Table('usergroupmember', SUEntity.metadata,
 )
 
 class UserGroup(SUEntity):
-    name = Column(UnicodeText)
+    name = Column(UnicodeText, unique=True)
     description = Column(UnicodeText)
 
     users = relation('User', secondary=group_member_table, backref='groups')
