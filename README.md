@@ -31,6 +31,8 @@ this also gives you the ability to do some extra processing before processing is
 ``` python
 from pyramid_signup.events import PasswordResetEvent
 from pyramid_signup.events import NewRegistrationEvent
+from pyramid_signup.events import RegistrationActivatedEvent
+from pyramid_signup.events import ProfileUpdatedEvent
 
 def handle_request(event):
   request = event.request
@@ -39,6 +41,8 @@ def handle_request(event):
 
 self.config.add_subscriber(handle_request, PasswordResetEvent)
 self.config.add_subscriber(handle_request, NewRegistrationEvent)
+self.config.add_subscriber(handle_request, RegistrationActivatedEvent)
+self.config.add_subscriber(handle_request, ProfileUpdatedEvent)
 ```
 
 
@@ -57,6 +61,8 @@ The interaces you have available to override from pyramid_signup.interfaces:
 >  ISUForgotPasswordForm
 >
 >  ISUResetPasswordForm
+>
+>  ISUProfileForm
 >
 
 This is how you would do it (uniform being a custom deform Form class):
@@ -79,6 +85,7 @@ The templates you have available to override are:
 >
 >  reset_password.mako
 >
+>  profile.mako
 
 If you would like to override the templates with Jinja2, you just have to override
 the view configuration:
@@ -93,6 +100,9 @@ config.add_view('pyramid_signup.views.ForgotPasswordController', attr='reset_pas
     route_name='reset_password', renderer='yourapp:templates/reset_password.jinja2')
 config.add_view('pyramid_signup.views.RegisterController', attr='register',
     route_name='register', renderer='yourapp:templates/register.jinja2')
+config.add_view('pyramid_signup.views.ProfileController', attr='profile', 
+    route_name='profile', renderer='yourapp:templates/profile.jinja2')
+
 
 ```
 
