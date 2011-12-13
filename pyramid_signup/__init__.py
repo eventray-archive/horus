@@ -20,6 +20,29 @@ from pyramid_signup.interfaces import ISUResetPasswordSchema
 
 from pyramid_signup.routes import build_routes
 
+def groupfinder(userid, request):
+    user = request.user
+    groups = []
+
+    if user:
+        for org in user.organizations:
+            groups.append('organization:%s' % org.pk)
+
+        for group in user.groups:
+            groups.append('group:%s' % group.pk)
+
+#        if user.kind == 'admin':
+#            groups.append('group:admin')
+
+#        account_perms = session.query(AccountUserPermission) \
+#                .filter(AccountUserPermission.user_pk == user.pk).all()
+#
+#        for account_perm in account_perms:
+#            if account_perm.has_access:
+#                groups.append('account:%s:%s' % (account_perm.account_pk, account_perm.key))
+#
+    return groups
+
 class SignUpRequestFactory(Request):
     @reify
     def user(self):

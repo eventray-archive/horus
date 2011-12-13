@@ -26,3 +26,9 @@ class ISUResetPasswordForm(Interface):
 
 class ISUResetPasswordSchema(Interface):
     pass
+
+class ISUProfileForm(Interface):
+    pass
+
+class ISUProfileSchema(Interface):
+    pass

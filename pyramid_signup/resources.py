@@ -4,7 +4,12 @@ from pyramid.security import ALL_PERMISSIONS
 
 from pyramid_signup.managers import OrganizationManager
 
-class RootFactory(object):
+class BaseFactory(object):
+    def __init__(self, request):
+        self.request = request
+        self.is_root = False
+
+class RootFactory(BaseFactory):
     @property
     def __acl__(self):
         defaultlist = [
@@ -15,7 +20,8 @@ class RootFactory(object):
         return defaultlist
 
     def __init__(self, request):
-        pass  # pragma: no cover
+        super(RootFactory, self).__init__(request)
+        self.is_root = True
 
 class OrganizationFactory(RootFactory):
     def __init__(self, request):

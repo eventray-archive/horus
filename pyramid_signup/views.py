@@ -21,6 +21,8 @@ from pyramid_signup.interfaces import ISUForgotPasswordForm
 from pyramid_signup.interfaces import ISUForgotPasswordSchema
 from pyramid_signup.interfaces import ISUResetPasswordForm
 from pyramid_signup.interfaces import ISUResetPasswordSchema
+from pyramid_signup.interfaces import ISUProfileForm
+from pyramid_signup.interfaces import ISUProfileSchema
 from pyramid_signup.managers import UserManager
 from pyramid_signup.managers import ActivationManager
 from pyramid_signup.models import User
@@ -324,3 +326,68 @@ class RegisterController(BaseController):
                 return HTTPFound(location=self.activate_redirect_view)
 
         return HTTPNotFound()
+
+
+class ProfileController(BaseController):
+    def __init__(self, request):
+        super(RegisterController, self).__init__(request)
+
+        schema = self.request.registry.getUtility(ISUProfileSchema)
+        self.schema = schema().bind(request=self.request)
+
+        form = self.request.registry.getUtility(ISUProfileForm)
+        self.form = form(schema)
+
+
+    @view_config(permission='view', route_name='profile', renderer='profile.mako')
+    def profile(self):
+        if self.request.method == 'GET':
+            username = self.request.user.username
+            first_name = self.request.user.first_name
+            last_name = self.request.user.last_name
+            email = self.request.user.email
+
+            return {
+                    'form': self.form.render(
+                        appstruct= dict(
+                            Username=username,
+                            First_Name=first_name if first_name else '',
+                            Last_Name=last_name if last_name else '',
+                            Email=email if email else '',
+                        )
+                    )
+                }
+        if self.request.method == 'POST':
+            try:
+                controls = self.request.POST.items()
+                captured = self.form.validate(controls)
+            except deform.ValidationFailure, e:
+                # We pre-populate username
+                e.cstruct['Username'] = self. request.user.username
+                return {'form': e.render(), 'errors': e.error.children}
+
+            user = self.request.user
+
+            user.first_name = captured.get('First_Name', '')
+            user.last_name = captured.get('Last_Name', '')
+            user.last_name = captured.get('Email', '')
+
+            password = captured.get('Password')
+
+            if password:
+                user.password = password
+
+        self.request.session.flash(_('Profile successfully updated.'), 'success')
+
+        self.db.add(user)
+
+        return {
+                'form': self.form.render(
+                    appstruct= dict(
+                        Username=user.username,
+                        First_Name=user.first_name,
+                        Last_Name=user.last_name,
+                        Password=password,
+                    )
+                )
+            }

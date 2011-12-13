@@ -30,3 +30,16 @@ class ResetPasswordSchema(CSRFSchema):
         validator=colander.Length(min=2),
         widget=deform.widget.CheckedPasswordWidget())
 
+class ProfileSchema(CSRFSchema):
+    Username = colander.SchemaNode(colander.String(),
+            widget=deform.widget.TextInputWidget(template='readonly/textinput'),
+            missing=colander.null,
+        )
+    Email = colander.SchemaNode(colander.String(),
+        validator=colander.Email())
+    First_Name = colander.SchemaNode(colander.String())
+    Last_Name = colander.SchemaNode(colander.String())
+    Password = colander.SchemaNode(colander.String(),
+        validator=colander.Length(min=2),
+        widget=deform.widget.CheckedPasswordWidget(),
+        missing=colander.null)

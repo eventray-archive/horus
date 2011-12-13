@@ -6,4 +6,4 @@ def build_routes(config):
     config.add_route('activate', '/activate/{code}')
     config.add_route('forgot_password', '/forgot_password')
     config.add_route('reset_password', '/reset_password/{code}')
-
+    config.add_route('profile', '/profile')

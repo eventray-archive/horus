@@ -110,7 +110,7 @@ class Organization(SUEntity):
     cancelled_reason = Column(UnicodeText, nullable=True)
     owner_pk = Column(Integer, ForeignKey('user.pk'))
     owner = relation('User', backref='owned_organizations')
-    users = relation('User', secondary=org_member_table, backref='member_accounts')
+    users = relation('User', secondary=org_member_table, backref='organizations')
 
     def __init__(self, name, owner):
         self.name = name
@@ -153,8 +153,6 @@ class User(SUEntity):
     first_name = Column(UnicodeText)
     last_name = Column(UnicodeText)
     activated = Column(Boolean, default=False)
-    accounts = relation('Organization', secondary=org_member_table,
-                      backref='user')
     activation_pk = Column(Integer, ForeignKey('activation.pk'))
     activation = relation('Activation', backref='user')
     suspended = Column(Boolean, default=False)
