@@ -396,7 +396,11 @@ class TestRegisterController(UnitTestBase):
             'Email': 'sontek@gmail.com'
         }, request_method='POST')
 
+        flash = Mock()
+        request.session.flash = flash
+
         request.user = Mock()
+
         controller = RegisterController(request)
         response = controller.register()
 
@@ -406,6 +410,7 @@ class TestRegisterController(UnitTestBase):
         user = mgr.get_by_username('admin')
 
         assert user.activated == True
+        flash.assert_called_with('You have been registered, you may login now!', 'success')
 
     def test_registration_craps_out(self):
         from pyramid_signup.views import RegisterController

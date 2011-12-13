@@ -288,6 +288,7 @@ class RegisterController(BaseController):
 
                     self.request.session.flash(_('Please check your E-mail for an activation link'), 'success')
                 else:
+                    self.request.session.flash(_('You have been registered, you may login now!'), 'success')
                     user.activated = True
 
                 self.db.add(user)
