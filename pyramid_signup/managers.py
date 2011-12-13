@@ -12,6 +12,9 @@ class BaseManager(object):
         self.session = get_session(request)
 
 class UserManager(BaseManager):
+    def all(self):
+        return self.session.query(User).all()
+
     def get_by_email(self, email):
         return self.session.query(User).filter(User.email == email).first()
 
