@@ -846,6 +846,12 @@ class TestProfileController(UnitTestBase):
         flash = Mock()
         request.session.flash = flash
 
+        request.matchdict = Mock()
+        get = Mock()
+        get.return_value = user.pk
+        request.matchdict.get = get
+
+
         view = ProfileController(request)
 
         response = view.profile()
@@ -868,6 +874,12 @@ class TestProfileController(UnitTestBase):
 
         request = self.get_csrf_request(request_method='POST') 
         request.user = user
+
+        request.matchdict = Mock()
+        get = Mock()
+        get.return_value = user.pk
+        request.matchdict.get = get
+
 
         flash = Mock()
         request.session.flash = flash
@@ -914,9 +926,14 @@ class TestProfileController(UnitTestBase):
         flash = Mock()
         request.session.flash = flash
 
-        view = ProfileController(request)
+        request.matchdict = Mock()
+        get = Mock()
+        get.return_value = user.pk
+        request.matchdict.get = get
 
+        view = ProfileController(request)
         view.profile()
+
         mgr = UserManager(request)
         new_user = mgr.get_by_pk(user.pk)
 
@@ -962,6 +979,12 @@ class TestProfileController(UnitTestBase):
         }, request_method='POST')
 
         request.user = user
+
+        request.matchdict = Mock()
+        get = Mock()
+        get.return_value = user.pk
+        request.matchdict.get = get
+
 
         flash = Mock()
         request.session.flash = flash

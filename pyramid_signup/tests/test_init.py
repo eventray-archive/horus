@@ -63,11 +63,12 @@ class TestInitCase(UnitTestBase):
         request = Mock()
         request.user = user1
 
-        results = groupfinder(1, request) 
+        results = groupfinder(1, request)
 
         assert 'organization:1' in results
         assert 'group:foo' in results
-        assert len(results) == 2
+        assert 'user:%s' % (user1.pk) in results
+        assert len(results) == 3
 
     def test_group_finder_no_groups(self):
         from pyramid_signup import groupfinder
@@ -92,4 +93,5 @@ class TestInitCase(UnitTestBase):
 
         results = groupfinder(2, request)
 
-        assert len(results) == 0
+        assert len(results) == 1
+        assert 'user:%s' % (user2.pk) in results
