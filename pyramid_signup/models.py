@@ -186,3 +186,10 @@ class User(SUEntity):
             return '%s %s' % (self.first_name, self.last_name)
         else:
             return self.username
+
+    @property
+    def __acl__(self):
+        return [
+                (Allow, 'user:%s' % self.pk, 'access_user')
+        ]
+

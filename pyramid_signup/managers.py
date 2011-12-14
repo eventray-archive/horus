@@ -2,6 +2,7 @@ import cryptacular.bcrypt
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
 from pyramid_signup.models import User
+from pyramid_signup.models import UserGroup
 from pyramid_signup.models import Activation
 from pyramid_signup.models import Organization
 from pyramid_signup.lib import get_session
@@ -12,7 +13,7 @@ class BaseManager(object):
         self.session = get_session(request)
 
 class UserManager(BaseManager):
-    def all(self):
+    def get_all(self):
         return self.session.query(User).all()
 
     def get_by_email(self, email):
@@ -39,6 +40,13 @@ class UserManager(BaseManager):
 
         if valid:
             return user
+
+class UserGroupManager(BaseManager):
+    def get_all(self):
+        return self.session.query(UserGroup).all()
+
+    def get_by_pk(self, pk):
+        return self.session.query(UserGroup).filter(UserGroup.pk == pk).first()
 
 class ActivationManager(BaseManager):
     def get_by_code(self, code):

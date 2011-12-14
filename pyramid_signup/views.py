@@ -341,13 +341,22 @@ class ProfileController(BaseController):
         self.form = form(self.schema)
 
 
-    @view_config(permission='view', route_name='profile', renderer='pyramid_signup:templates/profile.mako')
+    @view_config(permission='access_user', route_name='profile', renderer='pyramid_signup:templates/profile.mako')
     def profile(self):
+        pk = self.request.matchdict.get('user_pk', None)
+
+        mgr = UserManager(self.request)
+
+        user = mgr.get_by_pk(pk)
+
+        if not user:
+            return HTTPNotFound()
+
         if self.request.method == 'GET':
-            username = self.request.user.username
-            first_name = self.request.user.first_name
-            last_name = self.request.user.last_name
-            email = self.request.user.email
+            username = user.username
+            first_name = user.first_name
+            last_name = user.last_name
+            email = user.email
 
             return {
                     'form': self.form.render(
@@ -365,10 +374,8 @@ class ProfileController(BaseController):
                 captured = self.form.validate(controls)
             except deform.ValidationFailure, e:
                 # We pre-populate username
-                e.cstruct['Username'] = self. request.user.username
+                e.cstruct['Username'] = user.username
                 return {'form': e.render(), 'errors': e.error.children}
-
-            user = self.request.user
 
             user.first_name = captured.get('First_Name', '')
             user.last_name = captured.get('Last_Name', '')
@@ -382,8 +389,9 @@ class ProfileController(BaseController):
             self.request.session.flash(_('Profile successfully updated.'), 'success')
 
             self.db.add(user)
+
             self.request.registry.notify(
-                ProfileUpdatedEvent(self.request, user, password)
+                ProfileUpdatedEvent(self.request, user, captured)
             )
 
             return {

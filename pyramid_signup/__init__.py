@@ -34,6 +34,8 @@ def groupfinder(userid, request):
         for group in user.groups:
             groups.append('group:%s' % group.name)
 
+        groups.append('user:%s' % user.pk)
+
 #        if user.kind == 'admin':
 #            groups.append('group:admin')
 

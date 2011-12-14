@@ -21,7 +21,7 @@ class PasswordResetEvent(BaseEvent):
         self.password = password
 
 class ProfileUpdatedEvent(BaseEvent):
-    def __init__(self, request, user, password):
+    def __init__(self, request, user, values):
         super(ProfileUpdatedEvent, self).__init__(request, user)
-        self.password = password
+        self.values = values
 

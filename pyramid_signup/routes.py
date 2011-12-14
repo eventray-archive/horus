@@ -1,3 +1,5 @@
+from pyramid_signup.resources import UserFactory
+
 def build_routes(config):
     """ Add routes to the config """
     config.add_route('login', '/login')
@@ -6,4 +8,5 @@ def build_routes(config):
     config.add_route('activate', '/activate/{code}')
     config.add_route('forgot_password', '/forgot_password')
     config.add_route('reset_password', '/reset_password/{code}')
-    config.add_route('profile', '/profile')
+    config.add_route('profile', '/profile/{user_pk}', factory=UserFactory,
+            traverse="/{user_pk}")

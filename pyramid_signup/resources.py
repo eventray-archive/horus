@@ -3,6 +3,7 @@ from pyramid.security import Allow
 from pyramid.security import ALL_PERMISSIONS
 
 from pyramid_signup.managers import OrganizationManager
+from pyramid_signup.managers import UserManager
 
 class BaseFactory(object):
     def __init__(self, request):
@@ -37,3 +38,18 @@ class OrganizationFactory(RootFactory):
             org.__name__ = key
 
         return org
+
+class UserFactory(RootFactory):
+    def __init__(self, request):
+        self.request = request
+
+    def __getitem__(self, key):
+        mgr = UserManager(self.request)
+
+        user = mgr.get_by_pk(key)
+
+        if user:
+            user.__parent__ = self
+            user.__name__ = key
+
+        return user
