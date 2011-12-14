@@ -394,14 +394,5 @@ class ProfileController(BaseController):
                 ProfileUpdatedEvent(self.request, user, captured)
             )
 
-            return {
-                    'form': self.form.render(
-                        appstruct= dict(
-                            Username=user.username,
-                            Email=user.email,
-                            First_Name=user.first_name,
-                            Last_Name=user.last_name,
-                            Password=password,
-                        )
-                    )
-                }
+            return HTTPFound(location=self.request.route_url('profile',
+                user_pk=user.pk))
