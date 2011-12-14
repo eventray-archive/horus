@@ -465,8 +465,15 @@ class TestRegisterController(UnitTestBase):
 
         request = testing.DummyRequest()
         request.matchdict = Mock()
-        get = Mock()
-        get.return_value = user.activation.code
+
+        def get(key, default):
+            if key == 'code':
+                return user.activation.code
+            else:
+                return user.pk
+            
+            return default
+
         request.matchdict.get = get
 
         controller = RegisterController(request)
@@ -501,8 +508,14 @@ class TestRegisterController(UnitTestBase):
 
         request = testing.DummyRequest()
         request.matchdict = Mock()
-        get = Mock()
-        get.return_value = user1.activation.code
+
+        def get(key, default):
+            if key == 'code':
+                return user1.activation.code
+            else:
+                return user1.pk
+            return default
+
         request.matchdict.get = get
 
         controller = RegisterController(request)

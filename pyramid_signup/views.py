@@ -277,7 +277,7 @@ class RegisterController(BaseController):
 
                     body = pystache.render(_("Please activate your e-mail address by visiting {{ link }}"),
                         {
-                            'link': route_url('activate', self.request, code=user.activation.code)
+                            'link': route_url('activate', self.request, user_pk=user.pk, code=user.activation.code)
                         }
                     )
 
@@ -306,13 +306,17 @@ class RegisterController(BaseController):
     @view_config(route_name='activate')
     def activate(self):
         code = self.request.matchdict.get('code', None)
+        user_pk = self.request.matchdict.get('user_pk', None)
         act_mgr = ActivationManager(self.request)
         user_mgr = UserManager(self.request)
 
         activation = act_mgr.get_by_code(code)
 
         if activation:
-            user = user_mgr.get_by_activation(activation)
+            user = user_mgr.get_by_pk(user_pk)
+
+            if user.activation != activation:
+                return HTTPNotFound()
 
             if user:
                 self.db.delete(activation)
