@@ -36,16 +36,6 @@ def groupfinder(userid, request):
 
         groups.append('user:%s' % user.pk)
 
-#        if user.kind == 'admin':
-#            groups.append('group:admin')
-
-#        account_perms = session.query(AccountUserPermission) \
-#                .filter(AccountUserPermission.user_pk == user.pk).all()
-#
-#        for account_perm in account_perms:
-#            if account_perm.has_access:
-#                groups.append('account:%s:%s' % (account_perm.account_pk, account_perm.key))
-#
     return groups
 
 class SignUpRequestFactory(Request):

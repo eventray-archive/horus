@@ -398,5 +398,4 @@ class ProfileController(BaseController):
                 ProfileUpdatedEvent(self.request, user, captured)
             )
 
-            return HTTPFound(location=self.request.route_url('profile',
-                user_pk=user.pk))
+            return HTTPFound(location=self.request.url)
