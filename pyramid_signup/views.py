@@ -269,11 +269,15 @@ class RegisterController(BaseController):
             try:
                 user = User(username=username, password=password, email=email)
 
+                self.db.add(user)
+
                 if self.require_activation:
                     activation = Activation()
-                    self.db.add(activation)
 
+                    self.db.add(activation)
                     user.activation = activation
+
+                    self.db.flush()
 
                     body = pystache.render(_("Please activate your e-mail address by visiting {{ link }}"),
                         {
@@ -290,9 +294,6 @@ class RegisterController(BaseController):
                 else:
                     self.request.session.flash(_('You have been registered, you may login now!'), 'success')
                     user.activated = True
-
-                self.db.add(user)
-                self.db.flush()
             except Exception as exc:
                 self.request.session.flash(exc.message, 'error')
                 return {'form': self.form.render()}
