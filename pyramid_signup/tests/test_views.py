@@ -471,8 +471,6 @@ class TestRegisterController(UnitTestBase):
                 return user.activation.code
             else:
                 return user.pk
-            
-            return default
 
         request.matchdict.get = get
 
@@ -514,7 +512,6 @@ class TestRegisterController(UnitTestBase):
                 return user1.activation.code
             else:
                 return user1.pk
-            return default
 
         request.matchdict.get = get
 
@@ -560,6 +557,51 @@ class TestRegisterController(UnitTestBase):
         user = mgr.get_by_username('sontek')
 
         assert not user.activated
+        assert response.status_int == 404
+
+    def test_activate_invalid_user(self):
+        from pyramid_signup.views import RegisterController
+        from pyramid_signup.models import User
+        from pyramid_signup.models import Activation
+        from pyramid_mailer.interfaces import IMailer
+        from pyramid_mailer.mailer import DummyMailer
+        from pyramid_signup.managers import UserManager
+        self.config.include('pyramid_signup')
+        self.config.add_route('index', '/')
+
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
+
+        bad_act = Activation()
+
+        user = User(username='sontek', password='temp')
+        user.activation = Activation()
+
+        user2 = User(username='jessie', password='temp')
+        user2.activation = bad_act
+
+        self.session.add(user)
+        self.session.add(user2)
+        self.session.flush()
+
+        request = testing.DummyRequest()
+        request.matchdict = Mock()
+
+        def get(val, ret):
+            if val == 'code':
+                return bad_act.code
+            elif val == 'user_pk':
+                return user.pk
+
+        request.matchdict.get = get
+
+        controller = RegisterController(request)
+        response = controller.activate()
+        mgr = UserManager(request)
+        new_user1 = mgr.get_by_username('sontek')
+        new_user2 = mgr.get_by_username('jessie')
+
+        assert not new_user1.activated
+        assert not new_user2.activated
         assert response.status_int == 404
 
 class TestForgotPasswordController(UnitTestBase):
@@ -870,6 +912,37 @@ class TestProfileController(UnitTestBase):
         response = view.profile()
 
         assert response.get('form', None)
+
+    def test_profile_bad_pk(self):
+        from pyramid_signup.views import ProfileController
+
+        self.config.add_route('index', '/')
+        self.config.include('pyramid_signup')
+
+        from pyramid_signup.models import User
+
+        user = User(username='sontek', password='temp', email='sontek@gmail.com',
+            activated=True)
+
+        self.session.add(user)
+        self.session.flush()
+
+        request = testing.DummyRequest()
+        request.user = Mock()
+
+        flash = Mock()
+        request.session.flash = flash
+
+        request.matchdict = Mock()
+        get = Mock()
+        get.return_value = 99
+        request.matchdict.get = get
+
+        view = ProfileController(request)
+
+        response = view.profile()
+
+        assert response.status_int == 404
 
     def test_profile_update_profile_invalid(self):
         from pyramid_signup.views import ProfileController

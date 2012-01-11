@@ -108,6 +108,19 @@ class TestUser(UnitTestBase):
 
         assert user1.display_name == 'sontek'
 
+    def test_acl(self):
+        from pyramid_signup.models import User
+        from pyramid.security import Allow
+
+        user1 = User(username='sontek')
+
+
+        self.session.add(user1)
+        self.session.flush()
+
+        assert user1.__acl__ == [(Allow, 'user:1', 'access_user')]
+
+
 class TestUserGroup(UnitTestBase):
     def test_init(self):
         from pyramid_signup.models import UserGroup

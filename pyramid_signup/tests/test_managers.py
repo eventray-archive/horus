@@ -17,6 +17,23 @@ class TestUserManager(UnitTestBase):
 
         assert user == new_user
 
+    def test_get_all_users(self):
+        from pyramid_signup.models import User
+        from pyramid_signup.managers import UserManager
+
+        user = User(username='sontek', password='temp')
+        user2 = User(username='sontek2', password='temp')
+        self.session.add(user)
+        self.session.add(user2)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+        mgr = UserManager(request)
+
+        users = mgr.get_all()
+
+        assert len(users) == 2
+
     def test_get_invalid_user(self):
         from pyramid_signup.models import User
         from pyramid_signup.managers import UserManager
@@ -264,3 +281,48 @@ class TestOrganizationManager(UnitTestBase):
         orgs = mgr.get_all()
 
         assert len(orgs) == 1
+
+class TestUserGroupManager(UnitTestBase):
+    def test_get_all(self):
+        from pyramid_signup.models import UserGroup
+        from pyramid_signup.models import User
+        from pyramid_signup.managers import UserGroupManager
+
+        user = User(username='sontek', password='temp')
+        self.session.add(user)
+
+        group = UserGroup('admin', 'group for admins')
+        group.users.append(user)
+        self.session.add(group)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+        mgr = UserGroupManager(request)
+
+        groups = mgr.get_all()
+
+        assert len(groups) == 1
+
+    def test_get_by_pk(self):
+        from pyramid_signup.models import UserGroup
+        from pyramid_signup.models import User
+        from pyramid_signup.managers import UserGroupManager
+
+        group = UserGroup('admin', 'group for admins')
+        group2 = UserGroup('employees', 'group for employees')
+
+        self.session.add(group)
+        self.session.add(group2)
+
+        self.session.commit()
+
+        request = testing.DummyRequest()
+        mgr = UserGroupManager(request)
+
+        group = mgr.get_by_pk(2)
+
+        assert group.name == 'employees'
+
+
+
+
