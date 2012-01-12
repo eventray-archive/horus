@@ -10,7 +10,7 @@
       % endif
     % endfor
     % if request.user:
-      Welcome, <a href="${request.route_url('profile', user_pk=request.user.pk)}">${request.user.display_name}</a>
+      Welcome, ${request.user.display_name}
       <a href="${request.route_url('logout')}">Logout</a>
     % else:
       <a href="${request.route_url('login')}">Login</a>

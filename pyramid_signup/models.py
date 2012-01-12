@@ -162,8 +162,6 @@ class User(SUEntity):
     cancelled_on = Column(DateTime)
     cancelled_reason = Column(UnicodeText, nullable=True)
     salt = Column(UnicodeText)
-    facebook_username = Column(UnicodeText, nullable=True)
-    facebook_token = Column(UnicodeText, nullable=True)
 
     _password = Column('password', UnicodeText)
 
