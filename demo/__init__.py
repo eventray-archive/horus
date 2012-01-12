@@ -16,12 +16,14 @@ from pyramid_signup.interfaces import ISUSession
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
+from pyramid_signup import groupfinder
+
 def main(global_config, **settings):
     config = Configurator(settings=settings)
 
     config.add_route('index', '/')
 
-    authn_policy = AuthTktAuthenticationPolicy('secret')
+    authn_policy = AuthTktAuthenticationPolicy('secret', callback=groupfinder)
     config.set_authentication_policy(authn_policy)
 
     authz_policy = ACLAuthorizationPolicy()

@@ -9,6 +9,9 @@ from pyramid.settings import asbool
 
 import deform
 import pystache
+import urllib
+import cgi
+import json
 
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
@@ -345,6 +348,70 @@ class ProfileController(BaseController):
         form = self.request.registry.getUtility(ISUProfileForm)
         self.form = form(self.schema)
 
+    def graph_url(self, substr):
+        return "https://graph.facebook.com/%s" % substr
+
+    @view_config(permission='access_user', route_name='facebook_connect')
+    def facebook_connect(self):
+        pk = self.request.matchdict.get('user_pk', None)
+        mgr = UserManager(self.request)
+
+        user = mgr.get_by_pk(pk)
+        app_id = self.request.registry.settings.get('facebook.app_id')
+        secret = self.request.registry.settings.get('facebook.secret')
+
+        if (not app_id or not secret) or not user:
+            return HTTPNotFound()
+
+        fb_link_redirect_view = self.request.route_url(
+            self.settings.get('su.fb_link_redirect_view', 'profile'),
+            user_pk=pk
+        )
+
+
+        # If facebook doesn't return a code, the user declined the request for linking
+        code = self.request.GET.get('code')
+        if code:
+            args = dict(
+                client_id = app_id,
+                client_secret = secret,
+                redirect_uri = self.request.route_url('facebook_connect', user_pk=pk),
+                code = code
+            )
+
+            oauth_url = self.graph_url("oauth/access_token?%s" % urllib.urlencode(args))
+
+            response = cgi.parse_qs(urllib.urlopen(oauth_url).read())
+            access_token = response['access_token'][-1]
+
+            #perm_url = self.graph_url("me/permissions?access_token=%s" % access_token)
+            #perm_response = json.load(urllib.urlopen(perm_url))
+
+            #TODO: Store the permission data somewhere
+            #data = perm_response.get('data')[0]
+
+            #offline_access = data.get('offline_access', 0)
+            #publish_stream = data.get('publish_stream', 0)
+
+            profile_url = self.graph_url("me?%s" %
+                urllib.urlencode(dict(access_token=access_token))
+            )
+
+            profile = json.load(urllib.urlopen(profile_url))
+
+            username = profile.pop('username')
+
+            mgr.set_facebook_info(user, username, access_token)
+
+            return HTTPFound(location=fb_link_redirect_view)
+        else:
+            if self.request.GET.get('error') == 'access_denied':
+                self.request.session.flash(_('You denied the request to link your account.'), 'error')
+            else:
+                self.request.session.flash(_('Facebook didn not provide a valid code to link with.'), 'error')
+
+        return HTTPFound(location=fb_link_redirect_view)
+
 
     @view_config(permission='access_user', route_name='profile', renderer='pyramid_signup:templates/profile.mako')
     def profile(self):
@@ -358,6 +425,21 @@ class ProfileController(BaseController):
             return HTTPNotFound()
 
         if self.request.method == 'GET':
+            app_id = self.request.registry.settings.get('facebook.app_id')
+            secret = self.request.registry.settings.get('facebook.secret')
+            scope = self.request.registry.settings.get('facebook.scope')
+            fb_url = None
+
+            if app_id and secret:
+                args = dict(
+                    client_id=app_id,
+                    redirect_uri=self.request.route_url('facebook_connect', user_pk=pk)
+                )
+                if scope:
+                    args['scope'] = scope 
+
+                fb_url = self.graph_url("oauth/authorize?" + urllib.urlencode(args))
+
             username = user.username
             first_name = user.first_name
             last_name = user.last_name
@@ -371,7 +453,8 @@ class ProfileController(BaseController):
                             Last_Name=last_name if last_name else '',
                             Email=email if email else '',
                         )
-                    )
+                    ),
+                    'fb_url': fb_url
                 }
         elif self.request.method == 'POST':
             try:

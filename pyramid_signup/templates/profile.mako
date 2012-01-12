@@ -1,6 +1,7 @@
 
 <html>
   <body>
+  FB_URL: ${fb_url}
     <a href="${request.route_url('index')}">Back to Index</a>
     % for type in ['success', 'error', 'warning', 'info']:
       % if request.session.peek_flash(type):

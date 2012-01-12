@@ -10,3 +10,6 @@ def build_routes(config):
     config.add_route('reset_password', '/reset_password/{code}')
     config.add_route('profile', '/profile/{user_pk}', factory=UserFactory,
             traverse="/{user_pk}")
+
+    config.add_route('facebook_connect', '/profile/{user_pk}/facebook_connect', factory=UserFactory,
+            traverse="/{user_pk}")

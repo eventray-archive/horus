@@ -41,6 +41,12 @@ class UserManager(BaseManager):
         if valid:
             return user
 
+    def set_facebook_info(self, user, username, token):
+        user.facebook_username = username
+        user.facebook_token = token
+
+        self.session.add(user)
+
 class UserGroupManager(BaseManager):
     def get_all(self):
         return self.session.query(UserGroup).all()
