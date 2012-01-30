@@ -346,8 +346,21 @@ class ProfileController(BaseController):
         self.form = form(self.schema)
 
 
-    @view_config(permission='access_user', route_name='profile', renderer='pyramid_signup:templates/profile.mako')
+    @view_config(route_name='profile', renderer='pyramid_signup:templates/profile.mako')
     def profile(self):
+        pk = self.request.matchdict.get('user_pk', None)
+
+        mgr = UserManager(self.request)
+
+        user = mgr.get_by_pk(pk)
+
+        if not user:
+            return HTTPNotFound()
+
+        return {'user': user}
+
+    @view_config(permission='access_user', route_name='edit_profile', renderer='pyramid_signup:templates/edit_profile.mako')
+    def edit_profile(self):
         pk = self.request.matchdict.get('user_pk', None)
 
         mgr = UserManager(self.request)

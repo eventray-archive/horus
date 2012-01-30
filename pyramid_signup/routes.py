@@ -10,3 +10,5 @@ def build_routes(config):
     config.add_route('reset_password', '/reset_password/{code}')
     config.add_route('profile', '/profile/{user_pk}', factory=UserFactory,
             traverse="/{user_pk}")
+    config.add_route('edit_profile', '/profile/{user_pk}/edit', factory=UserFactory,
+            traverse="/{user_pk}")

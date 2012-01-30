@@ -13,6 +13,7 @@ from sqlalchemy import engine_from_config
 from zope.sqlalchemy import ZopeTransactionExtension
 
 from pyramid_signup.interfaces import ISUSession
+from pyramid_signup import groupfinder
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
@@ -21,7 +22,7 @@ def main(global_config, **settings):
 
     config.add_route('index', '/')
 
-    authn_policy = AuthTktAuthenticationPolicy('secret')
+    authn_policy = AuthTktAuthenticationPolicy('secret', callback=groupfinder)
     config.set_authentication_policy(authn_policy)
 
     authz_policy = ACLAuthorizationPolicy()
