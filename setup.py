@@ -1,63 +1,37 @@
 import os
-import sys
 
-from setuptools import setup, find_packages, Command
+from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
+README = ''#open(os.path.join(here, 'README.md')).read()
+CHANGES = ''#open(os.path.join(here, 'CHANGES.txt')).read()
 
-def _read(path):
-    with open(path) as f:
-        data= f.read()
-
-    f.close()
-
-    return data
-
-README = _read(os.path.join(here, 'README.txt'))
-CHANGES = _read(os.path.join(here, 'CHANGES.txt'))
-
-#requires = open('requirements.txt').readlines()
-requires = []
-if sys.version_info[:3] < (2,5,0):
-    requires.append('pysqlite')
-
-class PyTest(Command):
-    user_options = []
-    def initialize_options(self):
-        pass
-    def finalize_options(self):
-        pass
-    def run(self):
-        import subprocess
-        errno = subprocess.call('py.test')
-        raise SystemExit(errno)
+requires = ['pyramid']
 
 setup(name='pyramid_signup',
-      version='0.0',
-      description='pyramid_signup',
+      version='0.2',
+      description='Generic user registration for pyramid',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
-        "Programming Language :: Python",
-        "Framework :: Pylons",
-        "Topic :: Internet :: WWW/HTTP",
-        "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
-        ],
-      author='',
-      author_email='',
-      url='',
-      keywords='web wsgi bfg pylons pyramid',
+            'Development Status :: 4 - Beta',
+            'Environment :: Web Environment',
+            'Intended Audience :: Developers',
+            'License :: OSI Approved :: BSD License',
+            'Operating System :: OS Independent',
+            'Programming Language :: Python',
+            'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
+            'Topic :: Software Development :: Libraries :: Python Modules'
+      ],
+      author='John Anderson',
+      author_email='sontek@gmail.com',
+      url='https://github.com/sontek/pyramid_signup',
+      keywords='pyramid',
+      license='BSD',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
-      test_suite='pyramid_signup',
-      install_requires = requires,
-      cmdclass = {'test': PyTest},
-      entry_points = """\
-      [paste.app_factory]
-      main = pyramid_signup:main
-      [console_scripts]
-      su_setup = pyramid_signup.scripts.populate:main
-      """,
-      paster_plugins=['pyramid'],
-      )
+      install_requires=requires,
+      tests_require=requires + ['pytest', 'mock'],
+      test_suite="pyramid_signup"
+)
 
