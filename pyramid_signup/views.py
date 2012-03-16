@@ -299,7 +299,7 @@ class RegisterController(BaseController):
                 return {'form': self.form.render()}
 
             self.request.registry.notify(
-                NewRegistrationEvent(self.request, user, activation, controls)
+                NewRegistrationEvent(self.request, user, activation, captured)
             )
 
             return HTTPFound(location=self.register_redirect_view)
