@@ -299,7 +299,8 @@ class RegisterController(BaseController):
                 return {'form': self.form.render()}
 
             self.request.registry.notify(
-                NewRegistrationEvent(self.request, user, activation, controls)
+                NewRegistrationEvent(self.request, user, activation,
+                    captured)
             )
 
             return HTTPFound(location=self.register_redirect_view)
@@ -359,13 +360,10 @@ class ProfileController(BaseController):
 
         return {'user': user}
 
-    @view_config(permission='access_user', route_name='edit_profile', renderer='pyramid_signup:templates/edit_profile.mako')
+    @view_config(permission='access_user', route_name='edit_profile',
+        renderer='pyramid_signup:templates/edit_profile.mako')
     def edit_profile(self):
-        pk = self.request.matchdict.get('user_pk', None)
-
-        mgr = UserManager(self.request)
-
-        user = mgr.get_by_pk(pk)
+        user = self.request.context
 
         if not user:
             return HTTPNotFound()
