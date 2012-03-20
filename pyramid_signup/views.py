@@ -35,6 +35,18 @@ from pyramid_signup.events import ProfileUpdatedEvent
 
 _ = TranslationStringFactory('pyramid_signup')
 
+def authenticated(request, pk):
+    """ This sets the auth cookies and redirects to the page defined
+        in su.login_redirect, defaults to a view named 'index'
+    """
+    settings = request.registry.settings
+    headers = remember(request, pk)
+    request.session.flash(_('Logged in successfully.'), 'success')
+
+    login_redirect_view = route_url(settings.get('su.login_redirect', 'index'), request)
+
+    return HTTPFound(location=login_redirect_view, headers=headers)
+
 class BaseController(object):
     @property
     def request(self):
@@ -61,14 +73,6 @@ class AuthController(BaseController):
 
         self.form = form(self.schema)
 
-    def authenticated(self, request, pk):
-        """ This sets the auth cookies and redirects to the page defined
-            in su.login_redirect, defaults to a view named 'index'
-        """
-        headers = remember(request, pk)
-        request.session.flash(_('Logged in successfully.'), 'success')
-
-        return HTTPFound(location=self.login_redirect_view, headers=headers)
 
     @view_config(route_name='login', renderer='pyramid_signup:templates/login.mako')
     def login(self):
@@ -96,7 +100,7 @@ class AuthController(BaseController):
                     self.request.session.flash(_(u'Your account is not active, please check your e-mail.'), 'error')
                     return {'form': self.form.render()}
                 else:
-                    return self.authenticated(self.request, user.pk)
+                    return authenticated(self.request, user.pk)
 
             self.request.session.flash(_('Invalid username or password.'), 'error')
 
@@ -259,6 +263,7 @@ class RegisterController(BaseController):
 
             mgr = UserManager(self.request)
             user = mgr.get_by_username(username)
+            autologin = asbool(self.settings.get('su.autologin', False))
 
             if user:
                 self.request.session.flash(_('That username is already used.'), 'error')
@@ -292,7 +297,9 @@ class RegisterController(BaseController):
 
                     self.request.session.flash(_('Please check your E-mail for an activation link'), 'success')
                 else:
-                    self.request.session.flash(_('You have been registered, you may login now!'), 'success')
+                    if not autologin:
+                        self.request.session.flash(_('You have been registered, you may login now!'), 'success')
+
                     user.activated = True
             except Exception as exc:
                 self.request.session.flash(exc.message, 'error')
@@ -302,6 +309,12 @@ class RegisterController(BaseController):
                 NewRegistrationEvent(self.request, user, activation,
                     captured)
             )
+
+
+            if autologin:
+                self.db.flush()
+
+                return authenticated(self.request, user.pk)
 
             return HTTPFound(location=self.register_redirect_view)
 
