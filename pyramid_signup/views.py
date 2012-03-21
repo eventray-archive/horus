@@ -47,6 +47,29 @@ def authenticated(request, pk):
 
     return HTTPFound(location=login_redirect_view, headers=headers)
 
+def create_activation(request, user):
+    db = get_session(request)
+    activation = Activation()
+
+    db.add(activation)
+    user.activation = activation
+
+    db.flush()
+
+    body = pystache.render(_("Please activate your e-mail address by visiting {{ link }}"),
+        {
+            'link': request.route_url('activate', user_pk=user.pk, code=user.activation.code)
+        }
+    )
+
+    subject = _("Please active your e-mail address!")
+
+    message = Message(subject=subject, recipients=[user.email], body=body)
+
+    mailer = get_mailer(request)
+    mailer.send(message)
+
+
 class BaseController(object):
     @property
     def request(self):
@@ -285,24 +308,8 @@ class RegisterController(BaseController):
                 self.db.add(user)
 
                 if self.require_activation:
-                    activation = Activation()
-
-                    self.db.add(activation)
-                    user.activation = activation
-
-                    self.db.flush()
-
-                    body = pystache.render(_("Please activate your e-mail address by visiting {{ link }}"),
-                        {
-                            'link': route_url('activate', self.request, user_pk=user.pk, code=user.activation.code)
-                        }
-                    )
-
-                    subject = _("Please active your e-mail address!")
-
-                    message = Message(subject=subject, recipients=[user.email], body=body)
-                    self.mailer.send(message)
-
+                    # SEND EMAIL ACTIVATION
+                    create_activation(self.request, user)
                     self.request.session.flash(_('Please check your E-mail for an activation link'), 'success')
                 else:
                     if not autologin:
