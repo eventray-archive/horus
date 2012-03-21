@@ -45,7 +45,10 @@ class UserManager(BaseManager):
         if not user:
             return None
 
-        valid = self.validate_user(user, password)
+        if user.password == None:
+            valid = False
+        else:
+            valid = self.validate_user(user, password)
 
         if valid:
             return user
