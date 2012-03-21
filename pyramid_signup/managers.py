@@ -22,6 +22,15 @@ class UserManager(BaseManager):
     def get_by_username(self, username):
         return self.session.query(User).filter(User.username == username).first()
 
+    def get_by_email_password(self, email, password):
+        user = self.get_by_email(email)
+
+        if user:
+            valid = self.validate_user(user, password)
+
+            if valid:
+                return user
+
     def get_by_activation(self, activation):
         user = self.session.query(User).filter(User.activation_pk == activation.pk).first()
         return user
@@ -36,10 +45,15 @@ class UserManager(BaseManager):
         if not user:
             return None
 
-        valid = crypt.check(user.password, password + user.salt)
+        valid = self.validate_user(user, password)
 
         if valid:
             return user
+
+    def validate_user(self, user, password):
+        valid = crypt.check(user.password, password + user.salt)
+        return valid
+
 
 class UserGroupManager(BaseManager):
     def get_all(self):

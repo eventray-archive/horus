@@ -149,7 +149,7 @@ class UserGroup(SUEntity):
 
 class User(SUEntity):
     username = Column(UnicodeText, unique=True)
-    email = Column(UnicodeText, nullable=True)
+    email = Column(UnicodeText, unique=True)
     first_name = Column(UnicodeText)
     last_name = Column(UnicodeText)
     activated = Column(Boolean, default=False)

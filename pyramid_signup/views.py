@@ -70,6 +70,7 @@ class AuthController(BaseController):
 
         self.login_redirect_view = route_url(self.settings.get('su.login_redirect', 'index'), request)
         self.logout_redirect_view = route_url(self.settings.get('su.logout_redirect', 'index'), request)
+        self.require_activation = asbool(self.settings.get('su.require_activation', True))
 
         self.form = form(self.schema)
 
@@ -93,14 +94,21 @@ class AuthController(BaseController):
 
             mgr = UserManager(self.request)
 
+            allow_email_auth = self.settings.get('su.allow_email_auth', False)
+
             user = mgr.get_user(username, password)
 
+            if allow_email_auth:
+                if not user:
+                    user = mgr.get_by_email_password(username, password)
+
             if user:
-                if not user.activated:
-                    self.request.session.flash(_(u'Your account is not active, please check your e-mail.'), 'error')
-                    return {'form': self.form.render()}
-                else:
-                    return authenticated(self.request, user.pk)
+                if self.require_activation:
+                    if not user.activated:
+                        self.request.session.flash(_(u'Your account is not active, please check your e-mail.'), 'error')
+                        return {'form': self.form.render()}
+
+                return authenticated(self.request, user.pk)
 
             self.request.session.flash(_('Invalid username or password.'), 'error')
 
@@ -300,7 +308,6 @@ class RegisterController(BaseController):
                     if not autologin:
                         self.request.session.flash(_('You have been registered, you may login now!'), 'success')
 
-                    user.activated = True
             except Exception as exc:
                 self.request.session.flash(exc.message, 'error')
                 return {'form': self.form.render()}
