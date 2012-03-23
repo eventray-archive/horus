@@ -41,7 +41,10 @@ def authenticated(request, pk):
     """
     settings = request.registry.settings
     headers = remember(request, pk)
-    request.session.flash(_('Logged in successfully.'), 'success')
+    autologin = asbool(settings.get('su.autologin', False))
+
+    if not autologin:
+        request.session.flash(_('Logged in successfully.'), 'success')
 
     login_redirect_view = route_url(settings.get('su.login_redirect', 'index'), request)
 
