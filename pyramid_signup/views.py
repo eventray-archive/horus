@@ -131,7 +131,7 @@ class AuthController(BaseController):
             if user:
                 if self.require_activation:
                     if not user.activated:
-                        self.request.session.flash(_(u'Your account is not active, please check your e-mail.'), 'error')
+                        self.request.session.flash(_(u'Your account is not activate, please check your e-mail.'), 'error')
                         return {'form': self.form.render()}
 
                 return authenticated(self.request, user.pk)
