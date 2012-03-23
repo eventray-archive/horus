@@ -1,11 +1,14 @@
+from sqlalchemy import or_
+
 import cryptacular.bcrypt
-crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
 from pyramid_signup.models import User
 from pyramid_signup.models import UserGroup
 from pyramid_signup.models import Activation
 from pyramid_signup.models import Organization
 from pyramid_signup.lib import get_session
+
+crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
 class BaseManager(object):
     def __init__(self, request):
@@ -21,6 +24,14 @@ class UserManager(BaseManager):
 
     def get_by_username(self, username):
         return self.session.query(User).filter(User.username == username).first()
+
+    def get_by_username_or_email(self, username, email):
+        return self.session.query(User).filter(
+            or_(
+                User.username == username,
+                User.email == email
+            )
+        ).first()
 
     def get_by_email_password(self, email, password):
         user = self.get_by_email(email)

@@ -293,11 +293,16 @@ class RegisterController(BaseController):
 
 
             mgr = UserManager(self.request)
-            user = mgr.get_by_username(username)
+            user = mgr.get_by_username_or_email(username, email)
+
             autologin = asbool(self.settings.get('su.autologin', False))
 
             if user:
-                self.request.session.flash(_('That username is already used.'), 'error')
+                if user.username == username:
+                    self.request.session.flash(_('That username is already used.'), 'error')
+                elif user.email == email:
+                    self.request.session.flash(_('That e-mail is already used.'), 'error')
+
                 return {'form': self.form.render(self.request.POST)}
 
             activation = None
@@ -422,7 +427,20 @@ class ProfileController(BaseController):
 
             user.first_name = captured.get('First_Name', '')
             user.last_name = captured.get('Last_Name', '')
-            user.email = captured.get('Email', '')
+
+            email = captured.get('Email', None)
+
+            if email:
+                mgr = UserManager(self.request)
+                email_user = mgr.get_by_email(email)
+
+                if email_user:
+                    if email_user.pk != user.pk:
+                        self.request.session.flash(_('That e-mail is already used.'), 'error')
+
+                        return HTTPFound(location=self.request.url)
+
+                user.email = email
 
             password = captured.get('Password')
 
