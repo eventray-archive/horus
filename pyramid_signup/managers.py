@@ -53,19 +53,20 @@ class UserManager(BaseManager):
     def get_user(self, username, password):
         user = self.get_by_username(username)
 
+        valid = self.validate_user(user, password)
+
+        if valid:
+            return user
+
+    def validate_user(self, user, password):
         if not user:
             return None
 
         if user.password == None:
             valid = False
         else:
-            valid = self.validate_user(user, password)
+            valid = crypt.check(user.password, password + user.salt)
 
-        if valid:
-            return user
-
-    def validate_user(self, user, password):
-        valid = crypt.check(user.password, password + user.salt)
         return valid
 
 
