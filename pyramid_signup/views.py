@@ -97,6 +97,7 @@ class AuthController(BaseController):
         self.login_redirect_view = route_url(self.settings.get('su.login_redirect', 'index'), request)
         self.logout_redirect_view = route_url(self.settings.get('su.logout_redirect', 'index'), request)
         self.require_activation = asbool(self.settings.get('su.require_activation', True))
+        self.allow_inactive_login = asbool(self.settings.get('su.allow_inactive_login', False))
 
         self.form = form(self.schema)
 
@@ -129,10 +130,11 @@ class AuthController(BaseController):
                     user = mgr.get_by_email_password(username, password)
 
             if user:
-                if self.require_activation:
-                    if not user.activated:
-                        self.request.session.flash(_(u'Your account is not activate, please check your e-mail.'), 'error')
-                        return {'form': self.form.render()}
+                if not self.allow_inactive_login:
+                    if self.require_activation:
+                        if not user.activated:
+                            self.request.session.flash(_(u'Your account is not activate, please check your e-mail.'), 'error')
+                            return {'form': self.form.render()}
 
                 return authenticated(self.request, user.pk)
 
