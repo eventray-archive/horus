@@ -65,7 +65,7 @@ def create_activation(request, user):
         }
     )
 
-    subject = _("Please active your e-mail address!")
+    subject = _("Please activate your e-mail address!")
 
     message = Message(subject=subject, recipients=[user.email], body=body)
 
