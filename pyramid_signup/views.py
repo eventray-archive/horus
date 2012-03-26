@@ -293,7 +293,7 @@ class RegisterController(BaseController):
                 return {'form': e.render(), 'errors': e.error.children}
 
             email = captured['Email']
-            username = captured['Username']
+            username = captured['Username'].lower()
             password = captured['Password']
 
 

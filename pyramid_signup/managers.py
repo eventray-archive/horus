@@ -1,4 +1,5 @@
 from sqlalchemy import or_
+from sqlalchemy import func
 
 import cryptacular.bcrypt
 
@@ -20,15 +21,19 @@ class UserManager(BaseManager):
         return self.session.query(User).all()
 
     def get_by_email(self, email):
-        return self.session.query(User).filter(User.email == email).first()
+        return self.session.query(User).filter(
+                func.lower(User.email) == email.lower()
+        ).first()
 
     def get_by_username(self, username):
-        return self.session.query(User).filter(User.username == username).first()
+        return self.session.query(User).filter(
+            func.lower(User.username) == username.lower(),
+        ).first()
 
     def get_by_username_or_email(self, username, email):
         return self.session.query(User).filter(
             or_(
-                User.username == username,
+                func.lower(User.username) == username.lower(),
                 User.email == email
             )
         ).first()
