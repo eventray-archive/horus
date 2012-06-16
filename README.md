@@ -10,18 +10,18 @@ Next, run our console script to setup the database:
 
 > $ su_setup <your app config.ini>
 
-Finally, to include pyramid_signup in your project, in your apps configuration,
+Finally, to include horus in your project, in your apps configuration,
 you should include the package pyramid_mailer for the validation e-mail and forgot
-password e-mail and tell pyramid_signup which session to use for the database objects.
+password e-mail and tell horus which session to use for the database objects.
 
 ``` python
  config.include('pyramid_mailer')
- from pyramid_signup.interfaces import ISUSession
+ from horus.interfaces import ISUSession
  config.registry.registerUtility(DBSession, ISUSession)
- config.include('pyramid_signup')
+ config.include('horus')
  ```
 
-pyramid_signup does not require pyramid_tm or the ZopeTransactionManager with your
+horus does not require pyramid_tm or the ZopeTransactionManager with your
 session but if you do not use them you do have to take one extra step, we don't commit
 transactions for you because that just wouldn't be nice!
 
@@ -29,10 +29,10 @@ All you have to do is to subscribe to the extension events and commit the sessio
 this also gives you the ability to do some extra processing before processing is finished:
 
 ``` python
-from pyramid_signup.events import PasswordResetEvent
-from pyramid_signup.events import NewRegistrationEvent
-from pyramid_signup.events import RegistrationActivatedEvent
-from pyramid_signup.events import ProfileUpdatedEvent
+from horus.events import PasswordResetEvent
+from horus.events import NewRegistrationEvent
+from horus.events import RegistrationActivatedEvent
+from horus.events import ProfileUpdatedEvent
 
 def handle_request(event):
   request = event.request
@@ -47,12 +47,12 @@ self.config.add_subscriber(handle_request, ProfileUpdatedEvent)
 
 
 
-Extending pyramid_signup
+Extending horus
 =============================
 If you would like to modify any of the forms in pyramid signup, you just need
 to register the new deform class to use in the registry.
 
-The interaces you have available to override from pyramid_signup.interfaces:
+The interaces you have available to override from horus.interfaces:
 
 >  ISULoginForm
 >
@@ -73,7 +73,7 @@ This is how you would do it (uniform being a custom deform Form class):
 If you would like to override the templates you can use pyramid's override asset 
 functionality:
 
->    config.override_asset(to_override='pyramid_signup:templates/template.mako', override_with='your_package:templates/anothertemplate.mako')
+>    config.override_asset(to_override='horus:templates/template.mako', override_with='your_package:templates/anothertemplate.mako')
 
 The templates you have available to override are:
 
@@ -92,15 +92,15 @@ the view configuration:
 
 ``` python
 
-config.add_view('pyramid_signup.views.AuthController', attr='login', route_name='login',
+config.add_view('horus.views.AuthController', attr='login', route_name='login',
     renderer='yourapp:templates/login.jinja2')
-config.add_view('pyramid_signup.views.ForgotPasswordController', attr='forgot_password',
+config.add_view('horus.views.ForgotPasswordController', attr='forgot_password',
     route_name='forgot_password', renderer='yourapp:templates/forgot_password.jinja2')
-config.add_view('pyramid_signup.views.ForgotPasswordController', attr='reset_password',
+config.add_view('horus.views.ForgotPasswordController', attr='reset_password',
     route_name='reset_password', renderer='yourapp:templates/reset_password.jinja2')
-config.add_view('pyramid_signup.views.RegisterController', attr='register',
+config.add_view('horus.views.RegisterController', attr='register',
     route_name='register', renderer='yourapp:templates/register.jinja2')
-config.add_view('pyramid_signup.views.ProfileController', attr='profile', 
+config.add_view('horus.views.ProfileController', attr='profile', 
     route_name='profile', renderer='yourapp:templates/profile.jinja2')
 
 
@@ -108,14 +108,14 @@ config.add_view('pyramid_signup.views.ProfileController', attr='profile',
 
 Development
 =====================
-If you would like to help make any changes to pyramid_signup, you can run its
+If you would like to help make any changes to horus, you can run its
 unit tests with py.test:
 
 > $ py.test
 
 and to check test coverage:
 
-> $ py.test --cov-report term-missing --cov pyramid_signup
+> $ py.test --cov-report term-missing --cov horus
 
 you might also consider running the tests in parallel:
 
