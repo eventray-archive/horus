@@ -1,9 +1,9 @@
-from pyramid_signup.tests import UnitTestBase
+from horus.tests import UnitTestBase
 
 class TestInterfaces(UnitTestBase):
     def test_susession(self):
         """ Shouldn't be able to instantiate the interface """
-        from pyramid_signup.interfaces import ISUSession
+        from horus.interfaces import ISUSession
 
         def make_session():
             ISUSession('1')
@@ -12,7 +12,7 @@ class TestInterfaces(UnitTestBase):
 
     def test_suloginschema(self):
         """ Shouldn't be able to instantiate the interface """
-        from pyramid_signup.interfaces import ISULoginSchema
+        from horus.interfaces import ISULoginSchema
 
         def make_session():
             ISULoginSchema('1')
@@ -21,7 +21,7 @@ class TestInterfaces(UnitTestBase):
 
     def test_suloginform(self):
         """ Shouldn't be able to instantiate the interface """
-        from pyramid_signup.interfaces import ISULoginForm
+        from horus.interfaces import ISULoginForm
 
         def make_session():
             ISULoginForm('1')

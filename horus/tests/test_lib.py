@@ -1,12 +1,12 @@
-from pyramid_signup.tests import UnitTestBase
+from horus.tests import UnitTestBase
 from pyramid import testing
 
 from mock import Mock
 
 class TestLib(UnitTestBase):
     def test_get_session(self):
-        from pyramid_signup.interfaces import ISUSession
-        from pyramid_signup.lib import get_session
+        from horus.interfaces import ISUSession
+        from horus.lib import get_session
         request = testing.DummyRequest()
         request.registry = Mock()
 

@@ -13,27 +13,27 @@ import pystache
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
-from pyramid_signup.interfaces import ISULoginForm
-from pyramid_signup.interfaces import ISULoginSchema
-from pyramid_signup.interfaces import ISURegisterForm
-from pyramid_signup.interfaces import ISURegisterSchema
-from pyramid_signup.interfaces import ISUForgotPasswordForm
-from pyramid_signup.interfaces import ISUForgotPasswordSchema
-from pyramid_signup.interfaces import ISUResetPasswordForm
-from pyramid_signup.interfaces import ISUResetPasswordSchema
-from pyramid_signup.interfaces import ISUProfileForm
-from pyramid_signup.interfaces import ISUProfileSchema
-from pyramid_signup.managers import UserManager
-from pyramid_signup.managers import ActivationManager
-from pyramid_signup.models import User
-from pyramid_signup.models import Activation
-from pyramid_signup.lib import get_session
-from pyramid_signup.events import NewRegistrationEvent
-from pyramid_signup.events import RegistrationActivatedEvent
-from pyramid_signup.events import PasswordResetEvent
-from pyramid_signup.events import ProfileUpdatedEvent
+from horus.interfaces import ISULoginForm
+from horus.interfaces import ISULoginSchema
+from horus.interfaces import ISURegisterForm
+from horus.interfaces import ISURegisterSchema
+from horus.interfaces import ISUForgotPasswordForm
+from horus.interfaces import ISUForgotPasswordSchema
+from horus.interfaces import ISUResetPasswordForm
+from horus.interfaces import ISUResetPasswordSchema
+from horus.interfaces import ISUProfileForm
+from horus.interfaces import ISUProfileSchema
+from horus.managers import UserManager
+from horus.managers import ActivationManager
+from horus.models import User
+from horus.models import Activation
+from horus.lib import get_session
+from horus.events import NewRegistrationEvent
+from horus.events import RegistrationActivatedEvent
+from horus.events import PasswordResetEvent
+from horus.events import ProfileUpdatedEvent
 
-_ = TranslationStringFactory('pyramid_signup')
+_ = TranslationStringFactory('horus')
 
 def authenticated(request, pk):
     """ This sets the auth cookies and redirects to the page defined
@@ -102,7 +102,7 @@ class AuthController(BaseController):
         self.form = form(self.schema)
 
 
-    @view_config(route_name='login', renderer='pyramid_signup:templates/login.mako')
+    @view_config(route_name='login', renderer='horus:templates/login.mako')
     def login(self):
         if self.request.method == 'GET':
             if self.request.user:
@@ -162,7 +162,7 @@ class ForgotPasswordController(BaseController):
         self.forgot_password_redirect_view = route_url(self.settings.get('su.forgot_password_redirect', 'index'), request)
         self.reset_password_redirect_view = route_url(self.settings.get('su.reset_password_redirect', 'index'), request)
 
-    @view_config(route_name='forgot_password', renderer='pyramid_signup:templates/forgot_password.mako')
+    @view_config(route_name='forgot_password', renderer='horus:templates/forgot_password.mako')
     def forgot_password(self):
         schema = self.request.registry.getUtility(ISUForgotPasswordSchema)
         schema = schema().bind(request=self.request)
@@ -210,7 +210,7 @@ class ForgotPasswordController(BaseController):
         self.request.session.flash(_('Please check your e-mail to reset your password.'), 'success')
         return HTTPFound(location=self.reset_password_redirect_view)
 
-    @view_config(route_name='reset_password', renderer='pyramid_signup:templates/reset_password.mako')
+    @view_config(route_name='reset_password', renderer='horus:templates/reset_password.mako')
     def reset_password(self):
         schema = self.request.registry.getUtility(ISUResetPasswordSchema)
         schema = schema().bind(request=self.request)
@@ -278,7 +278,7 @@ class RegisterController(BaseController):
         if self.require_activation:
             self.mailer = get_mailer(request)
 
-    @view_config(route_name='register', renderer='pyramid_signup:templates/register.mako')
+    @view_config(route_name='register', renderer='horus:templates/register.mako')
     def register(self):
         if self.request.method == 'GET':
             if self.request.user:
@@ -384,7 +384,7 @@ class ProfileController(BaseController):
         self.form = form(self.schema)
 
 
-    @view_config(route_name='profile', renderer='pyramid_signup:templates/profile.mako')
+    @view_config(route_name='profile', renderer='horus:templates/profile.mako')
     def profile(self):
         pk = self.request.matchdict.get('user_pk', None)
 
@@ -398,7 +398,7 @@ class ProfileController(BaseController):
         return {'user': user}
 
     @view_config(permission='access_user', route_name='edit_profile',
-        renderer='pyramid_signup:templates/edit_profile.mako')
+        renderer='horus:templates/edit_profile.mako')
     def edit_profile(self):
         user = self.request.context
 

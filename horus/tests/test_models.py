@@ -1,5 +1,5 @@
-from pyramid_signup.tests import UnitTestBase
-from pyramid_signup.models import SUEntity
+from horus.tests import UnitTestBase
+from horus.models import SUEntity
 from sqlalchemy.types import DateTime
 
 from sqlalchemy import Column
@@ -23,7 +23,7 @@ class TestModels(UnitTestBase):
 
 class TestActivation(UnitTestBase):
     def test_create_activation_without_valid_until(self):
-        from pyramid_signup.models import Activation
+        from horus.models import Activation
 
         activation1 = Activation()
 
@@ -31,7 +31,7 @@ class TestActivation(UnitTestBase):
         assert activation1.valid_until > datetime.utcnow()
 
     def test_create_activation_with_valid_until(self):
-        from pyramid_signup.models import Activation
+        from horus.models import Activation
 
         dt = datetime.utcnow()
         activation1 = Activation(valid_until=dt)
@@ -41,8 +41,8 @@ class TestActivation(UnitTestBase):
 
 class TestOrganizations(UnitTestBase):
     def test_create_organization(self):
-        from pyramid_signup.models import Organization
-        from pyramid_signup.models import User
+        from horus.models import Organization
+        from horus.models import User
 
         owner = User()
         self.session.add(owner)
@@ -56,8 +56,8 @@ class TestOrganizations(UnitTestBase):
         assert organization.create_date != None
 
     def test_organization_acl(self):
-        from pyramid_signup.models import Organization
-        from pyramid_signup.models import User
+        from horus.models import Organization
+        from horus.models import User
         from pyramid.security import Allow
 
         owner = User()
@@ -78,7 +78,7 @@ class TestOrganizations(UnitTestBase):
 
 class TestUser(UnitTestBase):
     def test_password_hashing(self):
-        from pyramid_signup.models import User
+        from horus.models import User
         user1 = User(username='sontek', first_name='john',
                 last_name='anderson', password='password')
 
@@ -89,7 +89,7 @@ class TestUser(UnitTestBase):
         assert user1.salt != None
 
     def test_display_name_full(self):
-        from pyramid_signup.models import User
+        from horus.models import User
         user1 = User(username='sontek', first_name='john',
                 last_name='anderson', password='password')
 
@@ -99,7 +99,7 @@ class TestUser(UnitTestBase):
         assert user1.display_name == 'john anderson'
 
     def test_display_name_only_username(self):
-        from pyramid_signup.models import User
+        from horus.models import User
         user1 = User(username='sontek')
 
 
@@ -109,7 +109,7 @@ class TestUser(UnitTestBase):
         assert user1.display_name == 'sontek'
 
     def test_acl(self):
-        from pyramid_signup.models import User
+        from horus.models import User
         from pyramid.security import Allow
 
         user1 = User(username='sontek')
@@ -123,7 +123,7 @@ class TestUser(UnitTestBase):
 
 class TestUserGroup(UnitTestBase):
     def test_init(self):
-        from pyramid_signup.models import UserGroup
+        from horus.models import UserGroup
         group = UserGroup('foo', 'bar')
 
         assert group.name == 'foo'

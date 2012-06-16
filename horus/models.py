@@ -20,9 +20,9 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import date
 
-from pyramid_signup.lib import gen_hash_key
+from horus.lib import gen_hash_key
 
-_ = TranslationStringFactory('pyramid_signup')
+_ = TranslationStringFactory('horus')
 
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 

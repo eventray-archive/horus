@@ -8,7 +8,7 @@ def pytest_sessionstart():
     # Only run database setup on master (in case of xdist/multiproc mode)
     if not hasattr(config, 'slaveinput'):
         from pyramid.config import Configurator
-        from pyramid_signup.models import SUEntity
+        from horus.models import SUEntity
         from paste.deploy.loadwsgi import appconfig
         from sqlalchemy import engine_from_config
         import os
@@ -20,7 +20,7 @@ def pytest_sessionstart():
         print 'Creating the tables on the test database %s' % engine
 
         config = Configurator(settings=settings)
-        config.scan('pyramid_signup.models')
+        config.scan('horus.models')
 
         SUEntity.metadata.drop_all(engine)
         SUEntity.metadata.create_all(engine)

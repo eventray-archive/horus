@@ -1,12 +1,12 @@
 from pyramid import testing
 
-from pyramid_signup.tests import UnitTestBase
+from horus.tests import UnitTestBase
 
 class TestResources(UnitTestBase):
     def test_organization_factory(self):
-        from pyramid_signup.resources import OrganizationFactory
-        from pyramid_signup.models import Organization
-        from pyramid_signup.models import User
+        from horus.resources import OrganizationFactory
+        from horus.models import Organization
+        from horus.models import User
 
         user = User(username='sontek', password='temp')
         self.session.add(user)
@@ -24,8 +24,8 @@ class TestResources(UnitTestBase):
         assert org == organization
 
     def test_user_factory(self):
-        from pyramid_signup.resources import UserFactory
-        from pyramid_signup.models import User
+        from horus.resources import UserFactory
+        from horus.models import User
 
         user = User(username='sontek', password='temp')
         self.session.add(user)

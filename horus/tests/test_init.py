@@ -1,12 +1,12 @@
 from pyramid import testing
-from pyramid_signup.tests import UnitTestBase
+from horus.tests import UnitTestBase
 
 from mock import patch
 from mock import Mock
 
 class TestInitCase(UnitTestBase):
     def test_root_factory(self):
-        from pyramid_signup import RootFactory
+        from horus import RootFactory
         from pyramid.security import Authenticated
         from pyramid.security import Allow
         from pyramid.security import ALL_PERMISSIONS
@@ -24,13 +24,13 @@ class TestInitCase(UnitTestBase):
                 assert ace[2] == 'view'
 
     def test_request_factory(self):
-        from pyramid_signup import SignUpRequestFactory
-        from pyramid_signup.models import User
+        from horus import SignUpRequestFactory
+        from horus.models import User
         user1 = User(username='sontek', first_name='john')
         self.session.add(user1)
         self.session.flush()
 
-        with patch('pyramid_signup.unauthenticated_userid') as unauth:
+        with patch('horus.unauthenticated_userid') as unauth:
             unauth.return_value = 1
             request = SignUpRequestFactory({})
             request.registry = Mock()
@@ -45,10 +45,10 @@ class TestInitCase(UnitTestBase):
             assert user == user1
 
     def test_group_finder(self):
-        from pyramid_signup import groupfinder
-        from pyramid_signup.models import User
-        from pyramid_signup.models import UserGroup
-        from pyramid_signup.models import Organization
+        from horus import groupfinder
+        from horus.models import User
+        from horus.models import UserGroup
+        from horus.models import Organization
         
         group = UserGroup('foo', 'bar')
         user1 = User(username='sontek', first_name='john')
@@ -71,10 +71,10 @@ class TestInitCase(UnitTestBase):
         assert len(results) == 3
 
     def test_group_finder_no_groups(self):
-        from pyramid_signup import groupfinder
-        from pyramid_signup.models import User
-        from pyramid_signup.models import UserGroup
-        from pyramid_signup.models import Organization
+        from horus import groupfinder
+        from horus.models import User
+        from horus.models import UserGroup
+        from horus.models import Organization
         
         group = UserGroup('foo', 'bar')
         user1 = User(username='sontek', first_name='john')

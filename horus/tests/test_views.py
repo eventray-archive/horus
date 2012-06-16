@@ -3,13 +3,13 @@ from pyramid import testing
 from mock import Mock
 from mock import patch
 
-from pyramid_signup.tests import UnitTestBase
+from horus.tests import UnitTestBase
 
 class TestAuthController(UnitTestBase):
     def test_auth_controller_extensions(self):
-        from pyramid_signup.views import AuthController
-        from pyramid_signup.interfaces import ISULoginSchema
-        from pyramid_signup.interfaces import ISULoginForm
+        from horus.views import AuthController
+        from horus.interfaces import ISULoginSchema
+        from horus.interfaces import ISULoginForm
 
         self.config.add_route('index', '/')
 
@@ -31,9 +31,9 @@ class TestAuthController(UnitTestBase):
 
 
     def test_login_loads(self):
-        from pyramid_signup.views import AuthController
+        from horus.views import AuthController
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
         request = testing.DummyRequest()
         request.user = None
@@ -43,9 +43,9 @@ class TestAuthController(UnitTestBase):
         assert response.get('form', None)
 
     def test_login_redirects_if_logged_in(self):
-        from pyramid_signup.views import AuthController
+        from horus.views import AuthController
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
         request = testing.DummyRequest()
         request.user = Mock()
@@ -56,9 +56,9 @@ class TestAuthController(UnitTestBase):
 
     def test_login_fails_empty(self):
         """ Make sure we can't login with empty credentials"""
-        from pyramid_signup.views import AuthController
+        from horus.views import AuthController
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
         request = testing.DummyRequest(post={
             'submit': True,
@@ -77,9 +77,9 @@ class TestAuthController(UnitTestBase):
 
     def test_csrf_invalid_fails(self):
         """ Make sure we can't login with a bad csrf """
-        from pyramid_signup.views import AuthController
+        from horus.views import AuthController
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
         request = self.get_csrf_request(post={
                     'submit': True,
@@ -100,9 +100,9 @@ class TestAuthController(UnitTestBase):
 
     def test_login_fails_bad_credentials(self):
         """ Make sure we can't login with bad credentials"""
-        from pyramid_signup.views import AuthController
+        from horus.views import AuthController
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
         request = self.get_csrf_request(post={
                 'submit': True,
@@ -120,17 +120,17 @@ class TestAuthController(UnitTestBase):
 
     def test_login_succeeds(self):
         """ Make sure we can login """
-        from pyramid_signup.models import User
+        from horus.models import User
         admin = User(username='sontek', password='temp')
         admin.activated = True
 
         self.session.add(admin)
         self.session.flush()
 
-        from pyramid_signup.views import AuthController
+        from horus.views import AuthController
         self.config.add_route('index', '/')
 
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
         request = self.get_csrf_request(post={
                 'submit': True,
@@ -145,15 +145,15 @@ class TestAuthController(UnitTestBase):
 
     def test_inactive_login_fails(self):
         """ Make sure we can't login with an inactive user """
-        from pyramid_signup.models import User
+        from horus.models import User
         user = User(username='sontek', password='temp')
 
         self.session.add(user)
         self.session.flush()
 
-        from pyramid_signup.views import AuthController
+        from horus.views import AuthController
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
         request = self.get_csrf_request(post={
                 'submit': True,
@@ -172,9 +172,9 @@ class TestAuthController(UnitTestBase):
             'error')
 
     def test_logout(self):
-        from pyramid_signup.views import AuthController
+        from horus.views import AuthController
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         request = testing.DummyRequest()
 
         flash = Mock()
@@ -186,8 +186,8 @@ class TestAuthController(UnitTestBase):
         request.session.flash = flash
 
         view = AuthController(request)
-        with patch('pyramid_signup.views.forget') as forget:
-            with patch('pyramid_signup.views.HTTPFound') as HTTPFound:
+        with patch('horus.views.forget') as forget:
+            with patch('horus.views.HTTPFound') as HTTPFound:
                 view.logout()
                 flash.assert_called_with(u'Logged out successfully.', 'success')
                 forget.assert_called_with(request)
@@ -198,9 +198,9 @@ class TestRegisterController(UnitTestBase):
     def test_register_controller_extensions_with_mail(self):
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
-        from pyramid_signup.views import RegisterController
-        from pyramid_signup.interfaces import ISURegisterSchema
-        from pyramid_signup.interfaces import ISURegisterForm
+        from horus.views import RegisterController
+        from horus.interfaces import ISURegisterSchema
+        from horus.interfaces import ISURegisterForm
 
         self.config.add_route('index', '/')
 
@@ -216,7 +216,7 @@ class TestRegisterController(UnitTestBase):
         self.config.registry.registerUtility(form, ISURegisterForm)
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
-        with patch('pyramid_signup.views.get_mailer') as get_mailer:
+        with patch('horus.views.get_mailer') as get_mailer:
             RegisterController(request)
             assert get_mailer.called
 
@@ -224,9 +224,9 @@ class TestRegisterController(UnitTestBase):
         assert form.called
 
     def test_register_controller_extensions_without_mail(self):
-        from pyramid_signup.views import RegisterController
-        from pyramid_signup.interfaces import ISURegisterSchema
-        from pyramid_signup.interfaces import ISURegisterForm
+        from horus.views import RegisterController
+        from horus.interfaces import ISURegisterSchema
+        from horus.interfaces import ISURegisterForm
 
         self.config.add_route('index', '/')
 
@@ -242,7 +242,7 @@ class TestRegisterController(UnitTestBase):
         self.config.registry.registerUtility(schema, ISURegisterSchema)
         self.config.registry.registerUtility(form, ISURegisterForm)
 
-        with patch('pyramid_signup.views.get_mailer') as get_mailer:
+        with patch('horus.views.get_mailer') as get_mailer:
             RegisterController(request)
             assert not get_mailer.called
 
@@ -250,11 +250,11 @@ class TestRegisterController(UnitTestBase):
         assert form.called
 
     def test_register_loads_not_logged_in(self):
-        from pyramid_signup.views import RegisterController
+        from horus.views import RegisterController
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
 
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         self.config.add_route('index', '/')
@@ -267,11 +267,11 @@ class TestRegisterController(UnitTestBase):
         assert response.get('form', None)
 
     def test_register_redirects_if_logged_in(self):
-        from pyramid_signup.views import RegisterController
+        from horus.views import RegisterController
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
 
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         self.config.add_route('index', '/')
@@ -284,12 +284,12 @@ class TestRegisterController(UnitTestBase):
         assert response.status_int == 302
 
     def test_register_creates_user(self):
-        from pyramid_signup.views import RegisterController
+        from horus.views import RegisterController
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
-        from pyramid_signup.managers import UserManager
+        from horus.managers import UserManager
 
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         self.config.add_route('index', '/')
@@ -315,11 +315,11 @@ class TestRegisterController(UnitTestBase):
         assert user != None
 
     def test_register_validation(self):
-        from pyramid_signup.views import RegisterController
+        from horus.views import RegisterController
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
 
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         self.config.add_route('index', '/')
@@ -334,12 +334,12 @@ class TestRegisterController(UnitTestBase):
         assert 'There was a problem with your submission' in response['form']
 
     def test_register_existing_user(self):
-        from pyramid_signup.views import RegisterController
+        from horus.views import RegisterController
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
-        from pyramid_signup.models import User
+        from horus.models import User
 
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         self.config.add_route('index', '/')
@@ -366,14 +366,14 @@ class TestRegisterController(UnitTestBase):
         flash.assert_called_with(u'That username is already used.', 'error')
 
     def test_register_no_email_validation(self):
-        from pyramid_signup.views import RegisterController
+        from horus.views import RegisterController
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
-        from pyramid_signup.managers import UserManager
-        from pyramid_signup.interfaces import ISUSession
-        from pyramid_signup.events import NewRegistrationEvent
+        from horus.managers import UserManager
+        from horus.interfaces import ISUSession
+        from horus.events import NewRegistrationEvent
 
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         self.config.add_route('index', '/')
@@ -413,7 +413,7 @@ class TestRegisterController(UnitTestBase):
         flash.assert_called_with('You have been registered, you may login now!', 'success')
 
     def test_registration_craps_out(self):
-        from pyramid_signup.views import RegisterController
+        from horus.views import RegisterController
         from pyramid_mailer.interfaces import IMailer
 
         def send(message):
@@ -422,7 +422,7 @@ class TestRegisterController(UnitTestBase):
         mailer = Mock()
         mailer.send = send
 
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(mailer, IMailer)
 
         self.config.add_route('index', '/')
@@ -446,13 +446,13 @@ class TestRegisterController(UnitTestBase):
         flash.assert_called_with('I broke!', 'error')
 
     def test_activate(self):
-        from pyramid_signup.views import RegisterController
-        from pyramid_signup.models import User
-        from pyramid_signup.models import Activation
+        from horus.views import RegisterController
+        from horus.models import User
+        from horus.models import Activation
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
-        from pyramid_signup.managers import UserManager
-        self.config.include('pyramid_signup')
+        from horus.managers import UserManager
+        self.config.include('horus')
         self.config.add_route('index', '/')
 
         self.config.registry.registerUtility(DummyMailer(), IMailer)
@@ -483,14 +483,14 @@ class TestRegisterController(UnitTestBase):
         assert response.status_int == 302
 
     def test_activate_multiple_users(self):
-        from pyramid_signup.views import RegisterController
-        from pyramid_signup.models import User
-        from pyramid_signup.models import Activation
+        from horus.views import RegisterController
+        from horus.models import User
+        from horus.models import Activation
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
-        from pyramid_signup.managers import UserManager
-        from pyramid_signup.managers import ActivationManager
-        self.config.include('pyramid_signup')
+        from horus.managers import UserManager
+        from horus.managers import ActivationManager
+        self.config.include('horus')
         self.config.add_route('index', '/')
 
         self.config.registry.registerUtility(DummyMailer(), IMailer)
@@ -528,13 +528,13 @@ class TestRegisterController(UnitTestBase):
         assert response.status_int == 302
 
     def test_activate_invalid(self):
-        from pyramid_signup.views import RegisterController
-        from pyramid_signup.models import User
-        from pyramid_signup.models import Activation
+        from horus.views import RegisterController
+        from horus.models import User
+        from horus.models import Activation
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
-        from pyramid_signup.managers import UserManager
-        self.config.include('pyramid_signup')
+        from horus.managers import UserManager
+        self.config.include('horus')
         self.config.add_route('index', '/')
 
         self.config.registry.registerUtility(DummyMailer(), IMailer)
@@ -560,13 +560,13 @@ class TestRegisterController(UnitTestBase):
         assert response.status_int == 404
 
     def test_activate_invalid_user(self):
-        from pyramid_signup.views import RegisterController
-        from pyramid_signup.models import User
-        from pyramid_signup.models import Activation
+        from horus.views import RegisterController
+        from horus.models import User
+        from horus.models import Activation
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
-        from pyramid_signup.managers import UserManager
-        self.config.include('pyramid_signup')
+        from horus.managers import UserManager
+        self.config.include('horus')
         self.config.add_route('index', '/')
 
         self.config.registry.registerUtility(DummyMailer(), IMailer)
@@ -606,9 +606,9 @@ class TestRegisterController(UnitTestBase):
 
 class TestForgotPasswordController(UnitTestBase):
     def test_forgot_password_loads(self):
-        from pyramid_signup.views import ForgotPasswordController
+        from horus.views import ForgotPasswordController
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
         request = testing.DummyRequest()
         request.user = None
@@ -618,9 +618,9 @@ class TestForgotPasswordController(UnitTestBase):
         assert response.get('form', None)
 
     def test_forgot_password_logged_in_redirects(self):
-        from pyramid_signup.views import ForgotPasswordController
+        from horus.views import ForgotPasswordController
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
         request = testing.DummyRequest()
         request.user = Mock()
@@ -630,15 +630,15 @@ class TestForgotPasswordController(UnitTestBase):
         assert response.status_int == 302
 
     def test_forgot_password_valid_user(self):
-        from pyramid_signup.views import ForgotPasswordController
+        from horus.views import ForgotPasswordController
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
 
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
-        from pyramid_signup.models import User
+        from horus.models import User
 
         user = User(username='sontek', password='temp', email='sontek@gmail.com')
 
@@ -662,15 +662,15 @@ class TestForgotPasswordController(UnitTestBase):
         assert response.status_int == 302
 
     def test_forgot_password_invalid_password(self):
-        from pyramid_signup.views import ForgotPasswordController
+        from horus.views import ForgotPasswordController
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
 
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
-        from pyramid_signup.models import User
+        from horus.models import User
 
         user = User(username='sontek', password='temp', email='sontek@gmail.com')
 
@@ -689,16 +689,16 @@ class TestForgotPasswordController(UnitTestBase):
         assert len(response['errors']) == 1
 
     def test_reset_password_loads(self):
-        from pyramid_signup.views import ForgotPasswordController
+        from horus.views import ForgotPasswordController
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
 
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
-        from pyramid_signup.models import User
-        from pyramid_signup.models import Activation
+        from horus.models import User
+        from horus.models import Activation
 
         user = User(username='sontek', password='temp', email='sontek@gmail.com')
         user.activation = Activation()
@@ -722,18 +722,18 @@ class TestForgotPasswordController(UnitTestBase):
         assert 'sontek' in response['form']
 
     def test_reset_password_valid_user(self):
-        from pyramid_signup.views import ForgotPasswordController
-        from pyramid_signup.interfaces import ISUSession
-        from pyramid_signup.events import PasswordResetEvent
+        from horus.views import ForgotPasswordController
+        from horus.interfaces import ISUSession
+        from horus.events import PasswordResetEvent
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
-        from pyramid_signup.models import User
-        from pyramid_signup.models import Activation
-        from pyramid_signup.models import crypt
+        from horus.models import User
+        from horus.models import Activation
+        from horus.models import crypt
 
 
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         user = User(username='sontek', password='temp', email='sontek@gmail.com')
@@ -773,16 +773,16 @@ class TestForgotPasswordController(UnitTestBase):
         assert response.status_int == 302
 
     def test_reset_password_invalid_password(self):
-        from pyramid_signup.views import ForgotPasswordController
+        from horus.views import ForgotPasswordController
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
 
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
-        from pyramid_signup.models import User
-        from pyramid_signup.models import Activation
+        from horus.models import User
+        from horus.models import Activation
 
         user = User(username='sontek', password='temp', email='sontek@gmail.com')
         user.activation = Activation()
@@ -813,16 +813,16 @@ class TestForgotPasswordController(UnitTestBase):
         assert len(response['errors']) == 1
 
     def test_reset_password_empty_password(self):
-        from pyramid_signup.views import ForgotPasswordController
+        from horus.views import ForgotPasswordController
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
 
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
-        from pyramid_signup.models import User
-        from pyramid_signup.models import Activation
+        from horus.models import User
+        from horus.models import Activation
 
         user = User(username='sontek', password='temp', email='sontek@gmail.com')
         user.activation = Activation()
@@ -849,16 +849,16 @@ class TestForgotPasswordController(UnitTestBase):
         assert len(response['errors']) == 1
 
     def test_invalid_reset_gets_404(self):
-        from pyramid_signup.views import ForgotPasswordController
+        from horus.views import ForgotPasswordController
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
 
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
-        from pyramid_signup.models import User
-        from pyramid_signup.models import Activation
+        from horus.models import User
+        from horus.models import Activation
 
         user = User(username='sontek', password='temp', email='sontek@gmail.com')
         user.activation = Activation()
@@ -882,12 +882,12 @@ class TestForgotPasswordController(UnitTestBase):
 
 class TestProfileController(UnitTestBase):
     def test_profile_loads(self):
-        from pyramid_signup.views import ProfileController
+        from horus.views import ProfileController
 
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
-        from pyramid_signup.models import User
+        from horus.models import User
 
         user = User(username='sontek', password='temp', email='sontek@gmail.com',
             activated=True)
@@ -914,12 +914,12 @@ class TestProfileController(UnitTestBase):
         assert response.get('form', None)
 
     def test_profile_bad_pk(self):
-        from pyramid_signup.views import ProfileController
+        from horus.views import ProfileController
 
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
-        from pyramid_signup.models import User
+        from horus.models import User
 
         user = User(username='sontek', password='temp', email='sontek@gmail.com',
             activated=True)
@@ -945,12 +945,12 @@ class TestProfileController(UnitTestBase):
         assert response.status_int == 404
 
     def test_profile_update_profile_invalid(self):
-        from pyramid_signup.views import ProfileController
+        from horus.views import ProfileController
 
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
-        from pyramid_signup.models import User
+        from horus.models import User
 
         user = User(username='sontek', password='temp', email='sontek@gmail.com',
             activated=True)
@@ -977,16 +977,16 @@ class TestProfileController(UnitTestBase):
         assert len(response['errors']) == 3
 
     def test_profile_update_profile(self):
-        from pyramid_signup.views import ProfileController
-        from pyramid_signup.managers import UserManager
-        from pyramid_signup.interfaces import ISUSession
-        from pyramid_signup.events import ProfileUpdatedEvent
-        from pyramid_signup.models import crypt
+        from horus.views import ProfileController
+        from horus.managers import UserManager
+        from horus.interfaces import ISUSession
+        from horus.events import ProfileUpdatedEvent
+        from horus.models import crypt
 
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
-        from pyramid_signup.models import User
+        from horus.models import User
 
         user = User(username='sontek', password='temp', email='sontek@gmail.com',
             activated=True)
@@ -1029,16 +1029,16 @@ class TestProfileController(UnitTestBase):
         assert crypt.check(user.password, 'temp' + user.salt)
 
     def test_profile_update_password(self):
-        from pyramid_signup.views import ProfileController
-        from pyramid_signup.managers import UserManager
-        from pyramid_signup.interfaces import ISUSession
-        from pyramid_signup.events import ProfileUpdatedEvent
-        from pyramid_signup.models import crypt
+        from horus.views import ProfileController
+        from horus.managers import UserManager
+        from horus.interfaces import ISUSession
+        from horus.events import ProfileUpdatedEvent
+        from horus.models import crypt
 
         self.config.add_route('index', '/')
-        self.config.include('pyramid_signup')
+        self.config.include('horus')
 
-        from pyramid_signup.models import User
+        from horus.models import User
 
         user = User(username='sontek', password='temp', email='sontek@gmail.com',
             activated=True)

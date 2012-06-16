@@ -2,8 +2,8 @@ from pyramid.security import Authenticated
 from pyramid.security import Allow
 from pyramid.security import ALL_PERMISSIONS
 
-from pyramid_signup.managers import OrganizationManager
-from pyramid_signup.managers import UserManager
+from horus.managers import OrganizationManager
+from horus.managers import UserManager
 
 class BaseFactory(object):
     def __init__(self, request):

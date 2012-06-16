@@ -13,8 +13,8 @@ from pyramid.paster import (
     setup_logging,
 )
 
-from pyramid_signup.models import User
-from pyramid_signup.models import SUEntity
+from horus.models import User
+from horus.models import SUEntity
 
 from zope.sqlalchemy import ZopeTransactionExtension
 

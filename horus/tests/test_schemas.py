@@ -1,5 +1,5 @@
-from pyramid_signup.tests import UnitTestBase
-from pyramid_signup.schemas import LoginSchema
+from horus.tests import UnitTestBase
+from horus.schemas import LoginSchema
 from colander import Invalid
 
 class TestModels(UnitTestBase):

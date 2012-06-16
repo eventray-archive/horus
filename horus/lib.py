@@ -2,7 +2,7 @@ import hashlib
 import random
 import string
 
-from pyramid_signup.interfaces import ISUSession
+from horus.interfaces import ISUSession
 
 def gen_hash_key(length):
     """Generate a generic hash key for the user to use"""

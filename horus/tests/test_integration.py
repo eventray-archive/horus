@@ -1,4 +1,4 @@
-from pyramid_signup.tests import IntegrationTestBase
+from horus.tests import IntegrationTestBase
 from pyramid import testing
 from mock import patch
 from mock import Mock
@@ -21,7 +21,7 @@ class TestViews(IntegrationTestBase):
 
     def test_login_redirects_if_logged_in(self):
         request = testing.DummyRequest()
-        from pyramid_signup.views import AuthController
+        from horus.views import AuthController
         with patch.object(AuthController, 'request', request) as request:
             request.user = Mock()
             res = self.app.get('/login').follow()
@@ -38,7 +38,7 @@ class TestViews(IntegrationTestBase):
 
     def test_valid_login(self): 
         """ Call the login view, make sure routes are working """
-        from pyramid_signup.models import User
+        from horus.models import User
         admin = User(username='sontek', password='temp')
         admin.activated = True
         self.session.add(admin)
@@ -61,7 +61,7 @@ class TestViews(IntegrationTestBase):
 
     def test_inactive_login(self):
         """ Make sure inactive users can't sign in"""
-        from pyramid_signup.models import User
+        from horus.models import User
         admin = User(username='sontek', password='temp')
         self.session.add(admin)
         self.session.flush()

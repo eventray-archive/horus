@@ -1,4 +1,4 @@
-from pyramid_signup.tests import UnitTestBase
+from horus.tests import UnitTestBase
 
 class TestViews(UnitTestBase):
     pass

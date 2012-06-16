@@ -1,4 +1,4 @@
-from pyramid_signup.resources import UserFactory
+from horus.resources import UserFactory
 
 def build_routes(config):
     """ Add routes to the config """

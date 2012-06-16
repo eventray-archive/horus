@@ -14,8 +14,8 @@ from zope.sqlalchemy import ZopeTransactionExtension
 from mock import Mock
 import os
 
-from pyramid_signup.models import SUEntity
-from pyramid_signup.interfaces import ISUSession
+from horus.models import SUEntity
+from horus.interfaces import ISUSession
 
 here = os.path.dirname(__file__)
 settings = appconfig('config:' + os.path.join(here, '../../', 'test.ini'))
@@ -105,7 +105,7 @@ class IntegrationTestBase(unittest.TestCase):
         if settings.get('su.require_activation', True):
             config.include('pyramid_mailer')
 
-        config.include('pyramid_signup')
+        config.include('horus')
 
         app = config.make_wsgi_app()
 

@@ -3,11 +3,11 @@ from sqlalchemy import func
 
 import cryptacular.bcrypt
 
-from pyramid_signup.models import User
-from pyramid_signup.models import UserGroup
-from pyramid_signup.models import Activation
-from pyramid_signup.models import Organization
-from pyramid_signup.lib import get_session
+from horus.models import User
+from horus.models import UserGroup
+from horus.models import Activation
+from horus.models import Organization
+from horus.lib import get_session
 
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
