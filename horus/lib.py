@@ -4,7 +4,7 @@ import string
 
 from horus.interfaces import ISUSession
 
-def gen_hash_key(length):
+def generate_random_string(length):
     """Generate a generic hash key for the user to use"""
     m = hashlib.sha256()
     word = ''

@@ -1,36 +1,31 @@
-from pyramid.i18n import TranslationStringFactory
-from pyramid.security import Allow
-
-from sqlalchemy import Column
-from sqlalchemy import ForeignKey
-from sqlalchemy import Table
-from sqlalchemy.types import Integer
-from sqlalchemy.types import UnicodeText
-from sqlalchemy.types import Boolean
-from sqlalchemy.types import DateTime
-from sqlalchemy.orm import synonym
-from sqlalchemy.orm import relation
-from sqlalchemy.ext.declarative import declarative_base
+from pyramid.i18n               import TranslationStringFactory
+from pyramid.security           import Allow
+from datetime                   import datetime
+from datetime                   import timedelta
+from datetime                   import date
 from sqlalchemy.ext.declarative import declared_attr
+from horus.lib                  import generate_random_string
 
 import cryptacular.bcrypt
 import re
+import urllib
+import hashlib
+import sqlalchemy as sa
 
-from datetime import datetime
-from datetime import timedelta
-from datetime import date
-
-from horus.lib import gen_hash_key
 
 _ = TranslationStringFactory('horus')
 
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
-class SUBase(object):
+class BaseModel(object):
     """Base class which auto-generates tablename, and surrogate
     primary key column.
     """
-    __table_args__ = {"sqlite_autoincrement": True}
+    __table_args__ = {
+        'sqlite_autoincrement': True,
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
 
     @declared_attr
     def __tablename__(cls):
@@ -42,9 +37,10 @@ class SUBase(object):
             re.sub(r'([A-Z])', lambda m:"_" + m.group(0).lower(), name[1:])
         )
 
-    pk =  Column(Integer, primary_key=True)
+    # We use pk instead of id because id is a python builtin
+    pk =  sa.Column(sa.Integer, autoincrement=True, primary_key=True)
 
-    def serialize(self):
+    def __json__(self):
         """Converts all the properties of the object into a dict
         for use in json
         """
@@ -61,19 +57,7 @@ class SUBase(object):
 
         return props
 
-SUEntity = declarative_base(cls=SUBase)
-
-org_member_table = Table('organization_member', SUEntity.metadata,
-    Column('user_pk', Integer(),
-        ForeignKey('user.pk', onupdate='CASCADE', ondelete='CASCADE')
-    ),
-
-    Column('org_pk', Integer(),
-        ForeignKey('organization.pk', onupdate='CASCADE', ondelete='CASCADE')
-    )
-)
-
-class Activation(SUEntity):
+class Activation(BaseModel):
     """
     Handle activations/password reset items for users
 
@@ -84,13 +68,13 @@ class Activation(SUEntity):
     password, etc.
 
     """
-    code = Column(UnicodeText)
-    valid_until = Column(DateTime)
-    created_by = Column('created_by', UnicodeText)
+    code = sa.Column(sa.UnicodeText)
+    valid_until = sa.Column(sa.DateTime)
+    created_by = sa.Column('created_by', sa.UnicodeText)
 
     def __init__(self, created_system=None, valid_until=None):
         """ Create a new activation, valid_length is in days """
-        self.code =  gen_hash_key(12)
+        self.code =  generate_random_string(12)
         self.created_by = created_system
 
         if valid_until:
@@ -98,98 +82,157 @@ class Activation(SUEntity):
         else:
              self.valid_until = datetime.utcnow() + timedelta(days=3)
 
-class Organization(SUEntity):
-    """ Represents an organization a user can be attached to """
-    name = Column(UnicodeText, unique=True, nullable=False)
-    create_date = Column(DateTime, default=datetime.utcnow)
-    suspended = Column(Boolean, default=False)
-    suspended_on = Column(DateTime)
-    suspended_reason = Column(UnicodeText, nullable=True)
-    cancelled = Column(Boolean, default=False)
-    cancelled_on = Column(DateTime)
-    cancelled_reason = Column(UnicodeText, nullable=True)
-    owner_pk = Column(Integer, ForeignKey('user.pk'))
-    owner = relation('User', backref='owned_organizations')
-    users = relation('User', secondary=org_member_table, backref='organizations')
+class UserMixin(BaseModel):
+    user_name = sa.Column(sa.UnicodeText, unique=True)
+    email = sa.Column(sa.UnicodeText, unique=True)
 
-    def __init__(self, name, owner):
-        self.name = name
-        self.owner = owner
-        self.users.append(owner)
+    @declared_attr
+    def user_name(self):
+        """ Unique user name """
+        return sa.Column(sa.Unicode(30), unique=True)
 
-    @property
-    def __acl__(self):
-        """ Give access to the access_organization permission if they 
-            are part of the organization
-        """
-        return [
-                (Allow, 'organization:%s' % self.pk, 'access_organization')
-        ]
+    @declared_attr
+    def email(self):
+        """ E-mail for user """
+        return sa.Column(sa.Unicode(100), nullable=False, unique=True)
 
+    @declared_attr
+    def status(self):
+        """ Status of user """
+        return sa.Column(sa.Integer(), nullable=False)
 
-group_member_table = Table('usergroupmember', SUEntity.metadata,
-    Column('user_id', Integer(),
-        ForeignKey('user.pk', onupdate='CASCADE', ondelete='CASCADE')
-    ),
+    @declared_attr
+    def security_code(self):
+        """ Security code user, can be used for API calls or password reset """
+        return sa.Column(sa.Unicode(256))
 
-    Column('group_id', Integer(),
-        ForeignKey('user_group.pk', onupdate='CASCADE', ondelete='CASCADE')
-    )
-)
+    @declared_attr
+    def last_login_date(self):
+        """ Date of user's last login """
+        return sa.Column(
+            sa.TIMESTAMP(timezone=False)
+            , default=sa.sql.func.now()
+            , server_default=sa.func.now()
+        )
 
-class UserGroup(SUEntity):
-    name = Column(UnicodeText, unique=True)
-    description = Column(UnicodeText)
+    @declared_attr
+    def registered_date(self):
+        """ Date of user's registration """
+        return sa.sa.Column(
+            sa.TIMESTAMP(timezone=False)
+            , default=sa.sql.func.now()
+            , server_default=sa.func.now()
+        )
 
-    users = relation('User', secondary=group_member_table, backref='groups')
+    @declared_attr
+    def salt(self):
+        """ Password salt for user """
+        return sa.Column(sa.Unicode(256))
 
-    def __init__(self, name, desc):
-        self.name = name
-        self.description = desc
+    @declared_attr
+    def password(self):
+        """ Password hash for user object """
+        return sa.Column(sa.Unicode(256))
 
-class User(SUEntity):
-    username = Column(UnicodeText, unique=True)
-    email = Column(UnicodeText, unique=True)
-    first_name = Column(UnicodeText)
-    last_name = Column(UnicodeText)
-    activated = Column(Boolean, default=False)
-    activation_pk = Column(Integer, ForeignKey('activation.pk'))
-    activation = relation('Activation', backref='user')
-    suspended = Column(Boolean, default=False)
-    suspended_on = Column(DateTime)
-    suspended_reason = Column(UnicodeText, nullable=True)
-    cancelled = Column(Boolean, default=False)
-    cancelled_on = Column(DateTime)
-    cancelled_reason = Column(UnicodeText, nullable=True)
-    salt = Column(UnicodeText)
-
-    _password = Column('password', UnicodeText)
-
-    def _get_password(self):
-        return self._password
-
-    def _set_password(self, password):
-        self._password = self.hash_password(password)
+    def set_password(self, raw_password):
+        self.password = self.hash_password(raw_password)
 
     def hash_password(self, password):
         if not self.salt:
-            self.salt = gen_hash_key(24)
+            self.salt = generate_random_string(24)
 
         return unicode(crypt.encode(password + self.salt))
 
-    password = property(_get_password, _set_password)
-    password = synonym('_password', descriptor=password)
+    @classmethod
+    def generate_random_password(cls, chars=12):
+        """ generates random string of fixed length"""
+        return generate_random_string(chars)
 
-    @property
-    def display_name(self):
-        if self.first_name and self.last_name:
-            return '%s %s' % (self.first_name, self.last_name)
-        else:
-            return self.username
+    def gravatar_url(self, default='mm'):
+        """ returns user gravatar url """
+        # construct the url
+        h = hashlib.md5(self.email.encode('utf8').lower()).hexdigest()
+        base_url = "https://secure.gravatar.com/avatar/%s?%s"
+        gravatar_url = base_url % (h, urllib.urlencode({'d': default}))
+
+        return gravatar_url
+
+    def __repr__(self):
+        return '<User: %s>' % self.user_name
 
     @property
     def __acl__(self):
         return [
                 (Allow, 'user:%s' % self.pk, 'access_user')
         ]
+
+class GroupMixin(BaseModel):
+    """ base mixin for group object"""
+
+    @declared_attr
+    def group_name(self):
+        return sa.Column(sa.Unicode(50), unique=True)
+
+    @declared_attr
+    def description(self):
+        return sa.Column(sa.UnicodeText())
+
+    @declared_attr
+    def users(self):
+        """ relationship for users belonging to this group"""
+        return sa.orm.relationship(
+            'User'
+            , secondary='users_groups'
+            , order_by='User.user_name'
+            , passive_deletes=True
+            , passive_updates=True
+            , backref='groups'
+        )
+
+    @declared_attr
+    def permissions(self):
+        """ permissions assigned to this group"""
+        return sa.orm.relationship('GroupPermission'
+            , backref='groups'
+            , cascade="all, delete-orphan"
+            , passive_deletes=True
+            , passive_updates=True
+        )
+
+    def __repr__(self):
+        return '<Group: %s>' % self.group_name
+
+class GroupPermissionMixin(BaseModel):
+    """ group permission mixin """
+    @declared_attr
+    def group_name(self):
+        return sa.Column(
+            sa.Unicode(50)
+            , sa.ForeignKey('group.group_name', onupdate='CASCADE'
+            , ondelete='CASCADE'), primary_key=True
+        )
+
+    @declared_attr
+    def permission_name(self):
+        return sa.Column(sa.Unicode(30), primary_key=True)
+
+    def __repr__(self):
+        return '<GroupPermission: %s>' % self.permission_name
+
+class UserGroupMixin(BaseModel):
+    @declared_attr
+    def group_name(self):
+        return sa.Column(sa.Unicode(50),
+                         sa.ForeignKey('groups.group_name', onupdate='CASCADE',
+                                       ondelete='CASCADE'), primary_key=True)
+
+    @declared_attr
+    def user_name(self):
+        return sa.Column(sa.Unicode(30),
+                        sa.ForeignKey('users.user_name', onupdate='CASCADE',
+                                      ondelete='CASCADE'), primary_key=True)
+
+    def __repr__(self):
+        return '<UserGroup: %s, %s>' % (self.group_name, self.user_name,)
+
 
