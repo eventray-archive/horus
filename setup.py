@@ -7,7 +7,9 @@ README = ''#open(os.path.join(here, 'README.md')).read()
 CHANGES = ''#open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = ['pyramid', 'sqlalchemy', 'cryptacular', 'colander',
-        'deform', 'pyramid_deform']
+        'deform', 'pyramid_deform', 'transaction', 'zope.sqlalchemy',
+        'pystache', 'pyramid_mailer'
+]
 
 setup(name='horus'
       , version='0.2'
