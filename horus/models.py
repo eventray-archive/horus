@@ -35,7 +35,8 @@ class BaseModel(object):
     def __tablename__(cls):
         """Convert CamelCase class name to underscores_between_words 
         table name."""
-        name = cls.__name__
+        name = cls.__name__.replace('Mixin', '')
+
         return (
             name[0].lower() + 
             re.sub(r'([A-Z])', lambda m:"_" + m.group(0).lower(), name[1:])
@@ -101,9 +102,6 @@ class Activation(BaseModel):
              self.valid_until = datetime.utcnow() + timedelta(days=3)
 
 class UserMixin(BaseModel):
-    user_name = sa.Column(sa.UnicodeText, unique=True)
-    email = sa.Column(sa.UnicodeText, unique=True)
-
     @declared_attr
     def user_name(self):
         """ Unique user name """
@@ -185,20 +183,20 @@ class UserMixin(BaseModel):
         ).first()
 
     @classmethod
-    def get_by_username(cls, request, username):
+    def get_by_user_name(cls, request, user_name):
         session = get_session(request)
 
         return session.query(cls).filter(
-            func.lower(cls.username) == username.lower(),
+            func.lower(cls.user_name) == user_name.lower(),
         ).first()
 
     @classmethod
-    def get_by_username_or_email(cls, request, username, email):
+    def get_by_user_name_or_email(cls, request, user_name, email):
         session = get_session(request)
 
         return session.query(cls).filter(
             or_(
-                func.lower(cls.username) == username.lower(),
+                func.lower(cls.user_name) == user_name.lower(),
                 cls.email == email
             )
         ).first()
@@ -220,8 +218,8 @@ class UserMixin(BaseModel):
         return user
 
     @classmethod
-    def get_user(cls, request, username, password):
-        user = cls.get_by_username(request, username)
+    def get_user(cls, request, user_name, password):
+        user = cls.get_by_user_name(request, user_name)
 
         valid = cls.validate_user(request, user, password)
 
@@ -253,7 +251,7 @@ class GroupMixin(BaseModel):
     """ base mixin for group object"""
 
     @declared_attr
-    def group_name(self):
+    def name(self):
         return sa.Column(sa.Unicode(50), unique=True)
 
     @declared_attr
@@ -264,12 +262,12 @@ class GroupMixin(BaseModel):
     def users(self):
         """ relationship for users belonging to this group"""
         return sa.orm.relationship(
-            'User'
+            UserMixin.__tablename__
             , secondary='users_groups'
-            , order_by='User.user_name'
+            , order_by='%s.user_name' % UserMixin.__tablename__
             , passive_deletes=True
             , passive_updates=True
-            , backref='groups'
+            , backref=GroupMixin.__tablename__
         )
 
     @declared_attr
@@ -283,16 +281,20 @@ class GroupMixin(BaseModel):
         )
 
     def __repr__(self):
-        return '<Group: %s>' % self.group_name
+        return '<Group: %s>' % self.name
 
 class GroupPermissionMixin(BaseModel):
     """ group permission mixin """
     @declared_attr
-    def group_name(self):
+    def group_pk(self):
         return sa.Column(
-            sa.Unicode(50)
-            , sa.ForeignKey('group.group_name', onupdate='CASCADE'
-            , ondelete='CASCADE'), primary_key=True
+            sa.Integer
+            , sa.ForeignKey(
+                '%s.pk' % GroupMixin.__tablename__
+                , onupdate='CASCADE'
+                , ondelete='CASCADE'
+            )
+            , primary_key=True
         )
 
     @declared_attr
@@ -304,19 +306,22 @@ class GroupPermissionMixin(BaseModel):
 
 class UserGroupMixin(BaseModel):
     @declared_attr
-    def group_name(self):
-        return sa.Column(sa.Unicode(50),
-                         sa.ForeignKey('groups.group_name', onupdate='CASCADE',
-                                       ondelete='CASCADE'), primary_key=True)
+    def group_pk(self):
+        return sa.Column(sa.Integer,
+            sa.ForeignKey('%s.pk' % GroupMixin.__tablename__)
+        )
 
     @declared_attr
-    def user_name(self):
-        return sa.Column(sa.Unicode(30),
-                        sa.ForeignKey('users.user_name', onupdate='CASCADE',
-                                      ondelete='CASCADE'), primary_key=True)
+    def user_pk(self):
+        return sa.Column(sa.Integer
+                , sa.ForeignKey('%s.pk' % UserMixin.__tablename__,
+                    onupdate='CASCADE',
+                    ondelete='CASCADE'
+                )
+                , primary_key=True)
 
     def __repr__(self):
-        return '<UserGroup: %s, %s>' % (self.group_name, self.user_name,)
+        return '<UserGroup: %s, %s>' % (self.group_name, self.user_pk,)
 
 
 class OrganizationMixin(BaseModel):

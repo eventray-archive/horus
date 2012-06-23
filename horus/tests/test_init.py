@@ -26,7 +26,8 @@ class TestInitCase(UnitTestBase):
     def test_request_factory(self):
         from horus import SignUpRequestFactory
         from horus.tests.models import User
-        user1 = User(username='sontek', first_name='john')
+        import pdb; pdb.set_trace()
+        user1 = User(user_name='sontek')
         self.session.add(user1)
         self.session.flush()
 
@@ -47,11 +48,11 @@ class TestInitCase(UnitTestBase):
     def test_group_finder(self):
         from horus import groupfinder
         from horus.tests.models import User
-        from horus.tests.models import UserGroup
+        from horus.tests.models import Group
         from horus.tests.models import Organization
 
-        group = UserGroup('foo', 'bar')
-        user1 = User(username='sontek', first_name='john')
+        group = Group(name='foo', description='bar')
+        user1 = User(user_name='sontek')
         organization = Organization('foo', user1)
         group.users.append(user1)
 
@@ -73,13 +74,13 @@ class TestInitCase(UnitTestBase):
     def test_group_finder_no_groups(self):
         from horus import groupfinder
         from horus.tests.models import User
-        from horus.tests.models import UserGroup
+        from horus.tests.models import Group
         from horus.tests.models import Organization
-        
-        group = UserGroup('foo', 'bar')
-        user1 = User(username='sontek', first_name='john')
-        user2 = User(username='sontek2', first_name='john')
-        organization = Organization('foo', user1)
+
+        group = Group(name='foo', description='bar')
+        user1 = User(user_name='sontek')
+        user2 = User(user_name='sontek2')
+        organization = Organization()
         group.users.append(user1)
 
         self.session.add(organization)
