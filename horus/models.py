@@ -262,9 +262,9 @@ class GroupMixin(BaseModel):
     def users(self):
         """ relationship for users belonging to this group"""
         return sa.orm.relationship(
-            UserMixin.__tablename__
-            , secondary='users_groups'
-            , order_by='%s.user_name' % UserMixin.__tablename__
+            'User'
+            , secondary=UserGroupMixin.__tablename__
+#            , order_by='%s.user.user_name' % UserMixin.__tablename__
             , passive_deletes=True
             , passive_updates=True
             , backref=GroupMixin.__tablename__
