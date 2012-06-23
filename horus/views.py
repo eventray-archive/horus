@@ -25,8 +25,8 @@ from horus.interfaces import ISUProfileForm
 from horus.interfaces import ISUProfileSchema
 from horus.managers import UserManager
 from horus.managers import ActivationManager
-from horus.models import User
-from horus.models import Activation
+#from horus.models import User
+#from horus.models import Activation
 from horus.lib import get_session
 from horus.events import NewRegistrationEvent
 from horus.events import RegistrationActivatedEvent

@@ -6,9 +6,19 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = ''#open(os.path.join(here, 'README.md')).read()
 CHANGES = ''#open(os.path.join(here, 'CHANGES.txt')).read()
 
-requires = ['pyramid', 'sqlalchemy', 'cryptacular', 'colander',
-        'deform', 'pyramid_deform', 'transaction', 'zope.sqlalchemy',
-        'pystache', 'pyramid_mailer'
+requires = [
+    'pyramid'
+    , 'sqlalchemy'
+    , 'cryptacular'
+    , 'colander'
+    , 'deform'
+    , 'pyramid_deform'
+    , 'transaction'
+    , 'zope.sqlalchemy'
+    , 'pystache'
+    , 'pyramid_mailer'
+    , 'beaker'
+    , 'pyramid_beaker'
 ]
 
 setup(name='horus'
@@ -34,7 +44,7 @@ setup(name='horus'
       , include_package_data=True
       , zip_safe=False
       , install_requires=requires
-      , tests_require=requires + ['pytest', 'mock']
+      , tests_require=requires + ['pytest', 'mock', 'webtest']
       , test_suite='horus'
 )
 

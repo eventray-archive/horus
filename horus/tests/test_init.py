@@ -25,7 +25,7 @@ class TestInitCase(UnitTestBase):
 
     def test_request_factory(self):
         from horus import SignUpRequestFactory
-        from horus.models import User
+        from horus.tests.models import User
         user1 = User(username='sontek', first_name='john')
         self.session.add(user1)
         self.session.flush()
@@ -46,10 +46,10 @@ class TestInitCase(UnitTestBase):
 
     def test_group_finder(self):
         from horus import groupfinder
-        from horus.models import User
-        from horus.models import UserGroup
-        from horus.models import Organization
-        
+        from horus.tests.models import User
+        from horus.tests.models import UserGroup
+        from horus.tests.models import Organization
+
         group = UserGroup('foo', 'bar')
         user1 = User(username='sontek', first_name='john')
         organization = Organization('foo', user1)
@@ -72,9 +72,9 @@ class TestInitCase(UnitTestBase):
 
     def test_group_finder_no_groups(self):
         from horus import groupfinder
-        from horus.models import User
-        from horus.models import UserGroup
-        from horus.models import Organization
+        from horus.tests.models import User
+        from horus.tests.models import UserGroup
+        from horus.tests.models import Organization
         
         group = UserGroup('foo', 'bar')
         user1 = User(username='sontek', first_name='john')

@@ -7,11 +7,10 @@ def pytest_sessionstart():
 
     # Only run database setup on master (in case of xdist/multiproc mode)
     if not hasattr(config, 'slaveinput'):
-        from pyramid.config import Configurator
-        from horus.models import SUEntity
-        from paste.deploy.loadwsgi import appconfig
-        from sqlalchemy import engine_from_config
-        import os
+        from pyramid.config         import Configurator
+        from horus.tests.models     import Base
+        from paste.deploy.loadwsgi  import appconfig
+        from sqlalchemy             import engine_from_config
 
         ROOT_PATH = os.path.dirname(__file__)
         settings = appconfig('config:' + os.path.join(ROOT_PATH, 'test.ini'))
@@ -22,8 +21,8 @@ def pytest_sessionstart():
         config = Configurator(settings=settings)
         config.scan('horus.models')
 
-        SUEntity.metadata.drop_all(engine)
-        SUEntity.metadata.create_all(engine)
+        Base.metadata.drop_all(engine)
+        Base.metadata.create_all(engine)
 
 
 

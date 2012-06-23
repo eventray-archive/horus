@@ -4,7 +4,11 @@ from datetime                   import datetime
 from datetime                   import timedelta
 from datetime                   import date
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy                 import or_
+from sqlalchemy                 import func
+
 from horus.lib                  import generate_random_string
+from horus.lib                  import get_session
 
 import cryptacular.bcrypt
 import re
@@ -56,6 +60,20 @@ class BaseModel(object):
                     props[key] = getattr(self, key)
 
         return props
+
+    @classmethod
+    def get_all(cls, request):
+        session = get_session(request)
+
+        return session.query(cls).all()
+
+    @classmethod
+    def get_by_pk(cls, request, pk):
+        """Gets an object by its primary key"""
+        session = get_session(request)
+
+        return session.query(cls).filter(cls.pk == pk).first()
+
 
 class Activation(BaseModel):
     """
@@ -118,7 +136,7 @@ class UserMixin(BaseModel):
     @declared_attr
     def registered_date(self):
         """ Date of user's registration """
-        return sa.sa.Column(
+        return sa.Column(
             sa.TIMESTAMP(timezone=False)
             , default=sa.sql.func.now()
             , server_default=sa.func.now()
@@ -143,11 +161,6 @@ class UserMixin(BaseModel):
 
         return unicode(crypt.encode(password + self.salt))
 
-    @classmethod
-    def generate_random_password(cls, chars=12):
-        """ generates random string of fixed length"""
-        return generate_random_string(chars)
-
     def gravatar_url(self, default='mm'):
         """ returns user gravatar url """
         # construct the url
@@ -156,6 +169,76 @@ class UserMixin(BaseModel):
         gravatar_url = base_url % (h, urllib.urlencode({'d': default}))
 
         return gravatar_url
+
+    @classmethod
+    def generate_random_password(cls, chars=12):
+        """ generates random string of fixed length"""
+        return generate_random_string(chars)
+
+
+    @classmethod
+    def get_by_email(cls, request, email):
+        session = get_session(request)
+
+        return session.query(cls).filter(
+                func.lower(cls.email) == email.lower()
+        ).first()
+
+    @classmethod
+    def get_by_username(cls, request, username):
+        session = get_session(request)
+
+        return session.query(cls).filter(
+            func.lower(cls.username) == username.lower(),
+        ).first()
+
+    @classmethod
+    def get_by_username_or_email(cls, request, username, email):
+        session = get_session(request)
+
+        return session.query(cls).filter(
+            or_(
+                func.lower(cls.username) == username.lower(),
+                cls.email == email
+            )
+        ).first()
+
+    @classmethod
+    def get_by_email_password(cls, request, email, password):
+        user = cls.get_by_email(request, email)
+
+        if user:
+            valid = cls.validate_user(request, user, password)
+
+            if valid:
+                return user
+
+    @classmethod
+    def get_by_activation(cls, request, activation):
+        session = get_session(request)
+        user = session.query(cls).filter(cls.activation_pk == activation.pk).first()
+        return user
+
+    @classmethod
+    def get_user(cls, request, username, password):
+        user = cls.get_by_username(request, username)
+
+        valid = cls.validate_user(request, user, password)
+
+        if valid:
+            return user
+
+    @classmethod
+    def validate_user(cls, user, password):
+        if not user:
+            return None
+
+        if user.password == None:
+            valid = False
+        else:
+            valid = crypt.check(user.password, password + user.salt)
+
+        return valid
 
     def __repr__(self):
         return '<User: %s>' % self.user_name
@@ -236,3 +319,5 @@ class UserGroupMixin(BaseModel):
         return '<UserGroup: %s, %s>' % (self.group_name, self.user_name,)
 
 
+class OrganizationMixin(BaseModel):
+    pass
