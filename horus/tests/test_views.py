@@ -8,8 +8,8 @@ from horus.tests import UnitTestBase
 class TestAuthController(UnitTestBase):
     def test_auth_controller_extensions(self):
         from horus.views import AuthController
-        from horus.interfaces import ISULoginSchema
-        from horus.interfaces import ISULoginForm
+        from horus.interfaces import IHorusLoginSchema
+        from horus.interfaces import IHorusLoginForm
 
         self.config.add_route('index', '/')
 
@@ -21,8 +21,8 @@ class TestAuthController(UnitTestBase):
         schema = Mock()
         form = Mock()
 
-        self.config.registry.registerUtility(schema, ISULoginSchema)
-        self.config.registry.registerUtility(form, ISULoginForm)
+        self.config.registry.registerUtility(schema, IHorusLoginSchema)
+        self.config.registry.registerUtility(form, IHorusLoginForm)
 
         AuthController(request)
 
@@ -199,8 +199,8 @@ class TestRegisterController(UnitTestBase):
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
         from horus.views import RegisterController
-        from horus.interfaces import ISURegisterSchema
-        from horus.interfaces import ISURegisterForm
+        from horus.interfaces import IHorusRegisterSchema
+        from horus.interfaces import IHorusRegisterForm
 
         self.config.add_route('index', '/')
 
@@ -212,8 +212,8 @@ class TestRegisterController(UnitTestBase):
         schema = Mock()
         form = Mock()
 
-        self.config.registry.registerUtility(schema, ISURegisterSchema)
-        self.config.registry.registerUtility(form, ISURegisterForm)
+        self.config.registry.registerUtility(schema, IHorusRegisterSchema)
+        self.config.registry.registerUtility(form, IHorusRegisterForm)
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         with patch('horus.views.get_mailer') as get_mailer:
@@ -225,8 +225,8 @@ class TestRegisterController(UnitTestBase):
 
     def test_register_controller_extensions_without_mail(self):
         from horus.views import RegisterController
-        from horus.interfaces import ISURegisterSchema
-        from horus.interfaces import ISURegisterForm
+        from horus.interfaces import IHorusRegisterSchema
+        from horus.interfaces import IHorusRegisterForm
 
         self.config.add_route('index', '/')
 
@@ -239,8 +239,8 @@ class TestRegisterController(UnitTestBase):
         form = Mock()
         
         self.config.registry.settings['su.require_activation'] = False
-        self.config.registry.registerUtility(schema, ISURegisterSchema)
-        self.config.registry.registerUtility(form, ISURegisterForm)
+        self.config.registry.registerUtility(schema, IHorusRegisterSchema)
+        self.config.registry.registerUtility(form, IHorusRegisterForm)
 
         with patch('horus.views.get_mailer') as get_mailer:
             RegisterController(request)
@@ -370,7 +370,7 @@ class TestRegisterController(UnitTestBase):
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
         from horus.managers import UserManager
-        from horus.interfaces import ISUSession
+        from horus.interfaces import IHorusSession
         from horus.events import NewRegistrationEvent
 
         self.config.include('horus')
@@ -381,7 +381,7 @@ class TestRegisterController(UnitTestBase):
 
         def handle_registration(event):
             request = event.request
-            session = request.registry.getUtility(ISUSession)
+            session = request.registry.getUtility(IHorusSession)
             session.commit()
 
         self.config.add_subscriber(handle_registration, NewRegistrationEvent)
@@ -723,7 +723,7 @@ class TestForgotPasswordController(UnitTestBase):
 
     def test_reset_password_valid_user(self):
         from horus.views import ForgotPasswordController
-        from horus.interfaces import ISUSession
+        from horus.interfaces import IHorusSession
         from horus.events import PasswordResetEvent
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
@@ -761,7 +761,7 @@ class TestForgotPasswordController(UnitTestBase):
 
         def handle_password_reset(event):
             request = event.request
-            session = request.registry.getUtility(ISUSession)
+            session = request.registry.getUtility(IHorusSession)
             session.commit()
 
         self.config.add_subscriber(handle_password_reset, PasswordResetEvent)
@@ -979,7 +979,7 @@ class TestProfileController(UnitTestBase):
     def test_profile_update_profile(self):
         from horus.views import ProfileController
         from horus.managers import UserManager
-        from horus.interfaces import ISUSession
+        from horus.interfaces import IHorusSession
         from horus.events import ProfileUpdatedEvent
         from horus.models import crypt
 
@@ -996,7 +996,7 @@ class TestProfileController(UnitTestBase):
 
         def handle_profile_updated(event):
             request = event.request
-            session = request.registry.getUtility(ISUSession)
+            session = request.registry.getUtility(IHorusSession)
             session.commit()
 
         self.config.add_subscriber(handle_profile_updated, ProfileUpdatedEvent)
@@ -1031,7 +1031,7 @@ class TestProfileController(UnitTestBase):
     def test_profile_update_password(self):
         from horus.views import ProfileController
         from horus.managers import UserManager
-        from horus.interfaces import ISUSession
+        from horus.interfaces import IHorusSession
         from horus.events import ProfileUpdatedEvent
         from horus.models import crypt
 
@@ -1048,7 +1048,7 @@ class TestProfileController(UnitTestBase):
 
         def handle_profile_updated(event):
             request = event.request
-            session = request.registry.getUtility(ISUSession)
+            session = request.registry.getUtility(IHorusSession)
             session.commit()
 
         self.config.add_subscriber(handle_profile_updated, ProfileUpdatedEvent)

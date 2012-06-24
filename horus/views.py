@@ -13,16 +13,16 @@ import pystache
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
-from horus.interfaces import ISULoginForm
-from horus.interfaces import ISULoginSchema
-from horus.interfaces import ISURegisterForm
-from horus.interfaces import ISURegisterSchema
-from horus.interfaces import ISUForgotPasswordForm
-from horus.interfaces import ISUForgotPasswordSchema
-from horus.interfaces import ISUResetPasswordForm
-from horus.interfaces import ISUResetPasswordSchema
-from horus.interfaces import ISUProfileForm
-from horus.interfaces import ISUProfileSchema
+from horus.interfaces import IHorusLoginForm
+from horus.interfaces import IHorusLoginSchema
+from horus.interfaces import IHorusRegisterForm
+from horus.interfaces import IHorusRegisterSchema
+from horus.interfaces import IHorusForgotPasswordForm
+from horus.interfaces import IHorusForgotPasswordSchema
+from horus.interfaces import IHorusResetPasswordForm
+from horus.interfaces import IHorusResetPasswordSchema
+from horus.interfaces import IHorusProfileForm
+from horus.interfaces import IHorusProfileSchema
 from horus.managers import UserManager
 from horus.managers import ActivationManager
 #from horus.models import User
@@ -89,10 +89,10 @@ class AuthController(BaseController):
     def __init__(self, request):
         super(AuthController, self).__init__(request)
 
-        schema = request.registry.getUtility(ISULoginSchema)
+        schema = request.registry.getUtility(IHorusLoginSchema)
         self.schema = schema().bind(request=self.request)
 
-        form = request.registry.getUtility(ISULoginForm)
+        form = request.registry.getUtility(IHorusLoginForm)
 
         self.login_redirect_view = route_url(self.settings.get('su.login_redirect', 'index'), request)
         self.logout_redirect_view = route_url(self.settings.get('su.logout_redirect', 'index'), request)
@@ -164,10 +164,10 @@ class ForgotPasswordController(BaseController):
 
     @view_config(route_name='forgot_password', renderer='horus:templates/forgot_password.mako')
     def forgot_password(self):
-        schema = self.request.registry.getUtility(ISUForgotPasswordSchema)
+        schema = self.request.registry.getUtility(IHorusForgotPasswordSchema)
         schema = schema().bind(request=self.request)
 
-        form = self.request.registry.getUtility(ISUForgotPasswordForm)
+        form = self.request.registry.getUtility(IHorusForgotPasswordForm)
         form = form(schema)
 
         if self.request.method == 'GET':
@@ -212,10 +212,10 @@ class ForgotPasswordController(BaseController):
 
     @view_config(route_name='reset_password', renderer='horus:templates/reset_password.mako')
     def reset_password(self):
-        schema = self.request.registry.getUtility(ISUResetPasswordSchema)
+        schema = self.request.registry.getUtility(IHorusResetPasswordSchema)
         schema = schema().bind(request=self.request)
 
-        form = self.request.registry.getUtility(ISUResetPasswordForm)
+        form = self.request.registry.getUtility(IHorusResetPasswordForm)
         form = form(schema)
 
         code = self.request.matchdict.get('code', None)
@@ -264,10 +264,10 @@ class ForgotPasswordController(BaseController):
 class RegisterController(BaseController):
     def __init__(self, request):
         super(RegisterController, self).__init__(request)
-        schema = request.registry.getUtility(ISURegisterSchema)
+        schema = request.registry.getUtility(IHorusRegisterSchema)
         self.schema = schema().bind(request=self.request)
 
-        form = request.registry.getUtility(ISURegisterForm)
+        form = request.registry.getUtility(IHorusRegisterForm)
         self.form = form(self.schema)
 
         self.register_redirect_view = route_url(self.settings.get('su.register_redirect', 'index'), request)
@@ -377,10 +377,10 @@ class ProfileController(BaseController):
     def __init__(self, request):
         super(ProfileController, self).__init__(request)
 
-        schema = self.request.registry.getUtility(ISUProfileSchema)
+        schema = self.request.registry.getUtility(IHorusProfileSchema)
         self.schema = schema().bind(request=self.request)
 
-        form = self.request.registry.getUtility(ISUProfileForm)
+        form = self.request.registry.getUtility(IHorusProfileForm)
         self.form = form(self.schema)
 
 

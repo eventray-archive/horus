@@ -5,7 +5,7 @@ from mock import Mock
 
 class TestLib(UnitTestBase):
     def test_get_session(self):
-        from horus.interfaces import ISUSession
+        from horus.interfaces import IHorusSession
         from horus.lib import get_session
         request = testing.DummyRequest()
         request.registry = Mock()
@@ -19,7 +19,7 @@ class TestLib(UnitTestBase):
 
         new_session = get_session(request)
 
-        getUtility.assert_called_with(ISUSession)
+        getUtility.assert_called_with(IHorusSession)
         assert new_session == session
 
 
