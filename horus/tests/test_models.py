@@ -1,12 +1,12 @@
 from horus.tests import UnitTestBase
-from horus.models import SUEntity
+from horus.tests.models import Base
 from sqlalchemy.types import DateTime
 
 from sqlalchemy import Column
 
 from datetime import datetime
 
-class TestModel(SUEntity):
+class TestModel(Base):
     start_date = Column(DateTime)
 
 class TestModels(UnitTestBase):

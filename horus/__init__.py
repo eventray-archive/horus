@@ -42,13 +42,16 @@ def get_user(request):
         return user_class.get_by_pk(request, pk)
 
 def get_class_from_config(settings, key):
-    user_modules = settings.get(key).split('.')
-    module = '.'.join(user_modules[:-1])
-    klass = user_modules[-1]
-    imported_module = __import__(module, fromlist=[klass])
-    imported_class = getattr(imported_module, klass)
+    if key in settings:
+        user_modules = settings.get(key).split('.')
+        module = '.'.join(user_modules[:-1])
+        klass = user_modules[-1]
+        imported_module = __import__(module, fromlist=[klass])
+        imported_class = getattr(imported_module, klass)
 
-    return imported_class
+        return imported_class
+    else:
+        raise Exception('Please provide a horus.userclass config option')
 
 def includeme(config):
     settings = config.registry.settings
@@ -57,8 +60,9 @@ def includeme(config):
     config.set_root_factory(RootFactory)
 
 
-    user_class = get_class_from_config(settings, 'horus.user_class')
-    config.registry.registerUtility(user_class, IHorusUserClass)
+    if not config.registry.queryUtility(IHorusUserClass):
+        user_class = get_class_from_config(settings, 'horus.user_class')
+        config.registry.registerUtility(user_class, IHorusUserClass)
 
 
     schemas = [

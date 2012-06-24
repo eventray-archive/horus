@@ -7,9 +7,11 @@ from horus.tests import UnitTestBase
 
 class TestAuthController(UnitTestBase):
     def test_auth_controller_extensions(self):
-        from horus.views import AuthController
-        from horus.interfaces import IHorusLoginSchema
-        from horus.interfaces import IHorusLoginForm
+        from horus.views        import AuthController
+        from horus.interfaces   import IHorusUserClass
+        from horus.tests.models import User
+        from horus.interfaces   import IHorusLoginSchema
+        from horus.interfaces   import IHorusLoginForm
 
         self.config.add_route('index', '/')
 
@@ -21,6 +23,7 @@ class TestAuthController(UnitTestBase):
         schema = Mock()
         form = Mock()
 
+        self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.registry.registerUtility(schema, IHorusLoginSchema)
         self.config.registry.registerUtility(form, IHorusLoginForm)
 
@@ -31,7 +34,11 @@ class TestAuthController(UnitTestBase):
 
 
     def test_login_loads(self):
-        from horus.views import AuthController
+        from horus.views          import AuthController
+        from horus.interfaces     import IHorusUserClass
+        from horus.tests.models   import User
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.add_route('index', '/')
         self.config.include('horus')
 
@@ -44,6 +51,10 @@ class TestAuthController(UnitTestBase):
 
     def test_login_redirects_if_logged_in(self):
         from horus.views import AuthController
+        from horus.interfaces     import IHorusUserClass
+        from horus.tests.models   import User
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.add_route('index', '/')
         self.config.include('horus')
 
@@ -57,6 +68,10 @@ class TestAuthController(UnitTestBase):
     def test_login_fails_empty(self):
         """ Make sure we can't login with empty credentials"""
         from horus.views import AuthController
+        from horus.interfaces     import IHorusUserClass
+        from horus.tests.models   import User
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.add_route('index', '/')
         self.config.include('horus')
 
@@ -70,7 +85,7 @@ class TestAuthController(UnitTestBase):
 
         assert errors[0].node.name == u'csrf_token'
         assert errors[0].msg == u'Required'
-        assert errors[1].node.name == u'Username'
+        assert errors[1].node.name == u'user_name'
         assert errors[1].msg == u'Required'
         assert errors[2].node.name == u'Password'
         assert errors[2].msg == u'Required'
@@ -78,6 +93,10 @@ class TestAuthController(UnitTestBase):
     def test_csrf_invalid_fails(self):
         """ Make sure we can't login with a bad csrf """
         from horus.views import AuthController
+        from horus.interfaces     import IHorusUserClass
+        from horus.tests.models   import User
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.add_route('index', '/')
         self.config.include('horus')
 
@@ -101,12 +120,16 @@ class TestAuthController(UnitTestBase):
     def test_login_fails_bad_credentials(self):
         """ Make sure we can't login with bad credentials"""
         from horus.views import AuthController
+        from horus.interfaces     import IHorusUserClass
+        from horus.tests.models   import User
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.add_route('index', '/')
         self.config.include('horus')
 
         request = self.get_csrf_request(post={
                 'submit': True,
-                'Username': 'admin',
+                'user_name': 'admin',
                 'Password': 'test123',
             }, request_method='POST')
 
@@ -116,12 +139,16 @@ class TestAuthController(UnitTestBase):
         view = AuthController(request)
         view.login()
 
-        flash.assert_called_with(u'Invalid username or password.', 'error')
+        flash.assert_called_with(u'Invalid user_name or password.', 'error')
 
     def test_login_succeeds(self):
         """ Make sure we can login """
-        from horus.models import User
-        admin = User(username='sontek', password='temp')
+        from horus.tests.models import User
+        from horus.interfaces     import IHorusUserClass
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
+
+        admin = User(user_name='sontek', password='temp')
         admin.activated = True
 
         self.session.add(admin)
@@ -134,7 +161,7 @@ class TestAuthController(UnitTestBase):
 
         request = self.get_csrf_request(post={
                 'submit': True,
-                'Username': 'sontek',
+                'user_name': 'sontek',
                 'Password': 'temp',
             }, request_method='POST')
 
@@ -145,8 +172,11 @@ class TestAuthController(UnitTestBase):
 
     def test_inactive_login_fails(self):
         """ Make sure we can't login with an inactive user """
-        from horus.models import User
-        user = User(username='sontek', password='temp')
+        from horus.tests.models import User
+        from horus.interfaces     import IHorusUserClass
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
+        user = User(user_name='sontek', password='temp')
 
         self.session.add(user)
         self.session.flush()
@@ -157,7 +187,7 @@ class TestAuthController(UnitTestBase):
 
         request = self.get_csrf_request(post={
                 'submit': True,
-                'Username': 'sontek',
+                'user_name': 'sontek',
                 'Password': 'temp',
             }, request_method='POST')
 
@@ -172,7 +202,10 @@ class TestAuthController(UnitTestBase):
             'error')
 
     def test_logout(self):
-        from horus.views import AuthController
+        from horus.views        import AuthController
+        from horus.tests.models import User
+        from horus.interfaces import IHorusUserClass
+        self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.add_route('index', '/')
         self.config.include('horus')
         request = testing.DummyRequest()
@@ -250,12 +283,16 @@ class TestRegisterController(UnitTestBase):
         assert form.called
 
     def test_register_loads_not_logged_in(self):
-        from horus.views import RegisterController
-        from pyramid_mailer.mailer import DummyMailer
-        from pyramid_mailer.interfaces import IMailer
+        from horus.views                import RegisterController
+        from pyramid_mailer.mailer      import DummyMailer
+        from pyramid_mailer.interfaces  import IMailer
+        from horus.interfaces           import IHorusUserClass
+        from horus.tests.models         import User
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
+        self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         self.config.include('horus')
-        self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         self.config.add_route('index', '/')
 
@@ -267,9 +304,13 @@ class TestRegisterController(UnitTestBase):
         assert response.get('form', None)
 
     def test_register_redirects_if_logged_in(self):
-        from horus.views import RegisterController
-        from pyramid_mailer.mailer import DummyMailer
-        from pyramid_mailer.interfaces import IMailer
+        from horus.views                import RegisterController
+        from pyramid_mailer.mailer      import DummyMailer
+        from pyramid_mailer.interfaces  import IMailer
+        from horus.interfaces           import IHorusUserClass
+        from horus.tests.models         import User
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
 
         self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
@@ -288,6 +329,10 @@ class TestRegisterController(UnitTestBase):
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
         from horus.managers import UserManager
+        from horus.interfaces           import IHorusUserClass
+        from horus.tests.models         import User
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
 
         self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
@@ -295,7 +340,7 @@ class TestRegisterController(UnitTestBase):
         self.config.add_route('index', '/')
 
         request = self.get_csrf_request(post={
-            'Username': 'admin',
+            'User_name': 'admin',
             'Password': {
                 'value': 'test123',
                 'confirm': 'test123',
@@ -310,7 +355,7 @@ class TestRegisterController(UnitTestBase):
         assert response.status_int == 302
 
         mgr = UserManager(request)
-        user = mgr.get_by_username('admin')
+        user = mgr.get_by_user_name('admin')
 
         assert user != None
 
@@ -318,6 +363,10 @@ class TestRegisterController(UnitTestBase):
         from horus.views import RegisterController
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
+        from horus.interfaces           import IHorusUserClass
+        from horus.tests.models         import User
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
 
         self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
@@ -337,19 +386,22 @@ class TestRegisterController(UnitTestBase):
         from horus.views import RegisterController
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
-        from horus.models import User
+        from horus.interfaces           import IHorusUserClass
+        from horus.tests.models         import User
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
 
         self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         self.config.add_route('index', '/')
 
-        admin = User(username='sontek', password='temp')
+        admin = User(user_name='sontek', password='temp')
         self.session.add(admin)
         self.session.flush()
 
         request = self.get_csrf_request(post={
-            'Username': 'sontek',
+            'user_name': 'sontek',
             'Password': {
                 'value': 'test123',
                 'confirm': 'test123',
@@ -363,7 +415,7 @@ class TestRegisterController(UnitTestBase):
         controller = RegisterController(request)
         controller.register()
 
-        flash.assert_called_with(u'That username is already used.', 'error')
+        flash.assert_called_with(u'That user_name is already used.', 'error')
 
     def test_register_no_email_validation(self):
         from horus.views import RegisterController
@@ -388,7 +440,7 @@ class TestRegisterController(UnitTestBase):
 
 
         request = self.get_csrf_request(post={
-            'Username': 'admin',
+            'user_name': 'admin',
             'Password': {
                 'value': 'test123',
                 'confirm': 'test123',
@@ -407,7 +459,7 @@ class TestRegisterController(UnitTestBase):
         assert response.status_int == 302
 
         mgr = UserManager(request)
-        user = mgr.get_by_username('admin')
+        user = mgr.get_by_user_name('admin')
 
         assert user.activated == True
         flash.assert_called_with('You have been registered, you may login now!', 'success')
@@ -428,7 +480,7 @@ class TestRegisterController(UnitTestBase):
         self.config.add_route('index', '/')
 
         request = self.get_csrf_request(post={
-            'Username': 'admin',
+            'user_name': 'admin',
             'Password': {
                 'value': 'test123',
                 'confirm': 'test123',
@@ -457,7 +509,7 @@ class TestRegisterController(UnitTestBase):
 
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
-        user = User(username='sontek', password='temp')
+        user = User(user_name='sontek', password='temp')
         user.activation = Activation()
 
         self.session.add(user)
@@ -477,7 +529,7 @@ class TestRegisterController(UnitTestBase):
         controller = RegisterController(request)
         response = controller.activate()
         mgr = UserManager(request)
-        user = mgr.get_by_username('sontek')
+        user = mgr.get_by_user_name('sontek')
 
         assert user.activated
         assert response.status_int == 302
@@ -495,9 +547,9 @@ class TestRegisterController(UnitTestBase):
 
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
-        user = User(username='sontek', password='temp')
+        user = User(user_name='sontek', password='temp')
         user.activation = Activation()
-        user1 = User(username='sontek1', password='temp')
+        user1 = User(user_name='sontek1', password='temp')
         user1.activation = Activation()
 
         self.session.add(user)
@@ -518,7 +570,7 @@ class TestRegisterController(UnitTestBase):
         controller = RegisterController(request)
         response = controller.activate()
         mgr = UserManager(request)
-        user = mgr.get_by_username('sontek1')
+        user = mgr.get_by_user_name('sontek1')
 
         act_mgr = ActivationManager(request)
         activations = act_mgr.get_all()
@@ -539,7 +591,7 @@ class TestRegisterController(UnitTestBase):
 
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
-        user = User(username='sontek', password='temp')
+        user = User(user_name='sontek', password='temp')
         user.activation = Activation()
 
         self.session.add(user)
@@ -554,7 +606,7 @@ class TestRegisterController(UnitTestBase):
         controller = RegisterController(request)
         response = controller.activate()
         mgr = UserManager(request)
-        user = mgr.get_by_username('sontek')
+        user = mgr.get_by_user_name('sontek')
 
         assert not user.activated
         assert response.status_int == 404
@@ -573,10 +625,10 @@ class TestRegisterController(UnitTestBase):
 
         bad_act = Activation()
 
-        user = User(username='sontek', password='temp')
+        user = User(user_name='sontek', password='temp')
         user.activation = Activation()
 
-        user2 = User(username='jessie', password='temp')
+        user2 = User(user_name='jessie', password='temp')
         user2.activation = bad_act
 
         self.session.add(user)
@@ -597,8 +649,8 @@ class TestRegisterController(UnitTestBase):
         controller = RegisterController(request)
         response = controller.activate()
         mgr = UserManager(request)
-        new_user1 = mgr.get_by_username('sontek')
-        new_user2 = mgr.get_by_username('jessie')
+        new_user1 = mgr.get_by_user_name('sontek')
+        new_user2 = mgr.get_by_user_name('jessie')
 
         assert not new_user1.activated
         assert not new_user2.activated
@@ -640,7 +692,7 @@ class TestForgotPasswordController(UnitTestBase):
 
         from horus.models import User
 
-        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        user = User(user_name='sontek', password='temp', email='sontek@gmail.com')
 
         self.session.add(user)
         self.session.flush()
@@ -672,7 +724,7 @@ class TestForgotPasswordController(UnitTestBase):
 
         from horus.models import User
 
-        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        user = User(user_name='sontek', password='temp', email='sontek@gmail.com')
 
         self.session.add(user)
         self.session.flush()
@@ -700,7 +752,7 @@ class TestForgotPasswordController(UnitTestBase):
         from horus.models import User
         from horus.models import Activation
 
-        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        user = User(user_name='sontek', password='temp', email='sontek@gmail.com')
         user.activation = Activation()
 
         self.session.add(user)
@@ -736,7 +788,7 @@ class TestForgotPasswordController(UnitTestBase):
         self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
-        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        user = User(user_name='sontek', password='temp', email='sontek@gmail.com')
         user.activation = Activation()
 
         self.session.add(user)
@@ -784,7 +836,7 @@ class TestForgotPasswordController(UnitTestBase):
         from horus.models import User
         from horus.models import Activation
 
-        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        user = User(user_name='sontek', password='temp', email='sontek@gmail.com')
         user.activation = Activation()
 
         self.session.add(user)
@@ -824,7 +876,7 @@ class TestForgotPasswordController(UnitTestBase):
         from horus.models import User
         from horus.models import Activation
 
-        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        user = User(user_name='sontek', password='temp', email='sontek@gmail.com')
         user.activation = Activation()
 
         self.session.add(user)
@@ -860,7 +912,7 @@ class TestForgotPasswordController(UnitTestBase):
         from horus.models import User
         from horus.models import Activation
 
-        user = User(username='sontek', password='temp', email='sontek@gmail.com')
+        user = User(user_name='sontek', password='temp', email='sontek@gmail.com')
         user.activation = Activation()
 
         self.session.add(user)
@@ -889,7 +941,7 @@ class TestProfileController(UnitTestBase):
 
         from horus.models import User
 
-        user = User(username='sontek', password='temp', email='sontek@gmail.com',
+        user = User(user_name='sontek', password='temp', email='sontek@gmail.com',
             activated=True)
 
         self.session.add(user)
@@ -921,7 +973,7 @@ class TestProfileController(UnitTestBase):
 
         from horus.models import User
 
-        user = User(username='sontek', password='temp', email='sontek@gmail.com',
+        user = User(user_name='sontek', password='temp', email='sontek@gmail.com',
             activated=True)
 
         self.session.add(user)
@@ -952,7 +1004,7 @@ class TestProfileController(UnitTestBase):
 
         from horus.models import User
 
-        user = User(username='sontek', password='temp', email='sontek@gmail.com',
+        user = User(user_name='sontek', password='temp', email='sontek@gmail.com',
             activated=True)
 
         self.session.add(user)
@@ -988,7 +1040,7 @@ class TestProfileController(UnitTestBase):
 
         from horus.models import User
 
-        user = User(username='sontek', password='temp', email='sontek@gmail.com',
+        user = User(user_name='sontek', password='temp', email='sontek@gmail.com',
             activated=True)
 
         self.session.add(user)
@@ -1034,13 +1086,15 @@ class TestProfileController(UnitTestBase):
         from horus.interfaces import IHorusSession
         from horus.events import ProfileUpdatedEvent
         from horus.models import crypt
+        from horus.interfaces           import IHorusUserClass
+        from horus.tests.models         import User
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
 
         self.config.add_route('index', '/')
         self.config.include('horus')
 
-        from horus.models import User
-
-        user = User(username='sontek', password='temp', email='sontek@gmail.com',
+        user = User(user_name='sontek', password='temp', email='sontek@gmail.com',
             activated=True)
 
         self.session.add(user)
