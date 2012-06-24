@@ -37,8 +37,6 @@ class ProfileSchema(CSRFSchema):
         )
     Email = colander.SchemaNode(colander.String(),
         validator=colander.Email())
-    First_Name = colander.SchemaNode(colander.String())
-    Last_Name = colander.SchemaNode(colander.String())
     Password = colander.SchemaNode(colander.String(),
         validator=colander.Length(min=2),
         widget=deform.widget.CheckedPasswordWidget(),

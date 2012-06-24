@@ -6,6 +6,7 @@ from horus.schemas      import ProfileSchema
 from horus.forms        import SubmitForm
 from horus.resources    import RootFactory
 from horus.interfaces   import IHorusUserClass
+from horus.interfaces   import IHorusActivationClass
 from horus.interfaces   import IHorusLoginForm
 from horus.interfaces   import IHorusLoginSchema
 from horus.interfaces   import IHorusRegisterForm
@@ -42,6 +43,12 @@ def includeme(config):
     if not config.registry.queryUtility(IHorusUserClass):
         user_class = get_class_from_config(settings, 'horus.user_class')
         config.registry.registerUtility(user_class, IHorusUserClass)
+
+    if not config.registry.queryUtility(IHorusUserClass):
+        activation_class = get_class_from_config(settings,
+                'horus.activation_class')
+        config.registry.registerUtility(activation_class,
+                IHorusActivationClass)
 
 
     schemas = [

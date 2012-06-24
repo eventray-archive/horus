@@ -14,6 +14,7 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
 from horus.interfaces import IHorusUserClass
+from horus.interfaces import IHorusActivationClass
 from horus.interfaces import IHorusLoginForm
 from horus.interfaces import IHorusLoginSchema
 from horus.interfaces import IHorusRegisterForm
@@ -24,10 +25,6 @@ from horus.interfaces import IHorusResetPasswordForm
 from horus.interfaces import IHorusResetPasswordSchema
 from horus.interfaces import IHorusProfileForm
 from horus.interfaces import IHorusProfileSchema
-from horus.managers import UserManager
-from horus.managers import ActivationManager
-#from horus.models import User
-#from horus.models import Activation
 from horus.lib import get_session
 from horus.events import NewRegistrationEvent
 from horus.events import RegistrationActivatedEvent
@@ -53,6 +50,7 @@ def authenticated(request, pk):
 
 def create_activation(request, user):
     db = get_session(request)
+    Activation = request.registry.getUtility(IHorusActivationClass)
     activation = Activation()
 
     db.add(activation)
@@ -83,7 +81,8 @@ class BaseController(object):
     def __init__(self, request):
         self._request  = request
         self.settings = request.registry.settings
-        self.user_class = request.registry.getUtility(IHorusUserClass)
+        self.User = request.registry.getUtility(IHorusUserClass)
+        self.Activation = request.registry.getUtility(IHorusActivationClass)
         self.db = get_session(request)
 
 class AuthController(BaseController):
@@ -122,17 +121,17 @@ class AuthController(BaseController):
 
             allow_email_auth = self.settings.get('su.allow_email_auth', False)
 
-            user = self.user_class.get_user(self.request, username, password)
+            user = self.User.get_user(self.request, username, password)
 
             if allow_email_auth:
                 if not user:
-                    user = self.user_class.get_by_email_password(username,
+                    user = self.User.get_by_email_password(username,
                             password)
 
             if user:
                 if not self.allow_inactive_login:
                     if self.require_activation:
-                        if not user.activated:
+                        if not user.is_activated:
                             self.request.session.flash(_(u'Your account is not activate, please check your e-mail.'), 'error')
                             return {'form': self.form.render()}
 
@@ -185,9 +184,8 @@ class ForgotPasswordController(BaseController):
 
             email = captured['Email']
 
-            mgr = UserManager(self.request)
-            user = mgr.get_by_email(email)
-            activation = Activation()
+            user = self.User.get_by_email(email)
+            activation = self.Activation()
             self.db.add(activation)
 
             user.activation = activation
@@ -219,20 +217,18 @@ class ForgotPasswordController(BaseController):
         form = form(schema)
 
         code = self.request.matchdict.get('code', None)
-        act_mgr = ActivationManager(self.request)
-        user_mgr = UserManager(self.request)
 
-        activation = act_mgr.get_by_code(code)
+        activation = self.Activation.get_by_code(self.request, code)
 
         if activation:
-            user = user_mgr.get_by_activation(activation)
+            user = self.User.get_by_activation(self.request, activation)
 
             if user:
                 if self.request.method == 'GET':
                         return {
                             'form': form.render(
                                 appstruct=dict(
-                                    Username=user.username
+                                    User_name=user.username
                                 )
                             )
                         }
@@ -297,14 +293,14 @@ class RegisterController(BaseController):
             username = captured['User_name'].lower()
             password = captured['Password']
 
-            user = self.user_class.get_by_user_name_or_email(self.request,
+            user = self.User.get_by_user_name_or_email(self.request,
                     username, email
             )
 
             autologin = asbool(self.settings.get('su.autologin', False))
 
             if user:
-                if user.username == username:
+                if user.user_name == username:
                     self.request.session.flash(_('That username is already used.'), 'error')
                 elif user.email == email:
                     self.request.session.flash(_('That e-mail is already used.'), 'error')
@@ -314,7 +310,7 @@ class RegisterController(BaseController):
             activation = None
 
             try:
-                user = self.user_class(user_name=username, email=email)
+                user = self.User(user_name=username, email=email)
                 user.set_password(password)
 
                 self.db.add(user)
@@ -348,20 +344,17 @@ class RegisterController(BaseController):
     def activate(self):
         code = self.request.matchdict.get('code', None)
         user_pk = self.request.matchdict.get('user_pk', None)
-        act_mgr = ActivationManager(self.request)
-        user_mgr = UserManager(self.request)
 
-        activation = act_mgr.get_by_code(code)
+        activation = self.Activation.get_by_code(self.request, code)
 
         if activation:
-            user = user_mgr.get_by_pk(user_pk)
+            user = self.User.get_by_pk(self.request, user_pk)
 
             if user.activation != activation:
                 return HTTPNotFound()
 
             if user:
                 self.db.delete(activation)
-                user.activated = True
                 self.db.add(user)
                 self.db.flush()
 
@@ -390,9 +383,7 @@ class ProfileController(BaseController):
     def profile(self):
         pk = self.request.matchdict.get('user_pk', None)
 
-        mgr = UserManager(self.request)
-
-        user = mgr.get_by_pk(pk)
+        user = self.User.get_by_pk(self.request, pk)
 
         if not user:
             return HTTPNotFound()
@@ -408,17 +399,13 @@ class ProfileController(BaseController):
             return HTTPNotFound()
 
         if self.request.method == 'GET':
-            username = user.username
-            first_name = user.first_name
-            last_name = user.last_name
+            username = user.user_name
             email = user.email
 
             return {
                     'form': self.form.render(
                         appstruct= dict(
-                            Username=username,
-                            First_Name=first_name if first_name else '',
-                            Last_Name=last_name if last_name else '',
+                            User_name=username,
                             Email=email if email else '',
                         )
                     )
@@ -429,17 +416,13 @@ class ProfileController(BaseController):
                 captured = self.form.validate(controls)
             except deform.ValidationFailure, e:
                 # We pre-populate username
-                e.cstruct['Username'] = user.username
+                e.cstruct['User_name'] = user.user_name
                 return {'form': e.render(), 'errors': e.error.children}
-
-            user.first_name = captured.get('First_Name', '')
-            user.last_name = captured.get('Last_Name', '')
 
             email = captured.get('Email', None)
 
             if email:
-                mgr = UserManager(self.request)
-                email_user = mgr.get_by_email(email)
+                email_user = self.User.get_by_email(self.request, email)
 
                 if email_user:
                     if email_user.pk != user.pk:

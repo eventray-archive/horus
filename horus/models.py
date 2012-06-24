@@ -77,7 +77,7 @@ class BaseModel(object):
         return session.query(cls).filter(cls.pk == pk).first()
 
 
-class Activation(BaseModel):
+class ActivationMixin(BaseModel):
     """
     Handle activations/password reset items for users
 
@@ -88,14 +88,32 @@ class Activation(BaseModel):
     password, etc.
 
     """
-    code = sa.Column(sa.UnicodeText)
-    valid_until = sa.Column(sa.DateTime)
-    created_by = sa.Column('created_by', sa.UnicodeText)
+    @declared_attr
+    def code(self):
+        """ Unique user name """
+        return sa.Column(sa.Unicode(30), nullable=False, unique=True)
 
-    def __init__(self, created_system=None, valid_until=None):
-        """ Create a new activation, valid_length is in days """
+    @declared_attr
+    def valid_until(self):
+        """ How long will the activation key last """
+        return sa.Column(sa.DateTime, nullable=False)
+
+    @declared_attr
+    def created_by(self):
+        """ The system that generated the activation key """
+        return sa.Column(sa.DateTime, nullable=False)
+
+    @classmethod
+    def get_by_code(cls, request, code):
+        session = get_session(request)
+        return session.query(cls).filter(cls.code == code).first()
+
+    def __init__(self, created_by='web', valid_until=None):
+        """ Create a new activation, valid_until is a datetime, 
+        defaults to 3 days from current day
+        """
         self.code =  generate_random_string(12)
-        self.created_by = created_system
+        self.created_by = created_by
 
         if valid_until:
             self.valid_until = valid_until
@@ -152,6 +170,24 @@ class UserMixin(BaseModel):
     def password(self):
         """ Password hash for user object """
         return sa.Column(sa.Unicode(256), nullable=False)
+
+    @declared_attr
+    def activation_pk(self):
+        return sa.Column(
+            sa.Integer,
+            sa.ForeignKey('%s.pk' % ActivationMixin.__tablename__)
+        )
+
+    @declared_attr
+    def activation(self):
+        return sa.orm.relationship(
+            'Activation',
+            backref='user'
+        )
+
+    @property
+    def is_actived(self):
+        return self.activation_pk == None
 
     def set_password(self, raw_password):
         self.password = self.hash_password(raw_password)

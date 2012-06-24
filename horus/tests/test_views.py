@@ -12,6 +12,9 @@ class TestAuthController(UnitTestBase):
         from horus.tests.models import User
         from horus.interfaces   import IHorusLoginSchema
         from horus.interfaces   import IHorusLoginForm
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.add_route('index', '/')
 
@@ -37,6 +40,9 @@ class TestAuthController(UnitTestBase):
         from horus.views          import AuthController
         from horus.interfaces     import IHorusUserClass
         from horus.tests.models   import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.add_route('index', '/')
@@ -53,6 +59,9 @@ class TestAuthController(UnitTestBase):
         from horus.views import AuthController
         from horus.interfaces     import IHorusUserClass
         from horus.tests.models   import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.add_route('index', '/')
@@ -70,6 +79,9 @@ class TestAuthController(UnitTestBase):
         from horus.views import AuthController
         from horus.interfaces     import IHorusUserClass
         from horus.tests.models   import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.add_route('index', '/')
@@ -95,6 +107,9 @@ class TestAuthController(UnitTestBase):
         from horus.views import AuthController
         from horus.interfaces     import IHorusUserClass
         from horus.tests.models   import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.add_route('index', '/')
@@ -122,6 +137,9 @@ class TestAuthController(UnitTestBase):
         from horus.views import AuthController
         from horus.interfaces     import IHorusUserClass
         from horus.tests.models   import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.add_route('index', '/')
@@ -145,12 +163,14 @@ class TestAuthController(UnitTestBase):
         """ Make sure we can login """
         from horus.tests.models import User
         from horus.interfaces     import IHorusUserClass
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
 
         admin = User(user_name='sontek', email='sontek@gmail.com')
         admin.set_password('foo')
-        admin.activated = True
 
         self.session.add(admin)
         self.session.flush()
@@ -175,6 +195,9 @@ class TestAuthController(UnitTestBase):
         """ Make sure we can't login with an inactive user """
         from horus.tests.models import User
         from horus.interfaces     import IHorusUserClass
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
         user = User(user_name='sontek', email='sontek@gmail.com')
@@ -206,6 +229,9 @@ class TestAuthController(UnitTestBase):
         from horus.views        import AuthController
         from horus.tests.models import User
         from horus.interfaces import IHorusUserClass
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
         self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.add_route('index', '/')
         self.config.include('horus')
@@ -237,6 +263,9 @@ class TestRegisterController(UnitTestBase):
         from horus.interfaces           import IHorusRegisterForm
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
 
@@ -267,6 +296,9 @@ class TestRegisterController(UnitTestBase):
         from horus.interfaces import IHorusRegisterForm
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
 
@@ -297,6 +329,9 @@ class TestRegisterController(UnitTestBase):
         from pyramid_mailer.interfaces  import IMailer
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.registry.registerUtility(DummyMailer(), IMailer)
@@ -318,6 +353,9 @@ class TestRegisterController(UnitTestBase):
         from pyramid_mailer.interfaces  import IMailer
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
 
@@ -339,6 +377,9 @@ class TestRegisterController(UnitTestBase):
         from pyramid_mailer.interfaces import IMailer
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
 
@@ -372,6 +413,9 @@ class TestRegisterController(UnitTestBase):
         from pyramid_mailer.interfaces  import IMailer
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
 
@@ -395,6 +439,9 @@ class TestRegisterController(UnitTestBase):
         from pyramid_mailer.interfaces import IMailer
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
 
@@ -428,11 +475,13 @@ class TestRegisterController(UnitTestBase):
         from horus.views import RegisterController
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
-        from horus.managers import UserManager
         from horus.interfaces import IHorusSession
         from horus.events import NewRegistrationEvent
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
 
@@ -469,10 +518,9 @@ class TestRegisterController(UnitTestBase):
 
         assert response.status_int == 302
 
-        mgr = UserManager(request)
-        user = mgr.get_by_user_name('admin')
+        user = User.get_by_user_name(request, 'admin')
 
-        assert user.activated == True
+        assert user.is_activated == True
         flash.assert_called_with('You have been registered, you may login now!', 'success')
 
     def test_registration_craps_out(self):
@@ -480,6 +528,9 @@ class TestRegisterController(UnitTestBase):
         from pyramid_mailer.interfaces  import IMailer
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
 
@@ -514,12 +565,13 @@ class TestRegisterController(UnitTestBase):
 
     def test_activate(self):
         from horus.views import RegisterController
-        from horus.models import Activation
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
-        from horus.managers import UserManager
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces   import IHorusActivationClass
+        from horus.tests.models import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.include('horus')
@@ -547,21 +599,20 @@ class TestRegisterController(UnitTestBase):
 
         controller = RegisterController(request)
         response = controller.activate()
-        mgr = UserManager(request)
-        user = mgr.get_by_user_name('sontek')
+        user = User.get_by_user_name(request, 'sontek')
 
-        assert user.activated
+        assert user.is_activated
         assert response.status_int == 302
 
     def test_activate_multiple_users(self):
         from horus.views import RegisterController
-        from horus.models import Activation
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
-        from horus.managers import UserManager
-        from horus.managers import ActivationManager
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces           import IHorusActivationClass
+        from horus.tests.models         import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.include('horus')
@@ -593,24 +644,23 @@ class TestRegisterController(UnitTestBase):
 
         controller = RegisterController(request)
         response = controller.activate()
-        mgr = UserManager(request)
-        user = mgr.get_by_user_name('sontek1')
+        user = User.get_by_user_name(request, 'sontek1')
 
-        act_mgr = ActivationManager(request)
-        activations = act_mgr.get_all()
+        activations = Activation.get_all()
 
         assert len(activations) == 1
-        assert user.activated
+        assert user.is_activated
         assert response.status_int == 302
 
     def test_activate_invalid(self):
         from horus.views import RegisterController
-        from horus.models import Activation
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
-        from horus.managers import UserManager
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces           import IHorusActivationClass
+        from horus.tests.models         import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.include('horus')
@@ -633,20 +683,20 @@ class TestRegisterController(UnitTestBase):
 
         controller = RegisterController(request)
         response = controller.activate()
-        mgr = UserManager(request)
-        user = mgr.get_by_user_name('sontek')
+        user = User.get_by_user_name(request, 'sontek')
 
-        assert not user.activated
+        assert not user.is_activated
         assert response.status_int == 404
 
     def test_activate_invalid_user(self):
         from horus.views import RegisterController
-        from horus.models import Activation
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
-        from horus.managers import UserManager
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces           import IHorusActivationClass
+        from horus.tests.models         import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.include('horus')
@@ -681,12 +731,11 @@ class TestRegisterController(UnitTestBase):
 
         controller = RegisterController(request)
         response = controller.activate()
-        mgr = UserManager(request)
-        new_user1 = mgr.get_by_user_name('sontek')
-        new_user2 = mgr.get_by_user_name('jessie')
+        new_user1 = User.get_by_user_name(request, 'sontek')
+        new_user2 = User.get_by_user_name(request, 'jessie')
 
-        assert not new_user1.activated
-        assert not new_user2.activated
+        assert not new_user1.is_activated
+        assert not new_user2.is_activated
         assert response.status_int == 404
 
 class TestForgotPasswordController(UnitTestBase):
@@ -694,6 +743,9 @@ class TestForgotPasswordController(UnitTestBase):
         from horus.views import ForgotPasswordController
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces           import IHorusActivationClass
+        from horus.tests.models         import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.add_route('index', '/')
@@ -791,11 +843,13 @@ class TestForgotPasswordController(UnitTestBase):
         from horus.views import ForgotPasswordController
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
-        from horus.models import Activation
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.tests.models         import Activation
+        from horus.interfaces           import IHorusActivationClass
 
         self.config.registry.registerUtility(User, IHorusUserClass)
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.add_route('index', '/')
         self.config.include('horus')
@@ -829,12 +883,14 @@ class TestForgotPasswordController(UnitTestBase):
         from horus.events import PasswordResetEvent
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
-        from horus.models import Activation
         from horus.models import crypt
         from horus.interfaces           import IHorusUserClass
+        from horus.interfaces           import IHorusActivationClass
         from horus.tests.models         import User
+        from horus.tests.models         import Activation
 
         self.config.registry.registerUtility(User, IHorusUserClass)
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
 
         self.config.add_route('index', '/')
@@ -882,11 +938,13 @@ class TestForgotPasswordController(UnitTestBase):
         from horus.views import ForgotPasswordController
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
-        from horus.models import Activation
         from horus.interfaces           import IHorusUserClass
+        from horus.interfaces           import IHorusActivationClass
         from horus.tests.models         import User
+        from horus.tests.models         import Activation
 
         self.config.registry.registerUtility(User, IHorusUserClass)
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.add_route('index', '/')
         self.config.include('horus')
@@ -926,11 +984,13 @@ class TestForgotPasswordController(UnitTestBase):
         from horus.views import ForgotPasswordController
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
-        from horus.models import Activation
         from horus.interfaces           import IHorusUserClass
+        from horus.interfaces           import IHorusActivationClass
         from horus.tests.models         import User
+        from horus.tests.models         import Activation
 
         self.config.registry.registerUtility(User, IHorusUserClass)
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.add_route('index', '/')
         self.config.include('horus')
@@ -966,11 +1026,13 @@ class TestForgotPasswordController(UnitTestBase):
         from horus.views                import ForgotPasswordController
         from pyramid_mailer.interfaces  import IMailer
         from pyramid_mailer.mailer      import DummyMailer
-        from horus.models               import Activation
         from horus.interfaces           import IHorusUserClass
+        from horus.interfaces           import IHorusActivationClass
         from horus.tests.models         import User
+        from horus.tests.models         import Activation
 
         self.config.registry.registerUtility(User, IHorusUserClass)
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.add_route('index', '/')
         self.config.include('horus')
@@ -1001,16 +1063,19 @@ class TestProfileController(UnitTestBase):
     def test_profile_loads(self):
         from horus.views import ProfileController
         from horus.interfaces           import IHorusUserClass
+        from horus.interfaces           import IHorusActivationClass
         from horus.tests.models         import User
+        from horus.tests.models         import Activation
 
         self.config.registry.registerUtility(User, IHorusUserClass)
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.add_route('index', '/')
         self.config.include('horus')
 
-        user = User(user_name='sontek', password='temp', email='sontek@gmail.com',
-            activated=True)
-
+        user = User(user_name='sontek',
+                email='sontek@gmail.com')
+        user.set_password('temp')
         self.session.add(user)
         self.session.flush()
 
@@ -1035,15 +1100,18 @@ class TestProfileController(UnitTestBase):
     def test_profile_bad_pk(self):
         from horus.views import ProfileController
         from horus.interfaces           import IHorusUserClass
+        from horus.interfaces           import IHorusActivationClass
         from horus.tests.models         import User
+        from horus.tests.models         import Activation
 
         self.config.registry.registerUtility(User, IHorusUserClass)
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.add_route('index', '/')
         self.config.include('horus')
 
-        user = User(user_name='sontek', password='temp', email='sontek@gmail.com',
-            activated=True)
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('temp')
 
         self.session.add(user)
         self.session.flush()
@@ -1069,15 +1137,17 @@ class TestProfileController(UnitTestBase):
         from horus.views import ProfileController
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces           import IHorusActivationClass
+        from horus.tests.models         import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
 
         self.config.add_route('index', '/')
         self.config.include('horus')
 
-        user = User(user_name='sontek', password='temp', email='sontek@gmail.com',
-            activated=True)
-
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('temp')
         self.session.add(user)
         self.session.flush()
 
@@ -1101,21 +1171,22 @@ class TestProfileController(UnitTestBase):
 
     def test_profile_update_profile(self):
         from horus.views import ProfileController
-        from horus.managers import UserManager
         from horus.interfaces import IHorusSession
         from horus.events import ProfileUpdatedEvent
         from horus.models import crypt
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces           import IHorusActivationClass
+        from horus.tests.models         import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
 
         self.config.add_route('index', '/')
         self.config.include('horus')
 
-        user = User(user_name='sontek', password='temp', email='sontek@gmail.com',
-            activated=True)
-
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('temp')
         self.session.add(user)
         self.session.flush()
 
@@ -1127,8 +1198,6 @@ class TestProfileController(UnitTestBase):
         self.config.add_subscriber(handle_profile_updated, ProfileUpdatedEvent)
 
         request = self.get_csrf_request(post={
-            'First_Name': 'John',
-            'Last_Name': 'Anderson',
             'Email': 'sontek@gmail.com',
         }, request_method='POST')
 
@@ -1145,30 +1214,29 @@ class TestProfileController(UnitTestBase):
         view = ProfileController(request)
         view.profile()
 
-        mgr = UserManager(request)
-        new_user = mgr.get_by_pk(user.pk)
+        new_user = User.get_by_pk(request, user.pk)
 
-        assert new_user.first_name == 'John'
-        assert new_user.last_name == 'Anderson'
         assert new_user.email == 'sontek@gmail.com'
         assert crypt.check(user.password, 'temp' + user.salt)
 
     def test_profile_update_password(self):
         from horus.views import ProfileController
-        from horus.managers import UserManager
         from horus.interfaces import IHorusSession
         from horus.events import ProfileUpdatedEvent
         from horus.models import crypt
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
+        from horus.interfaces           import IHorusActivationClass
+        from horus.tests.models         import Activation
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
 
         self.config.registry.registerUtility(User, IHorusUserClass)
 
         self.config.add_route('index', '/')
         self.config.include('horus')
 
-        user = User(user_name='sontek', password='temp', email='sontek@gmail.com',
-            activated=True)
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('temp')
 
         self.session.add(user)
         self.session.flush()
@@ -1182,8 +1250,6 @@ class TestProfileController(UnitTestBase):
 
 
         request = self.get_csrf_request(post={
-            'First_Name': 'John',
-            'Last_Name': 'Anderson',
             'Email': 'sontek@gmail.com',
             'Password': {
                 'value': 'test123',
@@ -1205,10 +1271,7 @@ class TestProfileController(UnitTestBase):
         view = ProfileController(request)
 
         view.profile()
-        mgr = UserManager(request)
-        new_user = mgr.get_by_pk(user.pk)
+        new_user = User.get_by_pk(request, user.pk)
 
-        assert new_user.first_name == 'John'
-        assert new_user.last_name == 'Anderson'
         assert new_user.email == 'sontek@gmail.com'
         assert not crypt.check(user.password, 'temp' + user.salt)

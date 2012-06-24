@@ -3,6 +3,9 @@ from zope.interface import Interface
 class IHorusUserClass(Interface):
     pass
 
+class IHorusActivationClass(Interface):
+    pass
+
 class IHorusSession(Interface):
     pass
 
