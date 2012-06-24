@@ -101,7 +101,7 @@ class ActivationMixin(BaseModel):
     @declared_attr
     def created_by(self):
         """ The system that generated the activation key """
-        return sa.Column(sa.DateTime, nullable=False)
+        return sa.Column(sa.Unicode(30), nullable=False)
 
     @classmethod
     def get_by_code(cls, request, code):
@@ -186,7 +186,7 @@ class UserMixin(BaseModel):
         )
 
     @property
-    def is_actived(self):
+    def is_activated(self):
         return self.activation_pk == None
 
     def set_password(self, raw_password):

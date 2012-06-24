@@ -1,21 +1,24 @@
 import unittest
-from webtest import TestApp
-from sqlalchemy import engine_from_config
-from pyramid import testing
+from webtest                import TestApp
+from sqlalchemy             import engine_from_config
+from pyramid                import testing
 from pyramid.authentication import AuthTktAuthenticationPolicy
-from pyramid.authorization import ACLAuthorizationPolicy
-from pyramid_beaker import session_factory_from_settings
-from pyramid.response import Response
-from paste.deploy.loadwsgi import appconfig
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm import sessionmaker
-from zope.sqlalchemy import ZopeTransactionExtension
+from pyramid.authorization  import ACLAuthorizationPolicy
+from pyramid_beaker         import session_factory_from_settings
+from pyramid.response       import Response
+from paste.deploy.loadwsgi  import appconfig
+from sqlalchemy.orm         import scoped_session
+from sqlalchemy.orm         import sessionmaker
+from zope.sqlalchemy        import ZopeTransactionExtension
+from mock                   import Mock
+from horus.tests.models     import Base
+from horus.tests.models     import User
+from horus.tests.models     import Activation
+from horus.interfaces       import IHorusSession
+from horus.interfaces       import IHorusUserClass
+from horus.interfaces       import IHorusActivationClass
 
-from mock import Mock
 import os
-
-from horus.tests.models import Base
-from horus.interfaces import IHorusSession
 
 here = os.path.dirname(__file__)
 settings = appconfig('config:' + os.path.join(here, '../../', 'test.ini'))
@@ -40,6 +43,8 @@ class BaseTestCase(unittest.TestCase):
         self.session = self.Session(bind=connection)
 
         self.config.registry.registerUtility(self.session, IHorusSession)
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
+        self.config.registry.registerUtility(User, IHorusUserClass)
 
         Base.metadata.bind=connection
 
@@ -81,6 +86,9 @@ class IntegrationTestBase(unittest.TestCase):
         config = global_config
         config.add_settings(settings)
 
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
+        self.config.registry.registerUtility(User, IHorusUserClass)
+
         def index(request):
             return Response('index!')
 
@@ -97,8 +105,6 @@ class IntegrationTestBase(unittest.TestCase):
         session_factory = session_factory_from_settings(settings)
 
         config.set_session_factory(session_factory)
-
-#        config.include('pyramid_tm')
 
         config.registry.registerUtility(DBSession, IHorusSession)
 

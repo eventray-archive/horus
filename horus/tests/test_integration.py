@@ -38,9 +38,9 @@ class TestViews(IntegrationTestBase):
 
     def test_valid_login(self): 
         """ Call the login view, make sure routes are working """
-        from horus.models import User
-        admin = User(username='sontek', password='temp')
-        admin.activated = True
+        from horus.tests.models import User
+        admin = User(user_name='sontek', email='sontek@gmail.com')
+        admin.set_password('temp')
         self.session.add(admin)
         self.session.flush()
 
@@ -51,7 +51,7 @@ class TestViews(IntegrationTestBase):
         res = self.app.post('/login', 
             {
                 'submit': True,
-                'Username': 'sontek',
+                'User_name': 'sontek',
                 'Password': 'temp',
                 'csrf_token': csrf
             }
@@ -61,8 +61,11 @@ class TestViews(IntegrationTestBase):
 
     def test_inactive_login(self):
         """ Make sure inactive users can't sign in"""
-        from horus.models import User
-        admin = User(username='sontek', password='temp')
+        from horus.tests.models import User
+        from horus.tests.models import Activation
+        admin = User(user_name='sontek', email='sontek@gmail.com')
+        admin.activation = Activation()
+        admin.set_password('temp')
         self.session.add(admin)
         self.session.flush()
 
@@ -73,10 +76,10 @@ class TestViews(IntegrationTestBase):
         res = self.app.post('/login', 
             {
                 'submit': True,
-                'Username': 'sontek',
+                'User_name': 'sontek',
                 'Password': 'temp',
                 'csrf_token': csrf
             }
         )
 
-        assert 'Your account is not active, please check your e-mail.' in res.body
+        assert 'Your account is not activated, please check your e-mail.' in res.body

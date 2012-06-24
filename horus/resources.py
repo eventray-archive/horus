@@ -1,9 +1,7 @@
 from pyramid.security import Authenticated
 from pyramid.security import Allow
 from pyramid.security import ALL_PERMISSIONS
-
-from horus.managers import OrganizationManager
-from horus.managers import UserManager
+from horus.interfaces import IHorusUserClass
 
 class BaseFactory(object):
     def __init__(self, request):
@@ -24,29 +22,13 @@ class RootFactory(BaseFactory):
         super(RootFactory, self).__init__(request)
         self.is_root = True
 
-class OrganizationFactory(RootFactory):
-    def __init__(self, request):
-        self.request = request
-
-    def __getitem__(self, key):
-        mgr = OrganizationManager(self.request)
-
-        org = mgr.get_by_pk(key)
-
-        if org:
-            org.__parent__ = self
-            org.__name__ = key
-
-        return org
-
 class UserFactory(RootFactory):
     def __init__(self, request):
         self.request = request
+        self.User = request.registry.getUtility(IHorusUserClass)
 
     def __getitem__(self, key):
-        mgr = UserManager(self.request)
-
-        user = mgr.get_by_pk(key)
+        user = self.User.get_by_pk(self.request, key)
 
         if user:
             user.__parent__ = self

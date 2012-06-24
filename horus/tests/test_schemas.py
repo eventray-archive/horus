@@ -5,7 +5,7 @@ from colander import Invalid
 class TestModels(UnitTestBase):
     def test_valid_login_schema(self):
         request = self.get_csrf_request(post={
-            'Username': 'sontek',
+            'User_name': 'sontek',
             'Password': 'password',
             })
 
@@ -13,7 +13,7 @@ class TestModels(UnitTestBase):
 
         result = schema.deserialize(request.POST)
 
-        assert result['Username'] == 'sontek'
+        assert result['User_name'] == 'sontek'
         assert result['Password'] == 'password'
         assert result['csrf_token'] != None
 
@@ -26,7 +26,7 @@ class TestModels(UnitTestBase):
                 schema.deserialize({})
             except Invalid as exc:
                 assert len(exc.children) == 3
-                errors = ['csrf_token', 'Username', 'Password']
+                errors = ['csrf_token', 'User_name', 'Password']
 
                 for child in exc.children:
                     assert child.node.name in errors
