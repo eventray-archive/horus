@@ -2,7 +2,7 @@ import hashlib
 import random
 import string
 
-from horus.interfaces import ISUSession
+from horus.interfaces import IHorusSession
 
 def generate_random_string(length):
     """Generate a generic hash key for the user to use"""
@@ -17,6 +17,6 @@ def generate_random_string(length):
     return unicode(m.hexdigest()[:length])
 
 def get_session(request):
-    session = request.registry.getUtility(ISUSession)
+    session = request.registry.getUtility(IHorusSession)
 
     return session

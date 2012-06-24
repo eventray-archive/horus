@@ -1,27 +1,26 @@
-from pyramid.decorator import reify
-from pyramid.request import Request
-from pyramid.security import unauthenticated_userid
+from pyramid.decorator  import reify
+from pyramid.request    import Request
+from pyramid.security   import unauthenticated_userid
 
-from horus.managers import UserManager
-from horus.schemas import LoginSchema
-from horus.schemas import RegisterSchema
-from horus.schemas import ForgotPasswordSchema
-from horus.schemas import ResetPasswordSchema
-from horus.schemas import ProfileSchema
-from horus.forms import SubmitForm
-from horus.resources import RootFactory
-from horus.interfaces import ISULoginForm
-from horus.interfaces import ISULoginSchema
-from horus.interfaces import ISURegisterForm
-from horus.interfaces import ISURegisterSchema
-from horus.interfaces import ISUForgotPasswordForm
-from horus.interfaces import ISUForgotPasswordSchema
-from horus.interfaces import ISUResetPasswordForm
-from horus.interfaces import ISUResetPasswordSchema
-from horus.interfaces import ISUProfileForm
-from horus.interfaces import ISUProfileSchema
-
-from horus.routes import build_routes
+from horus.schemas      import LoginSchema
+from horus.schemas      import RegisterSchema
+from horus.schemas      import ForgotPasswordSchema
+from horus.schemas      import ResetPasswordSchema
+from horus.schemas      import ProfileSchema
+from horus.forms        import SubmitForm
+from horus.resources    import RootFactory
+from horus.interfaces   import IHorusUserClass
+from horus.interfaces   import IHorusLoginForm
+from horus.interfaces   import IHorusLoginSchema
+from horus.interfaces   import IHorusRegisterForm
+from horus.interfaces   import IHorusRegisterSchema
+from horus.interfaces   import IHorusForgotPasswordForm
+from horus.interfaces   import IHorusForgotPasswordSchema
+from horus.interfaces   import IHorusResetPasswordForm
+from horus.interfaces   import IHorusResetPasswordSchema
+from horus.interfaces   import IHorusProfileForm
+from horus.interfaces   import IHorusProfileSchema
+from horus.routes       import build_routes
 
 def groupfinder(userid, request):
     user = request.user
@@ -38,32 +37,44 @@ def groupfinder(userid, request):
 
     return groups
 
-class SignUpRequestFactory(Request):
-    @reify
-    def user(self):
-        pk = unauthenticated_userid(self)
+def get_user(request):
+    pk = unauthenticated_userid(request)
+    user_class = request.registry.queryUtility(IHorusUserClass)
 
-        if pk is not None:
-            mgr = UserManager(self)
-            return mgr.get_by_pk(pk)
+    if pk is not None:
+        return user_class.get_by_pk(request, pk)
 
+def get_class_from_config(settings, key):
+    user_modules = settings.get(key).split('.')
+    module = '.'.join(user_modules[:-1])
+    klass = user_modules[-1]
+    imported_module = __import__(module, fromlist=[klass])
+    imported_class = getattr(imported_module, klass)
+
+    return imported_class
 
 def includeme(config):
+    settings = config.registry.settings
+    config.set_request_property(get_user, 'user', reify=True)
+
     config.set_root_factory(RootFactory)
 
-    config.set_request_factory(SignUpRequestFactory)
+
+    user_class = get_class_from_config(settings, 'horus.user_class')
+    config.registry.registerUtility(user_class, IHorusUserClass)
+
 
     schemas = [
-        (ISULoginSchema, LoginSchema),
-        (ISURegisterSchema, RegisterSchema),
-        (ISUForgotPasswordSchema, ForgotPasswordSchema),
-        (ISUResetPasswordSchema, ResetPasswordSchema),
-        (ISUProfileSchema, ProfileSchema)
+        (IHorusLoginSchema, LoginSchema),
+        (IHorusRegisterSchema, RegisterSchema),
+        (IHorusForgotPasswordSchema, ForgotPasswordSchema),
+        (IHorusResetPasswordSchema, ResetPasswordSchema),
+        (IHorusProfileSchema, ProfileSchema)
     ]
 
     forms = [
-        ISULoginForm, ISURegisterForm, ISUForgotPasswordForm,
-        ISUResetPasswordForm, ISUProfileForm
+        IHorusLoginForm, IHorusRegisterForm, IHorusForgotPasswordForm,
+        IHorusResetPasswordForm, IHorusProfileForm
     ]
 
     for iface, schema in schemas:

@@ -1,34 +1,37 @@
 from zope.interface import Interface
 
-class ISUSession(Interface):
+class IHorusUserClass(Interface):
     pass
 
-class ISULoginSchema(Interface):
+class IHorusSession(Interface):
     pass
 
-class ISULoginForm(Interface):
+class IHorusLoginSchema(Interface):
     pass
 
-class ISURegisterSchema(Interface):
+class IHorusLoginForm(Interface):
     pass
 
-class ISURegisterForm(Interface):
+class IHorusRegisterSchema(Interface):
     pass
 
-class ISUForgotPasswordForm(Interface):
+class IHorusRegisterForm(Interface):
     pass
 
-class ISUForgotPasswordSchema(Interface):
+class IHorusForgotPasswordForm(Interface):
     pass
 
-class ISUResetPasswordForm(Interface):
+class IHorusForgotPasswordSchema(Interface):
     pass
 
-class ISUResetPasswordSchema(Interface):
+class IHorusResetPasswordForm(Interface):
     pass
 
-class ISUProfileForm(Interface):
+class IHorusResetPasswordSchema(Interface):
     pass
 
-class ISUProfileSchema(Interface):
+class IHorusProfileForm(Interface):
+    pass
+
+class IHorusProfileSchema(Interface):
     pass

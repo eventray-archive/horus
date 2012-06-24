@@ -15,7 +15,7 @@ from mock import Mock
 import os
 
 from horus.tests.models import Base
-from horus.interfaces import ISUSession
+from horus.interfaces import IHorusSession
 
 here = os.path.dirname(__file__)
 settings = appconfig('config:' + os.path.join(here, '../../', 'test.ini'))
@@ -39,7 +39,7 @@ class BaseTestCase(unittest.TestCase):
         # bind an individual Session to the connection
         self.session = self.Session(bind=connection)
 
-        self.config.registry.registerUtility(self.session, ISUSession)
+        self.config.registry.registerUtility(self.session, IHorusSession)
 
         Base.metadata.bind=connection
 
@@ -100,7 +100,7 @@ class IntegrationTestBase(unittest.TestCase):
 
 #        config.include('pyramid_tm')
 
-        config.registry.registerUtility(DBSession, ISUSession)
+        config.registry.registerUtility(DBSession, IHorusSession)
 
         if settings.get('su.require_activation', True):
             config.include('pyramid_mailer')
@@ -118,7 +118,7 @@ class IntegrationTestBase(unittest.TestCase):
         self.app = TestApp(app)
         self.connection = connection = self.engine.connect()
 
-        self.session = app.registry.getUtility(ISUSession)
+        self.session = app.registry.getUtility(IHorusSession)
         self.session.configure(bind=connection)
         # begin a non-ORM transaction
         self.trans = connection.begin()

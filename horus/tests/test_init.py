@@ -23,40 +23,39 @@ class TestInitCase(UnitTestBase):
             elif ace[1] == Authenticated:
                 assert ace[2] == 'view'
 
-    def test_request_factory(self):
-        from horus import SignUpRequestFactory
-        from horus.tests.models import User
-        import pdb; pdb.set_trace()
-        user1 = User(user_name='sontek')
-        self.session.add(user1)
-        self.session.flush()
-
-        with patch('horus.unauthenticated_userid') as unauth:
-            unauth.return_value = 1
-            request = SignUpRequestFactory({})
-            request.registry = Mock()
-
-            getUtility = Mock()
-            getUtility.return_value = self.session
-
-            request.registry.getUtility = getUtility
-
-            user = request.user
-
-            assert user == user1
+#    def test_request_factory(self):
+#        from horus import SignUpRequestFactory
+#        from horus.tests.models import User
+#
+#        user1 = User(user_name='sontek', email='sontek@gmail.com')
+#        user1.set_password('foo')
+#        self.session.add(user1)
+#        self.session.flush()
+#
+#        with patch('horus.unauthenticated_userid') as unauth:
+#            unauth.return_value = 1
+#            request = SignUpRequestFactory({})
+#            request.registry = Mock()
+#
+#            getUtility = Mock()
+#            getUtility.return_value = self.session
+#
+#            request.registry.getUtility = getUtility
+#
+#            user = request.user
+#
+#            assert user == user1
 
     def test_group_finder(self):
         from horus import groupfinder
         from horus.tests.models import User
         from horus.tests.models import Group
-        from horus.tests.models import Organization
 
         group = Group(name='foo', description='bar')
-        user1 = User(user_name='sontek')
-        organization = Organization('foo', user1)
+        user1 = User(user_name='sontek', email='sontek@gmail.com')
+        user1.set_password('foo')
         group.users.append(user1)
 
-        self.session.add(organization)
         self.session.add(group)
         self.session.add(user1)
         self.session.flush()
@@ -66,7 +65,6 @@ class TestInitCase(UnitTestBase):
 
         results = groupfinder(1, request)
 
-        assert 'organization:1' in results
         assert 'group:foo' in results
         assert 'user:%s' % (user1.pk) in results
         assert len(results) == 3
@@ -75,15 +73,14 @@ class TestInitCase(UnitTestBase):
         from horus import groupfinder
         from horus.tests.models import User
         from horus.tests.models import Group
-        from horus.tests.models import Organization
 
         group = Group(name='foo', description='bar')
-        user1 = User(user_name='sontek')
-        user2 = User(user_name='sontek2')
-        organization = Organization()
+        user1 = User(user_name='sontek', email='sontek@gmail.com')
+        user2 = User(user_name='sontek2', email='sontek2@gmail.com')
+        user1.set_password('foo')
+        user2.set_password('foo')
         group.users.append(user1)
 
-        self.session.add(organization)
         self.session.add(group)
         self.session.add(user1)
         self.session.add(user2)

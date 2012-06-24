@@ -105,7 +105,7 @@ class UserMixin(BaseModel):
     @declared_attr
     def user_name(self):
         """ Unique user name """
-        return sa.Column(sa.Unicode(30), unique=True)
+        return sa.Column(sa.Unicode(30), nullable=False, unique=True)
 
     @declared_attr
     def email(self):
@@ -115,20 +115,21 @@ class UserMixin(BaseModel):
     @declared_attr
     def status(self):
         """ Status of user """
-        return sa.Column(sa.Integer(), nullable=False)
+        return sa.Column(sa.Integer())
 
     @declared_attr
     def security_code(self):
         """ Security code user, can be used for API calls or password reset """
-        return sa.Column(sa.Unicode(256))
+        return sa.Column(sa.Unicode(256), nullable=True)
 
     @declared_attr
     def last_login_date(self):
         """ Date of user's last login """
         return sa.Column(
             sa.TIMESTAMP(timezone=False)
-            , default=sa.sql.func.now()
+            , default=sa.func.now()
             , server_default=sa.func.now()
+            , nullable=False
         )
 
     @declared_attr
@@ -138,17 +139,18 @@ class UserMixin(BaseModel):
             sa.TIMESTAMP(timezone=False)
             , default=sa.sql.func.now()
             , server_default=sa.func.now()
+            , nullable=False
         )
 
     @declared_attr
     def salt(self):
         """ Password salt for user """
-        return sa.Column(sa.Unicode(256))
+        return sa.Column(sa.Unicode(256), nullable=False)
 
     @declared_attr
     def password(self):
         """ Password hash for user object """
-        return sa.Column(sa.Unicode(256))
+        return sa.Column(sa.Unicode(256), nullable=False)
 
     def set_password(self, raw_password):
         self.password = self.hash_password(raw_password)
@@ -270,39 +272,18 @@ class GroupMixin(BaseModel):
             , backref=GroupMixin.__tablename__
         )
 
-    @declared_attr
-    def permissions(self):
-        """ permissions assigned to this group"""
-        return sa.orm.relationship('GroupPermission'
-            , backref='groups'
-            , cascade="all, delete-orphan"
-            , passive_deletes=True
-            , passive_updates=True
-        )
+#    @declared_attr
+#    def permissions(self):
+#        """ permissions assigned to this group"""
+#        return sa.orm.relationship('GroupPermission'
+#            , backref='groups'
+#            , cascade="all, delete-orphan"
+#            , passive_deletes=True
+#            , passive_updates=True
+#        )
 
     def __repr__(self):
         return '<Group: %s>' % self.name
-
-class GroupPermissionMixin(BaseModel):
-    """ group permission mixin """
-    @declared_attr
-    def group_pk(self):
-        return sa.Column(
-            sa.Integer
-            , sa.ForeignKey(
-                '%s.pk' % GroupMixin.__tablename__
-                , onupdate='CASCADE'
-                , ondelete='CASCADE'
-            )
-            , primary_key=True
-        )
-
-    @declared_attr
-    def permission_name(self):
-        return sa.Column(sa.Unicode(30), primary_key=True)
-
-    def __repr__(self):
-        return '<GroupPermission: %s>' % self.permission_name
 
 class UserGroupMixin(BaseModel):
     @declared_attr
@@ -313,16 +294,14 @@ class UserGroupMixin(BaseModel):
 
     @declared_attr
     def user_pk(self):
-        return sa.Column(sa.Integer
-                , sa.ForeignKey('%s.pk' % UserMixin.__tablename__,
-                    onupdate='CASCADE',
-                    ondelete='CASCADE'
-                )
-                , primary_key=True)
+        return sa.Column(
+            sa.Integer
+            , sa.ForeignKey('%s.pk' % UserMixin.__tablename__,
+                onupdate='CASCADE',
+                ondelete='CASCADE'
+            )
+            , primary_key=True
+        )
 
     def __repr__(self):
         return '<UserGroup: %s, %s>' % (self.group_name, self.user_pk,)
-
-
-class OrganizationMixin(BaseModel):
-    pass
