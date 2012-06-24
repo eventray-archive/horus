@@ -1,8 +1,10 @@
+from pyramid.security   import unauthenticated_userid
+from horus.interfaces   import IHorusSession
+from horus.interfaces   import IHorusUserClass
+
 import hashlib
 import random
 import string
-
-from horus.interfaces import IHorusSession
 
 def generate_random_string(length):
     """Generate a generic hash key for the user to use"""
@@ -20,6 +22,26 @@ def get_session(request):
     session = request.registry.getUtility(IHorusSession)
 
     return session
+
+def get_user(request):
+    pk = unauthenticated_userid(request)
+    user_class = request.registry.queryUtility(IHorusUserClass)
+
+    if pk is not None:
+        return user_class.get_by_pk(request, pk)
+
+def get_class_from_config(settings, key):
+    if key in settings:
+        user_modules = settings.get(key).split('.')
+        module = '.'.join(user_modules[:-1])
+        klass = user_modules[-1]
+        imported_module = __import__(module, fromlist=[klass])
+        imported_class = getattr(imported_module, klass)
+
+        return imported_class
+    else:
+        raise Exception('Please provide a horus.userclass config option')
+
 
 def pluralize(singular):
     """Return plural form of given lowercase singular word (English only). Based on

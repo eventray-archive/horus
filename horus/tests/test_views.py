@@ -85,7 +85,7 @@ class TestAuthController(UnitTestBase):
 
         assert errors[0].node.name == u'csrf_token'
         assert errors[0].msg == u'Required'
-        assert errors[1].node.name == u'user_name'
+        assert errors[1].node.name == u'User_name'
         assert errors[1].msg == u'Required'
         assert errors[2].node.name == u'Password'
         assert errors[2].msg == u'Required'
@@ -129,7 +129,7 @@ class TestAuthController(UnitTestBase):
 
         request = self.get_csrf_request(post={
                 'submit': True,
-                'user_name': 'admin',
+                'User_name': 'admin',
                 'Password': 'test123',
             }, request_method='POST')
 
@@ -139,7 +139,7 @@ class TestAuthController(UnitTestBase):
         view = AuthController(request)
         view.login()
 
-        flash.assert_called_with(u'Invalid user_name or password.', 'error')
+        flash.assert_called_with(u'Invalid username or password.', 'error')
 
     def test_login_succeeds(self):
         """ Make sure we can login """
@@ -148,7 +148,8 @@ class TestAuthController(UnitTestBase):
 
         self.config.registry.registerUtility(User, IHorusUserClass)
 
-        admin = User(user_name='sontek', password='temp')
+        admin = User(user_name='sontek', email='sontek@gmail.com')
+        admin.set_password('foo')
         admin.activated = True
 
         self.session.add(admin)
@@ -161,8 +162,8 @@ class TestAuthController(UnitTestBase):
 
         request = self.get_csrf_request(post={
                 'submit': True,
-                'user_name': 'sontek',
-                'Password': 'temp',
+                'User_name': 'sontek',
+                'Password': 'foo',
             }, request_method='POST')
 
         view = AuthController(request)
@@ -176,8 +177,8 @@ class TestAuthController(UnitTestBase):
         from horus.interfaces     import IHorusUserClass
 
         self.config.registry.registerUtility(User, IHorusUserClass)
-        user = User(user_name='sontek', password='temp')
-
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('foo')
         self.session.add(user)
         self.session.flush()
 
@@ -188,7 +189,7 @@ class TestAuthController(UnitTestBase):
         request = self.get_csrf_request(post={
                 'submit': True,
                 'user_name': 'sontek',
-                'Password': 'temp',
+                'Password': 'foo',
             }, request_method='POST')
 
         flash = Mock()
@@ -229,11 +230,15 @@ class TestAuthController(UnitTestBase):
 
 class TestRegisterController(UnitTestBase):
     def test_register_controller_extensions_with_mail(self):
-        from pyramid_mailer.mailer import DummyMailer
-        from pyramid_mailer.interfaces import IMailer
-        from horus.views import RegisterController
-        from horus.interfaces import IHorusRegisterSchema
-        from horus.interfaces import IHorusRegisterForm
+        from pyramid_mailer.mailer      import DummyMailer
+        from pyramid_mailer.interfaces  import IMailer
+        from horus.views                import RegisterController
+        from horus.interfaces           import IHorusRegisterSchema
+        from horus.interfaces           import IHorusRegisterForm
+        from horus.interfaces           import IHorusUserClass
+        from horus.tests.models         import User
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
 
         self.config.add_route('index', '/')
 
@@ -260,6 +265,10 @@ class TestRegisterController(UnitTestBase):
         from horus.views import RegisterController
         from horus.interfaces import IHorusRegisterSchema
         from horus.interfaces import IHorusRegisterForm
+        from horus.interfaces           import IHorusUserClass
+        from horus.tests.models         import User
+
+        self.config.registry.registerUtility(User, IHorusUserClass)
 
         self.config.add_route('index', '/')
 
@@ -328,7 +337,6 @@ class TestRegisterController(UnitTestBase):
         from horus.views import RegisterController
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
-        from horus.managers import UserManager
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
 
@@ -342,8 +350,8 @@ class TestRegisterController(UnitTestBase):
         request = self.get_csrf_request(post={
             'User_name': 'admin',
             'Password': {
-                'value': 'test123',
-                'confirm': 'test123',
+                'Password': 'test123',
+                'Password-confirm': 'test123',
             },
             'Email': 'sontek@gmail.com'
         }, request_method='POST')
@@ -354,15 +362,14 @@ class TestRegisterController(UnitTestBase):
 
         assert response.status_int == 302
 
-        mgr = UserManager(request)
-        user = mgr.get_by_user_name('admin')
+        user = User.get_by_user_name('admin')
 
         assert user != None
 
     def test_register_validation(self):
-        from horus.views import RegisterController
-        from pyramid_mailer.mailer import DummyMailer
-        from pyramid_mailer.interfaces import IMailer
+        from horus.views                import RegisterController
+        from pyramid_mailer.mailer      import DummyMailer
+        from pyramid_mailer.interfaces  import IMailer
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
 

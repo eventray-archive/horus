@@ -1,7 +1,3 @@
-from pyramid.decorator  import reify
-from pyramid.request    import Request
-from pyramid.security   import unauthenticated_userid
-
 from horus.schemas      import LoginSchema
 from horus.schemas      import RegisterSchema
 from horus.schemas      import ForgotPasswordSchema
@@ -21,6 +17,8 @@ from horus.interfaces   import IHorusResetPasswordSchema
 from horus.interfaces   import IHorusProfileForm
 from horus.interfaces   import IHorusProfileSchema
 from horus.routes       import build_routes
+from horus.lib          import get_user
+from horus.lib          import get_class_from_config
 
 def groupfinder(userid, request):
     user = request.user
@@ -33,25 +31,6 @@ def groupfinder(userid, request):
         groups.append('user:%s' % user.pk)
 
     return groups
-
-def get_user(request):
-    pk = unauthenticated_userid(request)
-    user_class = request.registry.queryUtility(IHorusUserClass)
-
-    if pk is not None:
-        return user_class.get_by_pk(request, pk)
-
-def get_class_from_config(settings, key):
-    if key in settings:
-        user_modules = settings.get(key).split('.')
-        module = '.'.join(user_modules[:-1])
-        klass = user_modules[-1]
-        imported_module = __import__(module, fromlist=[klass])
-        imported_class = getattr(imported_module, klass)
-
-        return imported_class
-    else:
-        raise Exception('Please provide a horus.userclass config option')
 
 def includeme(config):
     settings = config.registry.settings

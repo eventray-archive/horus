@@ -13,6 +13,7 @@ import pystache
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
+from horus.interfaces import IHorusUserClass
 from horus.interfaces import IHorusLoginForm
 from horus.interfaces import IHorusLoginSchema
 from horus.interfaces import IHorusRegisterForm
@@ -81,8 +82,8 @@ class BaseController(object):
 
     def __init__(self, request):
         self._request  = request
-
         self.settings = request.registry.settings
+        self.user_class = request.registry.getUtility(IHorusUserClass)
         self.db = get_session(request)
 
 class AuthController(BaseController):
@@ -116,18 +117,17 @@ class AuthController(BaseController):
             except deform.ValidationFailure, e:
                 return {'form': e.render(), 'errors': e.error.children}
 
-            username = captured['Username']
+            username = captured['User_name']
             password = captured['Password']
-
-            mgr = UserManager(self.request)
 
             allow_email_auth = self.settings.get('su.allow_email_auth', False)
 
-            user = mgr.get_user(username, password)
+            user = self.user_class.get_user(self.request, username, password)
 
             if allow_email_auth:
                 if not user:
-                    user = mgr.get_by_email_password(username, password)
+                    user = self.user_class.get_by_email_password(username,
+                            password)
 
             if user:
                 if not self.allow_inactive_login:
@@ -286,6 +286,7 @@ class RegisterController(BaseController):
 
             return {'form': self.form.render()}
         elif self.request.method == 'POST':
+
             try:
                 controls = self.request.POST.items()
                 captured = self.form.validate(controls)
@@ -293,12 +294,12 @@ class RegisterController(BaseController):
                 return {'form': e.render(), 'errors': e.error.children}
 
             email = captured['Email']
-            username = captured['Username'].lower()
+            username = captured['User_name'].lower()
             password = captured['Password']
 
-
-            mgr = UserManager(self.request)
-            user = mgr.get_by_username_or_email(username, email)
+            user = self.user_class.get_by_user_name_or_email(self.request,
+                    username, email
+            )
 
             autologin = asbool(self.settings.get('su.autologin', False))
 
@@ -313,7 +314,8 @@ class RegisterController(BaseController):
             activation = None
 
             try:
-                user = User(username=username, password=password, email=email)
+                user = self.user_class(user_name=username, email=email)
+                user.set_password(password)
 
                 self.db.add(user)
 
