@@ -27,9 +27,6 @@ def groupfinder(userid, request):
     groups = []
 
     if user:
-        for org in user.organizations:
-            groups.append('organization:%s' % org.pk)
-
         for group in user.groups:
             groups.append('group:%s' % group.name)
 

@@ -9,6 +9,7 @@ from sqlalchemy                 import func
 
 from horus.lib                  import generate_random_string
 from horus.lib                  import get_session
+from horus.lib                  import pluralize
 
 import cryptacular.bcrypt
 import re
@@ -269,7 +270,7 @@ class GroupMixin(BaseModel):
 #            , order_by='%s.user.user_name' % UserMixin.__tablename__
             , passive_deletes=True
             , passive_updates=True
-            , backref=GroupMixin.__tablename__
+            , backref=pluralize(GroupMixin.__tablename__)
         )
 
 #    @declared_attr

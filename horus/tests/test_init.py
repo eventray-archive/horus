@@ -67,7 +67,7 @@ class TestInitCase(UnitTestBase):
 
         assert 'group:foo' in results
         assert 'user:%s' % (user1.pk) in results
-        assert len(results) == 3
+        assert len(results) == 2
 
     def test_group_finder_no_groups(self):
         from horus import groupfinder
