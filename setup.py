@@ -26,14 +26,12 @@ setup(name='horus'
       , description='Generic user registration for pyramid'
       , long_description=README + '\n\n' +  CHANGES
       , classifiers=[
-            'Development Status :: 4 - Beta'
-            'Environment :: Web Environment'
             'Intended Audience :: Developers'
-            'License :: OSI Approved :: BSD License'
-            'Operating System :: OS Independent'
-            'Programming Language :: Python'
-            'Topic :: Internet :: WWW/HTTP :: Dynamic Content'
-            'Topic :: Software Development :: Libraries :: Python Modules'
+            , 'License :: OSI Approved :: BSD License'
+            , 'Operating System :: OS Independent'
+            , 'Programming Language :: Python'
+            , 'Topic :: Internet :: WWW/HTTP :: Dynamic Content'
+            , 'Topic :: Software Development :: Libraries :: Python Modules'
       ]
       , author='John Anderson'
       , author_email='sontek@gmail.com'
@@ -44,7 +42,7 @@ setup(name='horus'
       , include_package_data=True
       , zip_safe=False
       , install_requires=requires
-      , tests_require=requires + ['pytest', 'mock', 'webtest']
+      , tests_require=requires + ['pytest', 'mock', 'webtest', 'pytest-cov']
       , test_suite='horus'
 )
 
