@@ -1,2 +1,5 @@
 include MANIFEST.in
-include test.ini
+exclude tests/
+exclude test.ini
+global-exclude *.pyc
+global-exclude .DS_Store
