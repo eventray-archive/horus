@@ -17,11 +17,14 @@ from horus.tests.models     import Activation
 from horus.interfaces       import IHorusSession
 from horus.interfaces       import IHorusUserClass
 from horus.interfaces       import IHorusActivationClass
+from pkg_resources          import resource_filename
 
 import os
 
 here = os.path.dirname(__file__)
-settings = appconfig('config:' + os.path.join(here, '../../', 'test.ini'))
+#settings = appconfig('config:' + os.path.join(here, '../', 'test.ini'))
+settings = appconfig('config:' + resource_filename(__name__, '../../test.ini'))
+
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
