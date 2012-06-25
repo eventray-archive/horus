@@ -44,7 +44,7 @@ def includeme(config):
         user_class = get_class_from_config(settings, 'horus.user_class')
         config.registry.registerUtility(user_class, IHorusUserClass)
 
-    if not config.registry.queryUtility(IHorusUserClass):
+    if not config.registry.queryUtility(IHorusActivationClass):
         activation_class = get_class_from_config(settings,
                 'horus.activation_class')
         config.registry.registerUtility(activation_class,
