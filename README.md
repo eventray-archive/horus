@@ -16,8 +16,8 @@ password e-mail and tell horus which session to use for the database objects.
 
 ``` python
  config.include('pyramid_mailer')
- from horus.interfaces import ISUSession
- config.registry.registerUtility(DBSession, ISUSession)
+ from horus.interfaces import IHorusSession
+ config.registry.registerUtility(DBSession, IHorusSession)
  config.include('horus')
  ```
 
@@ -36,7 +36,7 @@ from horus.events import ProfileUpdatedEvent
 
 def handle_request(event):
   request = event.request
-  session = request.registry.getUtility(ISUSession)
+  session = request.registry.getUtility(IHorusSession)
   session.commit()
 
 self.config.add_subscriber(handle_request, PasswordResetEvent)
@@ -54,20 +54,20 @@ to register the new deform class to use in the registry.
 
 The interaces you have available to override from horus.interfaces:
 
->  ISULoginForm
+>  IHorusLoginForm
 >
->  ISURegisterForm
+>  IHorusRegisterForm
 >
->  ISUForgotPasswordForm
+>  IHorusForgotPasswordForm
 >
->  ISUResetPasswordForm
+>  IHorusResetPasswordForm
 >
->  ISUProfileForm
+>  IHorusProfileForm
 >
 
 This is how you would do it (uniform being a custom deform Form class):
 
->  config.registry.registerUtility(UNIForm, ISULoginForm)
+>  config.registry.registerUtility(UNIForm, IHorusLoginForm)
 >
 
 If you would like to override the templates you can use pyramid's override asset 
