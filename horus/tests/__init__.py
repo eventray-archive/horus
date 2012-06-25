@@ -23,7 +23,7 @@ import os
 
 here = os.path.dirname(__file__)
 #settings = appconfig('config:' + os.path.join(here, '../', 'test.ini'))
-settings = appconfig('config:' + resource_filename(__name__, '../../test.ini'))
+settings = appconfig('config:' + resource_filename(__name__, 'test.ini'))
 
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
