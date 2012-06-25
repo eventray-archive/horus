@@ -202,6 +202,7 @@ class TestAuthController(UnitTestBase):
         self.config.registry.registerUtility(User, IHorusUserClass)
         user = User(user_name='sontek', email='sontek@gmail.com')
         user.set_password('foo')
+        user.activation = Activation()
         self.session.add(user)
         self.session.flush()
 
@@ -211,7 +212,7 @@ class TestAuthController(UnitTestBase):
 
         request = self.get_csrf_request(post={
                 'submit': True,
-                'user_name': 'sontek',
+                'User_name': 'sontek',
                 'Password': 'foo',
             }, request_method='POST')
 
@@ -503,8 +504,8 @@ class TestRegisterController(UnitTestBase):
         request = self.get_csrf_request(post={
             'User_name': 'admin',
             'Password': {
-                'value': 'test123',
-                'confirm': 'test123',
+                'Password': 'test123',
+                'Password-confirm': 'test123',
             },
             'Email': 'sontek@gmail.com'
         }, request_method='POST')
@@ -549,8 +550,8 @@ class TestRegisterController(UnitTestBase):
         request = self.get_csrf_request(post={
             'User_name': 'admin',
             'Password': {
-                'value': 'test123',
-                'confirm': 'test123',
+                'Password': 'test123',
+                'Password-confirm': 'test123',
             },
             'Email': 'sontek@gmail.com'
         }, request_method='POST')
@@ -898,7 +899,7 @@ class TestForgotPasswordController(UnitTestBase):
         self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
-        user = User(user_name='sontek', password='temp', email='sontek@gmail.com')
+        user = User(user_name='sontek', email='sontek@gmail.com')
         user.set_password('foo')
         user.activation = Activation()
 
@@ -907,8 +908,8 @@ class TestForgotPasswordController(UnitTestBase):
 
         request = self.get_csrf_request(post={
             'Password': {
-                'value': 'test123',
-                'confirm': 'test123',
+                'Password': 'test123',
+                'Password-confirm': 'test123',
             },
         }, request_method='POST')
 
@@ -961,8 +962,8 @@ class TestForgotPasswordController(UnitTestBase):
 
         request = self.get_csrf_request(post={
             'Password': {
-                'value': 't',
-                'confirm': 't',
+                'Password': 't',
+                'Password-confirm': 't',
             },
         }, request_method='POST')
 
@@ -1096,7 +1097,7 @@ class TestProfileController(UnitTestBase):
 
         response = view.profile()
 
-        assert response.get('form', None)
+        assert response.get('user', None) == user
 
     def test_profile_bad_pk(self):
         from horus.views import ProfileController
@@ -1137,12 +1138,16 @@ class TestProfileController(UnitTestBase):
     def test_profile_update_profile_invalid(self):
         from horus.views import ProfileController
         from horus.interfaces           import IHorusUserClass
-        from horus.tests.models         import User
         from horus.interfaces           import IHorusActivationClass
+        from horus.interfaces           import IHorusProfileSchema
+        from horus.tests.models         import User
         from horus.tests.models         import Activation
-        self.config.registry.registerUtility(Activation, IHorusActivationClass)
+        from horus.tests.schemas        import ProfileSchema
 
+        self.config.registry.registerUtility(Activation, IHorusActivationClass)
         self.config.registry.registerUtility(User, IHorusUserClass)
+        self.config.registry.registerUtility(ProfileSchema,
+            IHorusProfileSchema)
 
         self.config.add_route('index', '/')
         self.config.include('horus')
@@ -1153,7 +1158,7 @@ class TestProfileController(UnitTestBase):
         self.session.flush()
 
         request = self.get_csrf_request(request_method='POST') 
-        request.user = user
+        request.context = user
 
         request.matchdict = Mock()
         get = Mock()
@@ -1166,7 +1171,7 @@ class TestProfileController(UnitTestBase):
 
         view = ProfileController(request)
 
-        response = view.profile()
+        response = view.edit_profile()
 
         assert len(response['errors']) == 3
 
@@ -1253,25 +1258,24 @@ class TestProfileController(UnitTestBase):
         request = self.get_csrf_request(post={
             'Email': 'sontek@gmail.com',
             'Password': {
-                'value': 'test123',
-                'confirm': 'test123',
+                'Password': 'test123',
+                'Password-confirm': 'test123',
             },
         }, request_method='POST')
 
-        request.user = user
+        request.context = user
 
         request.matchdict = Mock()
         get = Mock()
         get.return_value = user.pk
         request.matchdict.get = get
 
-
         flash = Mock()
         request.session.flash = flash
 
         view = ProfileController(request)
 
-        view.profile()
+        view.edit_profile()
         new_user = User.get_by_pk(request, user.pk)
 
         assert new_user.email == 'sontek@gmail.com'

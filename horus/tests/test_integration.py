@@ -82,4 +82,4 @@ class TestViews(IntegrationTestBase):
             }
         )
 
-        assert 'Your account is not activated, please check your e-mail.' in res.body
+        assert 'Your account is not active, please check your e-mail.' in res.body
