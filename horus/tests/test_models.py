@@ -60,7 +60,7 @@ class TestUser(UnitTestBase):
         self.session.add(user1)
         self.session.flush()
 
-        assert user1.__acl__ == [(Allow, 'user:1', 'access_user')]
+        assert user1.__acl__ == [(Allow, 'user:%s' % user1.pk, 'access_user')]
 
 
 class TestGroup(UnitTestBase):

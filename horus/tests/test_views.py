@@ -403,7 +403,7 @@ class TestRegisterController(UnitTestBase):
 
         assert response.status_int == 302
 
-        user = User.get_by_user_name('admin')
+        user = User.get_by_user_name(request, 'admin')
 
         assert user != None
 
@@ -450,15 +450,16 @@ class TestRegisterController(UnitTestBase):
 
         self.config.add_route('index', '/')
 
-        admin = User(user_name='sontek', password='temp')
+        admin = User(user_name='sontek', email='sontek@gmail.com')
+        admin.set_password('test123')
         self.session.add(admin)
         self.session.flush()
 
         request = self.get_csrf_request(post={
-            'user_name': 'sontek',
+            'User_name': 'sontek',
             'Password': {
-                'value': 'test123',
-                'confirm': 'test123',
+                'Password': 'test123',
+                'Password-confirm': 'test123',
             },
             'Email': 'sontek@gmail.com'
         }, request_method='POST')
@@ -469,7 +470,7 @@ class TestRegisterController(UnitTestBase):
         controller = RegisterController(request)
         controller.register()
 
-        flash.assert_called_with(u'That user_name is already used.', 'error')
+        flash.assert_called_with(u'That username is already used.', 'error')
 
     def test_register_no_email_validation(self):
         from horus.views import RegisterController
@@ -646,7 +647,7 @@ class TestRegisterController(UnitTestBase):
         response = controller.activate()
         user = User.get_by_user_name(request, 'sontek1')
 
-        activations = Activation.get_all()
+        activations = Activation.get_all(request)
 
         assert len(activations) == 1
         assert user.is_activated

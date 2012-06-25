@@ -184,7 +184,7 @@ class ForgotPasswordController(BaseController):
 
             email = captured['Email']
 
-            user = self.User.get_by_email(email)
+            user = self.User.get_by_email(self.request, email)
             activation = self.Activation()
             self.db.add(activation)
 
@@ -228,7 +228,7 @@ class ForgotPasswordController(BaseController):
                         return {
                             'form': form.render(
                                 appstruct=dict(
-                                    User_name=user.username
+                                    User_name=user.user_name
                                 )
                             )
                         }
