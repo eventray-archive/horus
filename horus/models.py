@@ -27,9 +27,8 @@ class BaseModel(object):
     primary key column.
     """
     __table_args__ = {
-        'sqlite_autoincrement': True,
-        'mysql_engine': 'InnoDB',
-        'mysql_charset': 'utf8'
+        'mysql_engine': 'InnoDB'
+        , 'mysql_charset': 'utf8'
     }
 
     @declared_attr
