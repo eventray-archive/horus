@@ -40,7 +40,7 @@ def get_class_from_config(settings, key):
 
         return imported_class
     else:
-        raise Exception('Please provide a horus.userclass config option')
+        raise Exception('Please provide a horus.user_class config option')
 
 
 def pluralize(singular):
