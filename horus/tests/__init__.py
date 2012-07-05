@@ -14,10 +14,10 @@ from mock                   import Mock
 from horus.tests.models     import Base
 from horus.tests.models     import User
 from horus.tests.models     import Activation
-from horus.interfaces       import IHorusSession
 from horus.interfaces       import IHorusUserClass
 from horus.interfaces       import IHorusActivationClass
 from pkg_resources          import resource_filename
+from hem.interfaces         import IDBSession
 
 import os
 
@@ -45,7 +45,7 @@ class BaseTestCase(unittest.TestCase):
         # bind an individual Session to the connection
         self.session = self.Session(bind=connection)
 
-        self.config.registry.registerUtility(self.session, IHorusSession)
+        self.config.registry.registerUtility(self.session, IDBSession)
         self.config.registry.registerUtility(Activation, IHorusActivationClass)
         self.config.registry.registerUtility(User, IHorusUserClass)
 
@@ -109,7 +109,7 @@ class IntegrationTestBase(unittest.TestCase):
 
         config.set_session_factory(session_factory)
 
-        config.registry.registerUtility(DBSession, IHorusSession)
+        config.registry.registerUtility(DBSession, IDBSession)
 
         if settings.get('su.require_activation', True):
             config.include('pyramid_mailer')
@@ -127,7 +127,7 @@ class IntegrationTestBase(unittest.TestCase):
         self.app = TestApp(app)
         self.connection = connection = self.engine.connect()
 
-        self.session = app.registry.getUtility(IHorusSession)
+        self.session = app.registry.getUtility(IDBSession)
         self.session.configure(bind=connection)
         # begin a non-ORM transaction
         self.trans = connection.begin()

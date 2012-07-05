@@ -19,7 +19,7 @@ from horus.interfaces   import IHorusProfileForm
 from horus.interfaces   import IHorusProfileSchema
 from horus.routes       import build_routes
 from horus.lib          import get_user
-from horus.lib          import get_class_from_config
+from hem.config         import get_class_from_config
 
 def groupfinder(userid, request):
     user = request.user

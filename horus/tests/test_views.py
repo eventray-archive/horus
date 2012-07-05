@@ -477,7 +477,7 @@ class TestRegisterController(UnitTestBase):
         from horus.views import RegisterController
         from pyramid_mailer.mailer import DummyMailer
         from pyramid_mailer.interfaces import IMailer
-        from horus.interfaces import IHorusSession
+        from hem.interfaces import IDBSession
         from horus.events import NewRegistrationEvent
         from horus.interfaces           import IHorusUserClass
         from horus.tests.models         import User
@@ -495,7 +495,7 @@ class TestRegisterController(UnitTestBase):
 
         def handle_registration(event):
             request = event.request
-            session = request.registry.getUtility(IHorusSession)
+            session = request.registry.getUtility(IDBSession)
             session.commit()
 
         self.config.add_subscriber(handle_registration, NewRegistrationEvent)
@@ -881,7 +881,7 @@ class TestForgotPasswordController(UnitTestBase):
 
     def test_reset_password_valid_user(self):
         from horus.views import ForgotPasswordController
-        from horus.interfaces import IHorusSession
+        from hem.interfaces import IDBSession
         from horus.events import PasswordResetEvent
         from pyramid_mailer.interfaces import IMailer
         from pyramid_mailer.mailer import DummyMailer
@@ -925,7 +925,7 @@ class TestForgotPasswordController(UnitTestBase):
 
         def handle_password_reset(event):
             request = event.request
-            session = request.registry.getUtility(IHorusSession)
+            session = request.registry.getUtility(IDBSession)
             session.commit()
 
         self.config.add_subscriber(handle_password_reset, PasswordResetEvent)
@@ -1177,7 +1177,7 @@ class TestProfileController(UnitTestBase):
 
     def test_profile_update_profile(self):
         from horus.views import ProfileController
-        from horus.interfaces import IHorusSession
+        from hem.interfaces import IDBSession
         from horus.events import ProfileUpdatedEvent
         from horus.models import crypt
         from horus.interfaces           import IHorusUserClass
@@ -1198,7 +1198,7 @@ class TestProfileController(UnitTestBase):
 
         def handle_profile_updated(event):
             request = event.request
-            session = request.registry.getUtility(IHorusSession)
+            session = request.registry.getUtility(IDBSession)
             session.commit()
 
         self.config.add_subscriber(handle_profile_updated, ProfileUpdatedEvent)
@@ -1227,7 +1227,7 @@ class TestProfileController(UnitTestBase):
 
     def test_profile_update_password(self):
         from horus.views import ProfileController
-        from horus.interfaces import IHorusSession
+        from hem.interfaces import IDBSession
         from horus.events import ProfileUpdatedEvent
         from horus.models import crypt
         from horus.interfaces           import IHorusUserClass
@@ -1249,7 +1249,7 @@ class TestProfileController(UnitTestBase):
 
         def handle_profile_updated(event):
             request = event.request
-            session = request.registry.getUtility(IHorusSession)
+            session = request.registry.getUtility(IDBSession)
             session.commit()
 
         self.config.add_subscriber(handle_profile_updated, ProfileUpdatedEvent)

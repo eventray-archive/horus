@@ -16,8 +16,8 @@ password e-mail and tell horus which session to use for the database objects.
 
 ``` python
  config.include('pyramid_mailer')
- from horus.interfaces import IHorusSession
- config.registry.registerUtility(DBSession, IHorusSession)
+ from hem.interfaces import IDBSession
+ config.registry.registerUtility(DBSession, IDBSession)
  config.include('horus')
  ```
 
@@ -36,7 +36,7 @@ from horus.events import ProfileUpdatedEvent
 
 def handle_request(event):
   request = event.request
-  session = request.registry.getUtility(IHorusSession)
+  session = request.registry.getUtility(IDBSession)
   session.commit()
 
 self.config.add_subscriber(handle_request, PasswordResetEvent)

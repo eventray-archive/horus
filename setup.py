@@ -19,6 +19,7 @@ requires = [
     , 'pyramid_mailer'
     , 'beaker'
     , 'pyramid_beaker'
+    , 'hem'
 ]
 
 setup(name='horus'

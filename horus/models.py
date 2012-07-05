@@ -7,9 +7,9 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy                 import or_
 from sqlalchemy                 import func
 
-from horus.lib                  import generate_random_string
-from horus.lib                  import get_session
-from horus.lib                  import pluralize
+from hem.text                   import generate_random_string
+from hem.text                   import pluralize
+from hem.db                     import get_session
 
 import cryptacular.bcrypt
 import re
