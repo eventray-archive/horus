@@ -43,8 +43,10 @@ class BaseModel(object):
             re.sub(r'([A-Z])', lambda m:"_" + m.group(0).lower(), name[1:])
         )
 
-    # We use pk instead of id because id is a python builtin
-    pk =  sa.Column(sa.Integer, autoincrement=True, primary_key=True)
+    @declared_attr
+    def pk(self):
+        # We use pk instead of id because id is a python builtin
+        return sa.Column(sa.Integer, autoincrement=True, primary_key=True)
 
     def __json__(self):
         """Converts all the properties of the object into a dict
