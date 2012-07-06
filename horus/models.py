@@ -7,9 +7,9 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy                 import or_
 from sqlalchemy                 import func
 
-from horus.lib                  import generate_random_string
-from horus.lib                  import get_session
-from horus.lib                  import pluralize
+from hem.text                   import generate_random_string
+from hem.text                   import pluralize
+from hem.db                     import get_session
 
 import cryptacular.bcrypt
 import re
@@ -42,8 +42,10 @@ class BaseModel(object):
             re.sub(r'([A-Z])', lambda m:"_" + m.group(0).lower(), name[1:])
         )
 
-    # We use pk instead of id because id is a python builtin
-    pk =  sa.Column(sa.Integer, autoincrement=True, primary_key=True)
+    @declared_attr
+    def pk(self):
+        # We use pk instead of id because id is a python builtin
+        return sa.Column(sa.Integer, autoincrement=True, primary_key=True)
 
     def __json__(self):
         """Converts all the properties of the object into a dict

@@ -1,35 +1,36 @@
-from pyramid.view import view_config
-from pyramid.url import route_url
-from pyramid.i18n import TranslationStringFactory
-from pyramid.security import remember
-from pyramid.security import forget
+from pyramid.view           import view_config
+from pyramid.url            import route_url
+from pyramid.i18n           import TranslationStringFactory
+from pyramid.security       import remember
+from pyramid.security       import forget
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPNotFound
-from pyramid.settings import asbool
+from pyramid.settings       import asbool
+
+from pyramid_mailer         import get_mailer
+from pyramid_mailer.message import Message
+
+from horus.interfaces       import IHorusUserClass
+from horus.interfaces       import IHorusActivationClass
+from horus.interfaces       import IHorusLoginForm
+from horus.interfaces       import IHorusLoginSchema
+from horus.interfaces       import IHorusRegisterForm
+from horus.interfaces       import IHorusRegisterSchema
+from horus.interfaces       import IHorusForgotPasswordForm
+from horus.interfaces       import IHorusForgotPasswordSchema
+from horus.interfaces       import IHorusResetPasswordForm
+from horus.interfaces       import IHorusResetPasswordSchema
+from horus.interfaces       import IHorusProfileForm
+from horus.interfaces       import IHorusProfileSchema
+from horus.events           import NewRegistrationEvent
+from horus.events           import RegistrationActivatedEvent
+from horus.events           import PasswordResetEvent
+from horus.events           import ProfileUpdatedEvent
+from hem.db                 import get_session
 
 import deform
 import pystache
 
-from pyramid_mailer import get_mailer
-from pyramid_mailer.message import Message
-
-from horus.interfaces import IHorusUserClass
-from horus.interfaces import IHorusActivationClass
-from horus.interfaces import IHorusLoginForm
-from horus.interfaces import IHorusLoginSchema
-from horus.interfaces import IHorusRegisterForm
-from horus.interfaces import IHorusRegisterSchema
-from horus.interfaces import IHorusForgotPasswordForm
-from horus.interfaces import IHorusForgotPasswordSchema
-from horus.interfaces import IHorusResetPasswordForm
-from horus.interfaces import IHorusResetPasswordSchema
-from horus.interfaces import IHorusProfileForm
-from horus.interfaces import IHorusProfileSchema
-from horus.lib import get_session
-from horus.events import NewRegistrationEvent
-from horus.events import RegistrationActivatedEvent
-from horus.events import PasswordResetEvent
-from horus.events import ProfileUpdatedEvent
 
 _ = TranslationStringFactory('horus')
 

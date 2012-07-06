@@ -1,6 +1,5 @@
+from pkg_resources          import resource_filename
 import os
-
-ROOT_PATH = os.path.dirname(__file__)
 
 def pytest_sessionstart():
     from py.test import config
@@ -12,8 +11,9 @@ def pytest_sessionstart():
         from paste.deploy.loadwsgi  import appconfig
         from sqlalchemy             import engine_from_config
 
-        ROOT_PATH = os.path.dirname(__file__)
-        settings = appconfig('config:' + os.path.join(ROOT_PATH, 'test.ini'))
+        settings = appconfig('config:' + resource_filename(__name__,
+            'horus/tests/test.ini')
+        )
         engine = engine_from_config(settings, prefix='sqlalchemy.')
 
         print 'Creating the tables on the test database %s' % engine

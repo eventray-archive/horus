@@ -6,9 +6,6 @@ class IHorusUserClass(Interface):
 class IHorusActivationClass(Interface):
     pass
 
-class IHorusSession(Interface):
-    pass
-
 class IHorusLoginSchema(Interface):
     pass
 
