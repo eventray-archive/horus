@@ -2,8 +2,13 @@ language: python
 python:
   - "2.6"
   - "2.7"
-# command to install dependencies
-install: python setup.py install
+
+before_script:
+    - psql -c 'create database horus_test;' -U postgres
+
+install: 
+    - python setup.py install
 
 # command to run tests
-script: python setup.py test
+script: 
+    - python setup.py test

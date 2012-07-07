@@ -1,4 +1,5 @@
 import os
+import sys
 
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
@@ -12,6 +13,8 @@ class PyTest(TestCommand):
         #import here, cause outside the eggs aren't loaded
         import pytest
         pytest.main(self.test_args)
+        result = pytest.main(self.test_args)
+        sys.exit(result)
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = ''#open(os.path.join(here, 'README.md')).read()
@@ -30,7 +33,7 @@ requires = [
     , 'pyramid_mailer'
     , 'beaker'
     , 'pyramid_beaker'
-    , 'hem'
+    , 'hem==dev'
     , 'psycopg2'
 ]
 
@@ -58,5 +61,8 @@ setup(name='horus'
       , tests_require=requires + ['pytest', 'mock', 'webtest', 'pytest-cov']
       , cmdclass = {'test': PyTest}
       , test_suite='horus'
+      , dependency_links = [
+            'https://github.com/eventray/hem/tarball/master#egg=hem-dev'
+        ]
 )
 
