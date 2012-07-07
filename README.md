@@ -121,3 +121,5 @@ you might also consider running the tests in parallel:
 
 > $ py.test -n4
 
+
+Build Server: http://travis-ci.org/#!/eventray/horus
