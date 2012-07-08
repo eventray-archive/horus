@@ -650,7 +650,7 @@ class TestRegisterController(UnitTestBase):
 
         activations = Activation.get_all(request)
 
-        assert len(activations) == 1
+        assert len(activations.all()) == 1
         assert user.is_activated
         assert response.status_int == 302
 

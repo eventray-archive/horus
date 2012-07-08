@@ -1,10 +1,11 @@
-from horus.tests import UnitTestBase
+from horus.tests        import UnitTestBase
 from horus.tests.models import Base
-from sqlalchemy.types import DateTime
+from pyramid            import testing
+from sqlalchemy.types   import DateTime
 
-from sqlalchemy import Column
+from sqlalchemy         import Column
 
-from datetime import datetime
+from datetime           import datetime
 
 class TestModel(Base):
     start_date = Column(DateTime)
@@ -39,6 +40,45 @@ class TestActivation(UnitTestBase):
         assert activation1.code != None
         assert activation1.valid_until == dt
 
+    def test_get_activation(self):
+        from horus.tests.models import Activation
+
+        activation = Activation()
+        self.session.add(activation)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        new_activation = Activation.get_by_code(request, activation.code)
+
+        assert activation == new_activation
+
+    def test_get_user_activation(self):
+        from horus.tests.models import Activation
+        from horus.tests.models import User
+
+        user1 = User(user_name='sontek1', email='sontek@gmail.com')
+        user2 = User(user_name='sontek2', email='sontek+2@gmail.com')
+        user1.set_password('password')
+        user2.set_password('password')
+
+        activation = Activation()
+        user2.activation = activation
+
+        self.session.add(user1)
+        self.session.add(user2)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        new_user = User.get_by_user_name(request, 'sontek2')
+
+        new_activation = Activation.get_by_code(request, activation.code)
+
+        assert activation == new_activation
+        assert new_user.activation == new_activation
+
+
 class TestUser(UnitTestBase):
     def test_password_hashing(self):
         from horus.tests.models import User
@@ -62,6 +102,175 @@ class TestUser(UnitTestBase):
 
         assert user1.__acl__ == [(Allow, 'user:%s' % user1.pk, 'access_user')]
 
+    def test_get_valid_user(self):
+        from horus.tests.models import User
+
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('temp')
+        self.session.add(user)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        new_user = User.get_user(request, 'sontek', 'temp')
+
+        assert user == new_user
+
+    def test_get_all_users(self):
+        from horus.tests.models import User
+
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('temp')
+        user2 = User(user_name='sontek2', email='sontek2@gmail.com')
+        user2.set_password('temp')
+        self.session.add(user)
+        self.session.add(user2)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        users = User.get_all(request)
+
+        assert len(users.all()) == 2
+
+    def test_get_invalid_user(self):
+        from horus.tests.models import User
+
+        user = User(user_name='sontek1', email='sontek@gmail.com')
+        user.set_password('temp')
+        self.session.add(user)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        new_user = User.get_user(request, 'sontek', 'temp')
+
+        assert new_user == None
+
+    def test_get_user_by_pk(self):
+        from horus.tests.models import User
+
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('temp')
+        self.session.add(user)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        new_user = User.get_by_pk(request, user.pk)
+
+        assert new_user == user
+
+    def test_get_user_by_invalid_pk(self):
+        from horus.tests.models import User
+
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('temp')
+        self.session.add(user)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        new_user = User.get_by_pk(request, 2)
+
+        assert new_user == None
+
+    def test_get_user_by_username(self):
+        from horus.tests.models import User
+
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('temp')
+        self.session.add(user)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        new_user = User.get_by_user_name(request, 'sontek')
+
+        assert new_user == user
+
+    def test_get_user_by_invalid_username(self):
+        from horus.tests.models import User
+
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('temp')
+        self.session.add(user)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        new_user = User.get_by_user_name(request, 'sontek1')
+
+        assert new_user == None
+
+    def test_get_user_by_email(self):
+        from horus.tests.models import User
+
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('password')
+
+        self.session.add(user)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        new_user = User.get_by_email(request, user.email)
+
+        assert new_user == user
+
+    def test_get_user_by_invalid_email(self):
+        from horus.tests.models import User
+
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('password')
+        self.session.add(user)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        new_user = User.get_by_email(request, 'sontek1@gmail.com')
+
+        assert new_user == None
+
+    def test_get_user_by_activation(self):
+        from horus.tests.models import User
+        from horus.tests.models import Activation
+
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('password')
+        activation = Activation()
+        user.activation = activation
+
+        self.session.add(user)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        new_user = User.get_by_activation(request, activation)
+
+        assert new_user == user
+
+    def test_get_user_by_activation_with_multiple_users(self):
+        from horus.tests.models import User
+        from horus.tests.models import Activation
+
+        user1 = User(user_name='sontek1', email='sontek@gmail.com')
+        user2 = User(user_name='sontek2', email='sontek+2@gmail.com')
+        user1.set_password('password')
+        user2.set_password('password2')
+        activation = Activation()
+        user2.activation = activation
+
+        self.session.add(user1)
+        self.session.add(user2)
+
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        new_user = User.get_by_activation(request, activation)
+
+        assert new_user == user2
 
 class TestGroup(UnitTestBase):
     def test_init(self):
@@ -70,3 +279,41 @@ class TestGroup(UnitTestBase):
 
         assert group.name == 'foo'
         assert group.description == 'bar'
+
+    def test_get_all(self):
+        from horus.tests.models import Group
+        from horus.tests.models import User
+
+        user = User(user_name='sontek', email='sontek@gmail.com')
+        user.set_password('temp')
+        self.session.add(user)
+
+        group = Group(name='admin', description='group for admins')
+        group.users.append(user)
+        self.session.add(group)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        groups = Group.get_all(request)
+
+        assert len(groups.all()) == 1
+
+    def test_get_by_pk(self):
+        from horus.tests.models import Group
+        from horus.tests.models import User
+
+        group = Group(name='admin', description='group for admins')
+        group2 = Group(name='employees', description='group for employees')
+
+        self.session.add(group)
+        self.session.add(group2)
+
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        group = Group.get_by_pk(request, group2.pk)
+
+        assert group.name == 'employees'
+

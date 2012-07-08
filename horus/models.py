@@ -65,10 +65,22 @@ class BaseModel(object):
         return props
 
     @classmethod
-    def get_all(cls, request):
+    def get_all(cls, request, page=None, limit=None):
+        """ Gets all records of the specific item with option page and
+        limits
+        """
         session = get_session(request)
 
-        return session.query(cls).all()
+        query = session.query(cls)
+
+        if limit:
+            query = query.limit(limit)
+
+        if page:
+            offset = (page - 1) * limit
+            query = query.offset(offset)
+
+        return query
 
     @classmethod
     def get_by_pk(cls, request, pk):
