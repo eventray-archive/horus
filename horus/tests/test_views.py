@@ -313,7 +313,7 @@ class TestRegisterController(UnitTestBase):
         schema = Mock()
         form = Mock()
         
-        self.config.registry.settings['su.require_activation'] = False
+        self.config.registry.settings['horus.require_activation'] = False
         self.config.registry.registerUtility(schema, IHorusRegisterSchema)
         self.config.registry.registerUtility(form, IHorusRegisterForm)
 
@@ -491,7 +491,7 @@ class TestRegisterController(UnitTestBase):
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         self.config.add_route('index', '/')
-        self.config.registry.settings['su.require_activation'] = False
+        self.config.registry.settings['horus.require_activation'] = False
 
         def handle_registration(event):
             request = event.request

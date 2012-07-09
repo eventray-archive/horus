@@ -36,16 +36,16 @@ _ = TranslationStringFactory('horus')
 
 def authenticated(request, pk):
     """ This sets the auth cookies and redirects to the page defined
-        in su.login_redirect, defaults to a view named 'index'
+        in horus.login_redirect, defaults to a view named 'index'
     """
     settings = request.registry.settings
     headers = remember(request, pk)
-    autologin = asbool(settings.get('su.autologin', False))
+    autologin = asbool(settings.get('horus.autologin', False))
 
     if not autologin:
         request.session.flash(_('Logged in successfully.'), 'success')
 
-    login_redirect_view = route_url(settings.get('su.login_redirect', 'index'), request)
+    login_redirect_view = route_url(settings.get('horus.login_redirect', 'index'), request)
 
     return HTTPFound(location=login_redirect_view, headers=headers)
 
@@ -61,7 +61,7 @@ def create_activation(request, user):
 
     body = pystache.render(_("Please activate your e-mail address by visiting {{ link }}"),
         {
-            'link': request.route_url('activate', user_pk=user.pk, code=user.activation.code)
+            'link': request.route_url('horus_activate', user_pk=user.pk, code=user.activation.code)
         }
     )
 
@@ -95,10 +95,10 @@ class AuthController(BaseController):
 
         form = request.registry.getUtility(IHorusLoginForm)
 
-        self.login_redirect_view = route_url(self.settings.get('su.login_redirect', 'index'), request)
-        self.logout_redirect_view = route_url(self.settings.get('su.logout_redirect', 'index'), request)
-        self.require_activation = asbool(self.settings.get('su.require_activation', True))
-        self.allow_inactive_login = asbool(self.settings.get('su.allow_inactive_login', False))
+        self.login_redirect_view = route_url(self.settings.get('horus.login_redirect', 'index'), request)
+        self.logout_redirect_view = route_url(self.settings.get('horus.logout_redirect', 'index'), request)
+        self.require_activation = asbool(self.settings.get('horus.require_activation', True))
+        self.allow_inactive_login = asbool(self.settings.get('horus.allow_inactive_login', False))
 
         self.form = form(self.schema)
 
@@ -120,7 +120,7 @@ class AuthController(BaseController):
             username = captured['User_name']
             password = captured['Password']
 
-            allow_email_auth = self.settings.get('su.allow_email_auth', False)
+            allow_email_auth = self.settings.get('horus.allow_email_auth', False)
 
             user = self.User.get_user(self.request, username, password)
 
@@ -146,7 +146,7 @@ class AuthController(BaseController):
     def logout(self):
         """
         Removes the auth cookies and redirects to the view defined in 
-        su.lgout_redirect, defaults to a view named 'index'
+        horus.lgout_redirect, defaults to a view named 'index'
         """
         self.request.session.invalidate()
         self.request.session.flash(_('Logged out successfully.'), 'success')
@@ -159,8 +159,8 @@ class ForgotPasswordController(BaseController):
     def __init__(self, request):
         super(ForgotPasswordController, self).__init__(request)
 
-        self.forgot_password_redirect_view = route_url(self.settings.get('su.forgot_password_redirect', 'index'), request)
-        self.reset_password_redirect_view = route_url(self.settings.get('su.reset_password_redirect', 'index'), request)
+        self.forgot_password_redirect_view = route_url(self.settings.get('horus.forgot_password_redirect', 'index'), request)
+        self.reset_password_redirect_view = route_url(self.settings.get('horus.reset_password_redirect', 'index'), request)
 
     @view_config(route_name='horus_forgot_password', renderer='horus:templates/forgot_password.mako')
     def forgot_password(self):
@@ -195,7 +195,7 @@ class ForgotPasswordController(BaseController):
                 mailer = get_mailer(self.request)
                 body = pystache.render(_("Someone has tried to reset your password, if this was you click here: {{ link }}"),
                     {
-                        'link': route_url('reset_password', self.request, code=user.activation.code)
+                        'link': route_url('horus_reset_password', self.request, code=user.activation.code)
                     }
                 )
 
@@ -267,10 +267,10 @@ class RegisterController(BaseController):
         form = request.registry.getUtility(IHorusRegisterForm)
         self.form = form(self.schema)
 
-        self.register_redirect_view = route_url(self.settings.get('su.register_redirect', 'index'), request)
-        self.activate_redirect_view = route_url(self.settings.get('su.activate_redirect', 'index'), request)
+        self.register_redirect_view = route_url(self.settings.get('horus.register_redirect', 'index'), request)
+        self.activate_redirect_view = route_url(self.settings.get('horus.activate_redirect', 'index'), request)
 
-        self.require_activation = asbool(self.settings.get('su.require_activation', True))
+        self.require_activation = asbool(self.settings.get('horus.require_activation', True))
 
         if self.require_activation:
             self.mailer = get_mailer(request)
@@ -298,7 +298,7 @@ class RegisterController(BaseController):
                     username, email
             )
 
-            autologin = asbool(self.settings.get('su.autologin', False))
+            autologin = asbool(self.settings.get('horus.autologin', False))
 
             if user:
                 if user.user_name == username:
