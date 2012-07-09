@@ -76,7 +76,7 @@ class BaseModel(object):
         if limit:
             query = query.limit(limit)
 
-        if page:
+        if page and limit:
             offset = (page - 1) * limit
             query = query.offset(offset)
 

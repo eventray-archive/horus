@@ -103,7 +103,7 @@ class AuthController(BaseController):
         self.form = form(self.schema)
 
 
-    @view_config(route_name='login', renderer='horus:templates/login.mako')
+    @view_config(route_name='horus_login', renderer='horus:templates/login.mako')
     def login(self):
         if self.request.method == 'GET':
             if self.request.user:
@@ -142,7 +142,7 @@ class AuthController(BaseController):
 
             return {'form': self.form.render(appstruct=captured)}
 
-    @view_config(permission='view', route_name='logout')
+    @view_config(permission='view', route_name='horus_logout')
     def logout(self):
         """
         Removes the auth cookies and redirects to the view defined in 
@@ -162,7 +162,7 @@ class ForgotPasswordController(BaseController):
         self.forgot_password_redirect_view = route_url(self.settings.get('su.forgot_password_redirect', 'index'), request)
         self.reset_password_redirect_view = route_url(self.settings.get('su.reset_password_redirect', 'index'), request)
 
-    @view_config(route_name='forgot_password', renderer='horus:templates/forgot_password.mako')
+    @view_config(route_name='horus_forgot_password', renderer='horus:templates/forgot_password.mako')
     def forgot_password(self):
         schema = self.request.registry.getUtility(IHorusForgotPasswordSchema)
         schema = schema().bind(request=self.request)
@@ -209,7 +209,7 @@ class ForgotPasswordController(BaseController):
         self.request.session.flash(_('Please check your e-mail to reset your password.'), 'success')
         return HTTPFound(location=self.reset_password_redirect_view)
 
-    @view_config(route_name='reset_password', renderer='horus:templates/reset_password.mako')
+    @view_config(route_name='horus_reset_password', renderer='horus:templates/reset_password.mako')
     def reset_password(self):
         schema = self.request.registry.getUtility(IHorusResetPasswordSchema)
         schema = schema().bind(request=self.request)
@@ -275,7 +275,7 @@ class RegisterController(BaseController):
         if self.require_activation:
             self.mailer = get_mailer(request)
 
-    @view_config(route_name='register', renderer='horus:templates/register.mako')
+    @view_config(route_name='horus_register', renderer='horus:templates/register.mako')
     def register(self):
         if self.request.method == 'GET':
             if self.request.user:
@@ -341,7 +341,7 @@ class RegisterController(BaseController):
 
             return HTTPFound(location=self.register_redirect_view)
 
-    @view_config(route_name='activate')
+    @view_config(route_name='horus_activate')
     def activate(self):
         code = self.request.matchdict.get('code', None)
         user_pk = self.request.matchdict.get('user_pk', None)
@@ -380,7 +380,7 @@ class ProfileController(BaseController):
         self.form = form(self.schema)
 
 
-    @view_config(route_name='profile', renderer='horus:templates/profile.mako')
+    @view_config(route_name='horus_profile', renderer='horus:templates/profile.mako')
     def profile(self):
         pk = self.request.matchdict.get('user_pk', None)
 
@@ -391,7 +391,7 @@ class ProfileController(BaseController):
 
         return {'user': user}
 
-    @view_config(permission='access_user', route_name='edit_profile',
+    @view_config(permission='access_user', route_name='horus_edit_profile',
         renderer='horus:templates/edit_profile.mako')
     def edit_profile(self):
         user = self.request.context

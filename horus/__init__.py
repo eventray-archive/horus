@@ -17,7 +17,6 @@ from horus.interfaces   import IHorusResetPasswordForm
 from horus.interfaces   import IHorusResetPasswordSchema
 from horus.interfaces   import IHorusProfileForm
 from horus.interfaces   import IHorusProfileSchema
-from horus.routes       import build_routes
 from horus.lib          import get_user
 from hem.config         import get_class_from_config
 
@@ -72,5 +71,5 @@ def includeme(config):
         if not config.registry.queryUtility(form):
             config.registry.registerUtility(SubmitForm, form)
 
-    config.include(build_routes)
-    config.scan('horus')
+    config.include('horus.routes')
+    config.scan()
