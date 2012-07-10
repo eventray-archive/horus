@@ -14,6 +14,11 @@ def includeme(config):
     config.add_route('horus_edit_profile', '/profile/{user_pk}/edit',
             factory=UserFactory, traverse="/{user_pk}")
 
-    config.add_route('horus_admin_users_list', '/admin/users')
-    config.add_route('horus_admin_users_create', '/admin/users/create')
-    config.add_route('horus_admin_users_edit', '/admin/users/{user_pk}')
+    config.add_route('horus_admin', '/admin')
+    config.add_route('horus_admin_users_index', '/admin/users')
+    config.add_route('horus_admin_users_create', '/admin/users/new')
+    config.add_route('horus_admin_users_edit'
+        , '/admin/users/{user_pk}/edit'
+        , factory = UserFactory
+        , traverse = "/{user_pk}"
+    )

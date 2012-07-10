@@ -43,12 +43,12 @@ class ProfileSchema(CSRFSchema):
         missing=colander.null)
 
 class AdminUserSchema(CSRFSchema):
-    User_name = colander.SchemaNode(colander.String())
-    Email = colander.SchemaNode(
+    user_name = colander.SchemaNode(colander.String())
+    email = colander.SchemaNode(
         colander.String(),
         validator=colander.Email()
     )
-    Password = colander.SchemaNode(colander.String(),
+    password = colander.SchemaNode(colander.String(),
         validator=colander.Length(min=2),
         widget=deform.widget.CheckedPasswordWidget(),
         missing=colander.null

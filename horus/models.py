@@ -53,7 +53,12 @@ class BaseModel(object):
         """
         props = {}
 
+        blacklist = ['password']
+
         for key in self.__dict__:
+            if key in blacklist:
+                continue
+
             if not key.startswith('__') and not key.startswith('_sa_'):
                 obj = getattr(self, key)
 
