@@ -33,12 +33,12 @@ requires = [
     , 'pyramid_mailer'
     , 'beaker'
     , 'pyramid_beaker'
-    , 'hem==dev'
+    , 'hem'
     , 'psycopg2'
 ]
 
 setup(name='horus'
-      , version='dev'
+      , version='0.9.2'
       , description='Generic user registration for pyramid'
       , long_description=README + '\n\n' +  CHANGES
       , classifiers=[
