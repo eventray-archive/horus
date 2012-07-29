@@ -2,4 +2,6 @@ global-exclude *.pyc
 global-exclude .DS_Store
 global-include test.ini
 include MANIFEST.in
-include *.mako
+include *.txt *.ini *.cfg *.rst
+recursive-include horus *.ico *.png *.css *.gif *.jpg *.pt *.txt *.mak *.mako *.js *.html *.xml
+
