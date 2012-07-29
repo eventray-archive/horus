@@ -47,7 +47,7 @@ class BaseModel(object):
         # We use pk instead of id because id is a python builtin
         return sa.Column(sa.Integer, autoincrement=True, primary_key=True)
 
-    def __json__(self):
+    def __json__(self, convert_date=False):
         """Converts all the properties of the object into a dict
         for use in json
         """
@@ -61,9 +61,11 @@ class BaseModel(object):
 
             if not key.startswith('__') and not key.startswith('_sa_'):
                 obj = getattr(self, key)
-
                 if isinstance(obj, datetime) or isinstance(obj, date):
-                        props[key] = obj.isoformat()
+                        if convert_date:
+                            props[key] = obj.isoformat()
+                        else:
+                            props[key] = getattr(self, key)
                 else:
                     props[key] = getattr(self, key)
 
