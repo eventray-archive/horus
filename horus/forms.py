@@ -1,4 +1,9 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+    unicode_literals)
 import deform
+
 
 class SubmitForm(deform.Form):
     def __init__(self, *args, **kwargs):
@@ -8,12 +13,14 @@ class SubmitForm(deform.Form):
 
         super(SubmitForm, self).__init__(*args, **kwargs)
 
+
 class BaseForm(deform.Form):
     def __init__(self, *args, **kwargs):
         if not kwargs.get('buttons'):
             kwargs['buttons'] = ('submit', )
 
         super(BaseForm, self).__init__(*args, **kwargs)
+
 
 class BootstrapForm(BaseForm):
     """ This form renders out twitter bootstrap templates """
@@ -30,9 +37,9 @@ class BootstrapForm(BaseForm):
                 if not 'xlarge' in child.widget.css_class:
                     child.widget.css_class += ' xlarge'
 
+
 class HorusForm(BootstrapForm):
     """ This is the standard form we should use through out our code, that way
     if we decide to swap our rendering later, we only have to do it in 1 place
     """
     pass
-

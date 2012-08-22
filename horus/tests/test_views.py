@@ -1,9 +1,14 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+    unicode_literals)
 from pyramid import testing
 
 from mock import Mock
 from mock import patch
 
 from horus.tests import UnitTestBase
+
 
 class TestAuthController(UnitTestBase):
     def test_auth_controller_extensions(self):
@@ -34,7 +39,6 @@ class TestAuthController(UnitTestBase):
 
         assert schema.called
         assert form.called
-
 
     def test_login_loads(self):
         from horus.views          import AuthController
@@ -131,7 +135,6 @@ class TestAuthController(UnitTestBase):
         assert errors[0].node.name == u'csrf_token'
         assert errors[0].msg == u'Invalid cross-site scripting token'
 
-
     def test_login_fails_bad_credentials(self):
         """ Make sure we can't login with bad credentials"""
         from horus.views import AuthController
@@ -160,7 +163,7 @@ class TestAuthController(UnitTestBase):
         flash.assert_called_with(u'Invalid username or password.', 'error')
 
     def test_login_succeeds(self):
-        """ Make sure we can login """
+        """Make sure we can log in."""
         from horus.tests.models import User
         from horus.interfaces     import IHorusUserClass
         from horus.interfaces   import IHorusActivationClass
@@ -192,7 +195,7 @@ class TestAuthController(UnitTestBase):
         assert response.status_int == 302
 
     def test_inactive_login_fails(self):
-        """ Make sure we can't login with an inactive user """
+        """Make sure we can't log in with an inactive user."""
         from horus.tests.models import User
         from horus.interfaces     import IHorusUserClass
         from horus.interfaces   import IHorusActivationClass
@@ -223,7 +226,8 @@ class TestAuthController(UnitTestBase):
         view = AuthController(request)
         view.login()
 
-        flash.assert_called_with(u'Your account is not active, please check your e-mail.',
+        flash.assert_called_with(
+            'Your account is not active, please check your e-mail.',
             'error')
 
     def test_logout(self):
@@ -254,6 +258,7 @@ class TestAuthController(UnitTestBase):
                 forget.assert_called_with(request)
                 assert invalidate.called
                 assert HTTPFound.called
+
 
 class TestRegisterController(UnitTestBase):
     def test_register_controller_extensions_with_mail(self):
@@ -312,7 +317,7 @@ class TestRegisterController(UnitTestBase):
 
         schema = Mock()
         form = Mock()
-        
+
         self.config.registry.settings['horus.require_activation'] = False
         self.config.registry.registerUtility(schema, IHorusRegisterSchema)
         self.config.registry.registerUtility(form, IHorusRegisterForm)
@@ -499,7 +504,6 @@ class TestRegisterController(UnitTestBase):
             session.commit()
 
         self.config.add_subscriber(handle_registration, NewRegistrationEvent)
-
 
         request = self.get_csrf_request(post={
             'User_name': 'admin',
@@ -740,6 +744,7 @@ class TestRegisterController(UnitTestBase):
         assert not new_user2.is_activated
         assert response.status_int == 404
 
+
 class TestForgotPasswordController(UnitTestBase):
     def test_forgot_password_loads(self):
         from horus.views import ForgotPasswordController
@@ -794,7 +799,6 @@ class TestForgotPasswordController(UnitTestBase):
 
         self.session.add(user)
         self.session.flush()
-
 
         request = self.get_csrf_request(post={
             'Email': 'sontek@gmail.com'
@@ -893,7 +897,6 @@ class TestForgotPasswordController(UnitTestBase):
 
         self.config.registry.registerUtility(User, IHorusUserClass)
         self.config.registry.registerUtility(Activation, IHorusActivationClass)
-
 
         self.config.add_route('index', '/')
         self.config.include('horus')
@@ -998,7 +1001,6 @@ class TestForgotPasswordController(UnitTestBase):
         self.config.include('horus')
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
-
         user = User(user_name='sontek', password='temp', email='sontek@gmail.com')
         user.set_password('foo')
         user.activation = Activation()
@@ -1061,6 +1063,7 @@ class TestForgotPasswordController(UnitTestBase):
 
         assert response.status_int == 404
 
+
 class TestProfileController(UnitTestBase):
     def test_profile_loads(self):
         from horus.views import ProfileController
@@ -1091,7 +1094,6 @@ class TestProfileController(UnitTestBase):
         get = Mock()
         get.return_value = user.pk
         request.matchdict.get = get
-
 
         view = ProfileController(request)
 
@@ -1157,14 +1159,13 @@ class TestProfileController(UnitTestBase):
         self.session.add(user)
         self.session.flush()
 
-        request = self.get_csrf_request(request_method='POST') 
+        request = self.get_csrf_request(request_method='POST')
         request.context = user
 
         request.matchdict = Mock()
         get = Mock()
         get.return_value = user.pk
         request.matchdict.get = get
-
 
         flash = Mock()
         request.session.flash = flash
@@ -1252,8 +1253,8 @@ class TestProfileController(UnitTestBase):
             session = request.registry.getUtility(IDBSession)
             session.commit()
 
-        self.config.add_subscriber(handle_profile_updated, ProfileUpdatedEvent)
-
+        self.config.add_subscriber(handle_profile_updated,
+            ProfileUpdatedEvent)
 
         request = self.get_csrf_request(post={
             'Email': 'sontek@gmail.com',

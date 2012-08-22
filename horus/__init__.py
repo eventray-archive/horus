@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+    unicode_literals)
 from horus.schemas          import LoginSchema
 from horus.schemas          import RegisterSchema
 from horus.schemas          import ForgotPasswordSchema
@@ -20,36 +24,29 @@ from horus.interfaces       import IHorusProfileSchema
 from horus.lib              import get_user
 from hem.config             import get_class_from_config
 
+
 def groupfinder(userid, request):
     user = request.user
     groups = []
-
     if user:
         for group in user.groups:
             groups.append('group:%s' % group.name)
-
         groups.append('user:%s' % user.pk)
-
     return groups
+
 
 def includeme(config):
     settings = config.registry.settings
     config.set_request_property(get_user, 'user', reify=True)
-
     config.set_root_factory(RootFactory)
-
-
     if not config.registry.queryUtility(IHorusUserClass):
         user_class = get_class_from_config(settings, 'horus.user_class')
         config.registry.registerUtility(user_class, IHorusUserClass)
-
     if not config.registry.queryUtility(IHorusActivationClass):
         activation_class = get_class_from_config(settings,
                 'horus.activation_class')
         config.registry.registerUtility(activation_class,
                 IHorusActivationClass)
-
-
     schemas = [
         (IHorusLoginSchema, LoginSchema),
         (IHorusRegisterSchema, RegisterSchema),
@@ -57,19 +54,15 @@ def includeme(config):
         (IHorusResetPasswordSchema, ResetPasswordSchema),
         (IHorusProfileSchema, ProfileSchema)
     ]
-
     forms = [
         IHorusLoginForm, IHorusRegisterForm, IHorusForgotPasswordForm,
         IHorusResetPasswordForm, IHorusProfileForm
     ]
-
     for iface, schema in schemas:
         if not config.registry.queryUtility(iface):
             config.registry.registerUtility(schema, iface)
-
     for form in forms:
         if not config.registry.queryUtility(form):
             config.registry.registerUtility(SubmitForm, form)
-
     config.include('horus.routes')
     config.scan()

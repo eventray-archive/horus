@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+    unicode_literals)
 from pyramid.i18n               import TranslationStringFactory
 from pyramid.security           import Allow
 from datetime                   import datetime
@@ -17,34 +21,34 @@ import urllib
 import hashlib
 import sqlalchemy as sa
 
-
 _ = TranslationStringFactory('horus')
 
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
+
 class BaseModel(object):
-    """Base class which auto-generates tablename, and surrogate
+    """Base class which auto-generates tablename and surrogate
     primary key column.
     """
     __table_args__ = {
-        'mysql_engine': 'InnoDB'
-        , 'mysql_charset': 'utf8'
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
     }
 
     @declared_attr
     def __tablename__(cls):
-        """Convert CamelCase class name to underscores_between_words 
-        table name."""
+        """Convert CamelCase class name to underscores_between_words
+        table name.
+        """
         name = cls.__name__.replace('Mixin', '')
-
         return (
-            name[0].lower() + 
-            re.sub(r'([A-Z])', lambda m:"_" + m.group(0).lower(), name[1:])
+            name[0].lower() +
+            re.sub(r'([A-Z])', lambda m: "_" + m.group(0).lower(), name[1:])
         )
 
     @declared_attr
     def pk(self):
-        # We use pk instead of id because id is a python builtin
+        # We use "pk" instead of "id" because "id" is a python builtin.
         return sa.Column(sa.Integer, autoincrement=True, primary_key=True)
 
     def __json__(self, convert_date=False):
@@ -73,8 +77,7 @@ class BaseModel(object):
 
     @classmethod
     def get_all(cls, request, page=None, limit=None):
-        """ Gets all records of the specific item with option page and
-        limits
+        """Gets all records of the specific item with option page and limits.
         """
         session = get_session(request)
 
@@ -91,22 +94,19 @@ class BaseModel(object):
 
     @classmethod
     def get_by_pk(cls, request, pk):
-        """Gets an object by its primary key"""
+        """Gets an object by its primary key."""
         session = get_session(request)
-
         return session.query(cls).filter(cls.pk == pk).first()
 
 
 class ActivationMixin(BaseModel):
-    """
-    Handle activations/password reset items for users
+    """Handles activations/password reset items for users.
 
-    The code should be a random hash that is valid only one time
-    After that hash is used to access the site it'll be removed
+    The code should be a random hash that is valid only once.
+    After the hash is used to access the site, it'll be removed.
 
-    The created by is a system: new user registration, password reset, forgot
-    password, etc.
-
+    The "created by" is a system: new user registration, password reset,
+    forgot password etc.
     """
     @declared_attr
     def code(self):
@@ -129,16 +129,17 @@ class ActivationMixin(BaseModel):
         return session.query(cls).filter(cls.code == code).first()
 
     def __init__(self, created_by='web', valid_until=None):
-        """ Create a new activation, valid_until is a datetime, 
-        defaults to 3 days from current day
+        """Create a new activation, valid_until is a datetime,
+        defaults to 3 days from current day.
         """
-        self.code =  generate_random_string(12)
+        self.code = generate_random_string(12)
         self.created_by = created_by
 
         if valid_until:
             self.valid_until = valid_until
         else:
-             self.valid_until = datetime.utcnow() + timedelta(days=3)
+            self.valid_until = datetime.utcnow() + timedelta(days=3)
+
 
 class UserMixin(BaseModel):
     @declared_attr
@@ -232,7 +233,6 @@ class UserMixin(BaseModel):
         """ generates random string of fixed length"""
         return generate_random_string(chars)
 
-
     @classmethod
     def get_by_email(cls, request, email):
         session = get_session(request)
@@ -306,6 +306,7 @@ class UserMixin(BaseModel):
                 (Allow, 'user:%s' % self.pk, 'access_user')
         ]
 
+
 class GroupMixin(BaseModel):
     """ base mixin for group object"""
 
@@ -319,14 +320,14 @@ class GroupMixin(BaseModel):
 
     @declared_attr
     def users(self):
-        """ relationship for users belonging to this group"""
+        """Relationship for users belonging to this group"""
         return sa.orm.relationship(
-            'User'
-            , secondary=UserGroupMixin.__tablename__
-#            , order_by='%s.user.user_name' % UserMixin.__tablename__
-            , passive_deletes=True
-            , passive_updates=True
-            , backref=pluralize(GroupMixin.__tablename__)
+            'User',
+            secondary=UserGroupMixin.__tablename__,
+            # order_by='%s.user.user_name' % UserMixin.__tablename__,
+            passive_deletes=True,
+            passive_updates=True,
+            backref=pluralize(GroupMixin.__tablename__),
         )
 
 #    @declared_attr
@@ -342,6 +343,7 @@ class GroupMixin(BaseModel):
     def __repr__(self):
         return '<Group: %s>' % self.name
 
+
 class UserGroupMixin(BaseModel):
     @declared_attr
     def group_pk(self):
@@ -352,12 +354,12 @@ class UserGroupMixin(BaseModel):
     @declared_attr
     def user_pk(self):
         return sa.Column(
-            sa.Integer
-            , sa.ForeignKey('%s.pk' % UserMixin.__tablename__,
+            sa.Integer,
+            sa.ForeignKey('%s.pk' % UserMixin.__tablename__,
                 onupdate='CASCADE',
                 ondelete='CASCADE'
-            )
-            , primary_key=True
+            ),
+            primary_key=True,
         )
 
     def __repr__(self):

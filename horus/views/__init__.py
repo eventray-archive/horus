@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+    unicode_literals)
 from pyramid.view           import view_config
 from pyramid.url            import route_url
-from pyramid.i18n           import TranslationStringFactory
 from pyramid.security       import remember
 from pyramid.security       import forget
 from pyramid.httpexceptions import HTTPFound
@@ -26,17 +29,16 @@ from horus.events           import NewRegistrationEvent
 from horus.events           import RegistrationActivatedEvent
 from horus.events           import PasswordResetEvent
 from horus.events           import ProfileUpdatedEvent
+from horus.models import _
 from hem.db                 import get_session
 
 import deform
 import pystache
 
 
-_ = TranslationStringFactory('horus')
-
 def authenticated(request, pk):
-    """ This sets the auth cookies and redirects to the page defined
-        in horus.login_redirect, defaults to a view named 'index'
+    """Sets the auth cookies and redirects to the page defined
+    in horus.login_redirect, which defaults to a view named 'index'.
     """
     settings = request.registry.settings
     headers = remember(request, pk)
@@ -48,6 +50,7 @@ def authenticated(request, pk):
     login_redirect_view = route_url(settings.get('horus.login_redirect', 'index'), request)
 
     return HTTPFound(location=login_redirect_view, headers=headers)
+
 
 def create_activation(request, user):
     db = get_session(request)
@@ -80,11 +83,12 @@ class BaseController(object):
         return self._request
 
     def __init__(self, request):
-        self._request  = request
+        self._request = request
         self.settings = request.registry.settings
         self.User = request.registry.getUtility(IHorusUserClass)
         self.Activation = request.registry.getUtility(IHorusActivationClass)
         self.db = get_session(request)
+
 
 class AuthController(BaseController):
     def __init__(self, request):
@@ -102,8 +106,8 @@ class AuthController(BaseController):
 
         self.form = form(self.schema)
 
-
-    @view_config(route_name='horus_login', renderer='horus:templates/login.mako')
+    @view_config(route_name='horus_login',
+        renderer='horus:templates/login.mako')
     def login(self):
         if self.request.method == 'GET':
             if self.request.user:
@@ -144,9 +148,8 @@ class AuthController(BaseController):
 
     @view_config(permission='view', route_name='horus_logout')
     def logout(self):
-        """
-        Removes the auth cookies and redirects to the view defined in 
-        horus.lgout_redirect, defaults to a view named 'index'
+        """Removes the auth cookies and redirects to the view defined in
+        horus.logout_redirect, which defaults to a view named 'index'.
         """
         self.request.session.invalidate()
         self.request.session.flash(_('Logged out successfully.'), 'success')
@@ -333,7 +336,6 @@ class RegisterController(BaseController):
                     captured)
             )
 
-
             if autologin:
                 self.db.flush()
 
@@ -379,8 +381,8 @@ class ProfileController(BaseController):
         form = self.request.registry.getUtility(IHorusProfileForm)
         self.form = form(self.schema)
 
-
-    @view_config(route_name='horus_profile', renderer='horus:templates/profile.mako')
+    @view_config(route_name='horus_profile',
+        renderer='horus:templates/profile.mako')
     def profile(self):
         pk = self.request.matchdict.get('user_pk', None)
 
@@ -405,7 +407,7 @@ class ProfileController(BaseController):
 
             return {
                     'form': self.form.render(
-                        appstruct= dict(
+                        appstruct=dict(
                             User_name=username,
                             Email=email if email else '',
                         )
@@ -424,13 +426,11 @@ class ProfileController(BaseController):
 
             if email:
                 email_user = self.User.get_by_email(self.request, email)
-
                 if email_user:
                     if email_user.pk != user.pk:
-                        self.request.session.flash(_('That e-mail is already used.'), 'error')
-
+                        self.request.session.flash(
+                            _('That e-mail is already used.'), 'error')
                         return HTTPFound(location=self.request.url)
-
                 user.email = email
 
             password = captured.get('Password')
@@ -438,12 +438,12 @@ class ProfileController(BaseController):
             if password:
                 user.set_password(password)
 
-            self.request.session.flash(_('Profile successfully updated.'), 'success')
+            self.request.session.flash(_('Profile successfully updated.'),
+                'success')
 
             self.db.add(user)
 
             self.request.registry.notify(
                 ProfileUpdatedEvent(self.request, user, captured)
             )
-
             return HTTPFound(location=self.request.url)

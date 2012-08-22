@@ -1,7 +1,12 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+    unicode_literals)
 from horus.tests import IntegrationTestBase
 from pyramid import testing
 from mock import patch
 from mock import Mock
+
 
 class TestViews(IntegrationTestBase):
     def test_index(self):
@@ -36,7 +41,7 @@ class TestViews(IntegrationTestBase):
         assert "Required" in res.body
         assert res.status_int == 200
 
-    def test_valid_login(self): 
+    def test_valid_login(self):
         """ Call the login view, make sure routes are working """
         from horus.tests.models import User
         admin = User(user_name='sontek', email='sontek@gmail.com')
@@ -48,7 +53,7 @@ class TestViews(IntegrationTestBase):
 
         csrf = res.form.fields['csrf_token'][0].value
 
-        res = self.app.post('/login', 
+        res = self.app.post('/login',
             {
                 'submit': True,
                 'User_name': 'sontek',
@@ -73,7 +78,7 @@ class TestViews(IntegrationTestBase):
 
         csrf = res.form.fields['csrf_token'][0].value
 
-        res = self.app.post('/login', 
+        res = self.app.post('/login',
             {
                 'submit': True,
                 'User_name': 'sontek',
