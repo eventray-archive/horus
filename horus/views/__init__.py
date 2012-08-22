@@ -118,7 +118,7 @@ class AuthController(BaseController):
             try:
                 controls = self.request.POST.items()
                 captured = self.form.validate(controls)
-            except deform.ValidationFailure, e:
+            except deform.ValidationFailure as e:
                 return {'form': e.render(), 'errors': e.error.children}
 
             username = captured['User_name']
@@ -183,7 +183,7 @@ class ForgotPasswordController(BaseController):
             try:
                 controls = self.request.POST.items()
                 captured = form.validate(controls)
-            except deform.ValidationFailure, e:
+            except deform.ValidationFailure as e:
                 return {'form': e.render(), 'errors': e.error.children}
 
             email = captured['Email']
@@ -241,7 +241,7 @@ class ForgotPasswordController(BaseController):
                     try:
                         controls = self.request.POST.items()
                         captured = form.validate(controls)
-                    except deform.ValidationFailure, e:
+                    except deform.ValidationFailure as e:
                         return {'form': e.render(), 'errors': e.error.children}
 
                     password = captured['Password']
@@ -290,7 +290,7 @@ class RegisterController(BaseController):
             try:
                 controls = self.request.POST.items()
                 captured = self.form.validate(controls)
-            except deform.ValidationFailure, e:
+            except deform.ValidationFailure as e:
                 return {'form': e.render(), 'errors': e.error.children}
 
             email = captured['Email']
@@ -417,7 +417,7 @@ class ProfileController(BaseController):
             try:
                 controls = self.request.POST.items()
                 captured = self.form.validate(controls)
-            except deform.ValidationFailure, e:
+            except deform.ValidationFailure as e:
                 # We pre-populate username
                 e.cstruct['User_name'] = user.user_name
                 return {'form': e.render(), 'errors': e.error.children}

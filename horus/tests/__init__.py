@@ -70,7 +70,7 @@ class UnitTestBase(BaseTestCase):
         if not post:
             post = {}
 
-        if not u'csrf_token' in post.keys():
+        if not 'csrf_token' in post.keys():
             post.update({
                 'csrf_token': csrf
             })

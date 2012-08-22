@@ -2,6 +2,7 @@
 
 from __future__ import (absolute_import, division, print_function,
     unicode_literals)
+from pyramid.compat             import text_type
 from pyramid.i18n               import TranslationStringFactory
 from pyramid.security           import Allow
 from datetime                   import datetime
@@ -217,7 +218,7 @@ class UserMixin(BaseModel):
         if not self.salt:
             self.salt = generate_random_string(24)
 
-        return unicode(crypt.encode(password + self.salt))
+        return text_type(crypt.encode(password + self.salt))
 
     def gravatar_url(self, default='mm'):
         """ returns user gravatar url """
