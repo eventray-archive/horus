@@ -27,8 +27,9 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = ''  # open(os.path.join(here, 'README.md')).read()
 CHANGES = ''  # open(os.path.join(here, 'CHANGES.txt')).read()
 
-requires = 'pyramid sqlalchemy cryptacular deform pyramid_deform transaction' \
-    'zope.sqlalchemy pystache pyramid_mailer beaker pyramid_beaker hem'.split()
+requires = 'pyramid sqlalchemy cryptacular deform pyramid_deform ' \
+    'transaction zope.sqlalchemy pystache pyramid_mailer hem ' \
+    'beaker pyramid_beaker'.split()
 
 setup(name='horus',
     version='0.9.8',
