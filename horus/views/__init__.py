@@ -328,7 +328,7 @@ class RegisterController(BaseController):
                         self.request.session.flash(_('You have been registered, you may login now!'), 'success')
 
             except Exception as exc:
-                self.request.session.flash(exc.message, 'error')
+                self.request.session.flash(exc.args[0], 'error')
                 return {'form': self.form.render()}
 
             self.request.registry.notify(
