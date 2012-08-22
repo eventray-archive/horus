@@ -99,12 +99,12 @@ class TestAuthController(UnitTestBase):
         response = view.login()
         errors = response['errors']
 
-        assert errors[0].node.name == u'csrf_token'
-        assert errors[0].msg == u'Required'
-        assert errors[1].node.name == u'User_name'
-        assert errors[1].msg == u'Required'
-        assert errors[2].node.name == u'Password'
-        assert errors[2].msg == u'Required'
+        assert errors[0].node.name == 'csrf_token'
+        assert errors[0].msg == 'Required'
+        assert errors[1].node.name == 'User_name'
+        assert errors[1].msg == 'Required'
+        assert errors[2].node.name == 'Password'
+        assert errors[2].msg == 'Required'
 
     def test_csrf_invalid_fails(self):
         """ Make sure we can't login with a bad csrf """
@@ -132,8 +132,8 @@ class TestAuthController(UnitTestBase):
 
         errors = response['errors']
 
-        assert errors[0].node.name == u'csrf_token'
-        assert errors[0].msg == u'Invalid cross-site scripting token'
+        assert errors[0].node.name == 'csrf_token'
+        assert errors[0].msg == 'Invalid cross-site scripting token'
 
     def test_login_fails_bad_credentials(self):
         """ Make sure we can't login with bad credentials"""
@@ -160,7 +160,7 @@ class TestAuthController(UnitTestBase):
         view = AuthController(request)
         view.login()
 
-        flash.assert_called_with(u'Invalid username or password.', 'error')
+        flash.assert_called_with('Invalid username or password.', 'error')
 
     def test_login_succeeds(self):
         """Make sure we can log in."""
@@ -254,7 +254,8 @@ class TestAuthController(UnitTestBase):
         with patch('horus.views.forget') as forget:
             with patch('horus.views.HTTPFound') as HTTPFound:
                 view.logout()
-                flash.assert_called_with(u'Logged out successfully.', 'success')
+                flash.assert_called_with('Logged out successfully.',
+                    'success')
                 forget.assert_called_with(request)
                 assert invalidate.called
                 assert HTTPFound.called
@@ -476,7 +477,7 @@ class TestRegisterController(UnitTestBase):
         controller = RegisterController(request)
         controller.register()
 
-        flash.assert_called_with(u'That username is already used.', 'error')
+        flash.assert_called_with('That username is already used.', 'error')
 
     def test_register_no_email_validation(self):
         from horus.views import RegisterController
@@ -812,7 +813,8 @@ class TestForgotPasswordController(UnitTestBase):
         view = ForgotPasswordController(request)
         response = view.forgot_password()
 
-        flash.assert_called_with(u'Please check your e-mail to reset your password.', 'success')
+        flash.assert_called_with(
+            'Please check your e-mail to reset your password.', 'success')
         assert response.status_int == 302
 
     def test_forgot_password_invalid_password(self):

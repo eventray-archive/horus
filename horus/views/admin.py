@@ -38,7 +38,7 @@ class AdminController(BaseController):
             try:
                 controls = self.request.POST.items()
                 captured = form.validate(controls)
-            except deform.ValidationFailure, e:
+            except deform.ValidationFailure as e:
                 return dict(form=e, errors=e.error.children)
 
             if isinstance(self.request.context, RootFactory):
@@ -54,7 +54,7 @@ class AdminController(BaseController):
 
             self.db.add(user)
 
-            self.request.session.flash(_(u'The user was created'), 'success')
+            self.request.session.flash(_('The user was created'), 'success')
 
             return HTTPFound(
                 location=self.request.route_url('horus_admin_users_index')

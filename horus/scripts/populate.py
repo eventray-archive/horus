@@ -11,16 +11,13 @@ from getpass import getpass
 from sqlalchemy import engine_from_config
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import scoped_session
+from zope.sqlalchemy import ZopeTransactionExtension
 
 from pyramid.paster import (
     get_appsettings,
     setup_logging,
 )
 
-from horus.models import User
-from horus.models import SUEntity
-
-from zope.sqlalchemy import ZopeTransactionExtension
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 

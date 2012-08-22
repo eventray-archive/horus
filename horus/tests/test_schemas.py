@@ -34,6 +34,6 @@ class TestModels(UnitTestBase):
                 errors = ['csrf_token', 'User_name', 'Password']
                 for child in exc.children:
                     assert child.node.name in errors
-                    assert child.msg == u'Required'
+                    assert child.msg == 'Required'
                 raise
         self.assertRaises(Invalid, deserialize_empty)

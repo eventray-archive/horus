@@ -37,7 +37,9 @@ def groupfinder(userid, request):
 
 def includeme(config):
     settings = config.registry.settings
-    config.set_request_property(get_user, 'user', reify=True)
+    # str('user') returns a bytestring under Python 2 and a
+    # unicode string under Python 3, which is what we need:
+    config.set_request_property(get_user, str('user'), reify=True)
     config.set_root_factory(RootFactory)
     if not config.registry.queryUtility(IHorusUserClass):
         user_class = get_class_from_config(settings, 'horus.user_class')
