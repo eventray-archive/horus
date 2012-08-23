@@ -111,17 +111,17 @@ class ActivationMixin(BaseModel):
     """
     @declared_attr
     def code(self):
-        """ Unique user name """
+        """A random hash that is valid only once."""
         return sa.Column(sa.Unicode(30), nullable=False, unique=True)
 
     @declared_attr
     def valid_until(self):
-        """ How long will the activation key last """
+        """How long will the activation key last"""
         return sa.Column(sa.DateTime, nullable=False)
 
     @declared_attr
     def created_by(self):
-        """ The system that generated the activation key """
+        """The system that generated the activation key"""
         return sa.Column(sa.Unicode(30), nullable=False)
 
     @classmethod
@@ -130,8 +130,8 @@ class ActivationMixin(BaseModel):
         return session.query(cls).filter(cls.code == code).first()
 
     def __init__(self, created_by='web', valid_until=None):
-        """Create a new activation, valid_until is a datetime,
-        defaults to 3 days from current day.
+        """Create a new activation. *valid_until* is a datetime.
+        It defaults to 3 days from current day.
         """
         self.code = generate_random_string(12)
         self.created_by = created_by
