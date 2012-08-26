@@ -160,7 +160,7 @@ class UserMixin(BaseModel):
 
     @declared_attr
     def security_code(self):
-        """ Security code user, can be used for API calls or password reset """
+        """Can be used for API calls or password reset."""
         return sa.Column(sa.Unicode(256), nullable=True)
 
     @declared_attr

@@ -271,23 +271,25 @@ class RegisterController(BaseController):
         form = request.registry.getUtility(IHorusRegisterForm)
         self.form = form(self.schema)
 
-        self.register_redirect_view = route_url(self.settings.get('horus.register_redirect', 'index'), request)
-        self.activate_redirect_view = route_url(self.settings.get('horus.activate_redirect', 'index'), request)
+        self.register_redirect_view = route_url(
+            self.settings.get('horus.register_redirect', 'index'), request)
+        self.activate_redirect_view = route_url(
+            self.settings.get('horus.activate_redirect', 'index'), request)
 
-        self.require_activation = asbool(self.settings.get('horus.require_activation', True))
+        self.require_activation = asbool(
+            self.settings.get('horus.require_activation', True))
 
         if self.require_activation:
             self.mailer = get_mailer(request)
 
-    @view_config(route_name='horus_register', renderer='horus:templates/register.mako')
+    @view_config(route_name='horus_register',
+        renderer='horus:templates/register.mako')
     def register(self):
         if self.request.method == 'GET':
             if self.request.user:
                 return HTTPFound(location=self.register_redirect_view)
-
             return {'form': self.form.render()}
         elif self.request.method == 'POST':
-
             try:
                 controls = self.request.POST.items()
                 captured = self.form.validate(controls)
@@ -306,10 +308,11 @@ class RegisterController(BaseController):
 
             if user:
                 if user.user_name == username:
-                    self.request.session.flash(_('That username is already used.'), 'error')
+                    self.request.session.flash(
+                        _('That username is already used.'), 'error')
                 elif user.email == email:
-                    self.request.session.flash(_('That e-mail is already used.'), 'error')
-
+                    self.request.session.flash(
+                        _('That e-mail is already used.'), 'error')
                 return {'form': self.form.render(self.request.POST)}
 
             activation = None
@@ -323,12 +326,15 @@ class RegisterController(BaseController):
                 if self.require_activation:
                     # SEND EMAIL ACTIVATION
                     create_activation(self.request, user)
-                    self.request.session.flash(_('Please check your E-mail for an activation link'), 'success')
+                    self.request.session.flash(
+                        _('Please check your e-mail for an activation link.'),
+                        'success')
                 else:
                     if not autologin:
-                        self.request.session.flash(_('You have been registered, you may login now!'), 'success')
-
-            except Exception as exc:
+                        self.request.session.flash(
+                            _('You have been registered, you may log in now!'),
+                            'success')
+            except Exception as exc:  # TODO Catch finer-grained exceptions
                 self.request.session.flash(exc.args[0], 'error')
                 return {'form': self.form.render()}
 
@@ -336,13 +342,11 @@ class RegisterController(BaseController):
                 NewRegistrationEvent(self.request, user, activation,
                     captured)
             )
-
             if autologin:
-                self.db.flush()
-
+                self.db.flush()  # in order to get the pk
                 return authenticated(self.request, user.pk)
-
-            return HTTPFound(location=self.register_redirect_view)
+            else:  # not autologin: User must log in just after registering.
+                return HTTPFound(location=self.register_redirect_view)
 
     @view_config(route_name='horus_activate')
     def activate(self):
