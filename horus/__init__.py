@@ -22,9 +22,11 @@ from hem.config             import get_class_from_config
 
 def groupfinder(userid, request):
     user = request.user
-    groups = []
+
+    groups = None
 
     if user:
+        groups = []
         for group in user.groups:
             groups.append('group:%s' % group.name)
 
