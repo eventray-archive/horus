@@ -32,7 +32,7 @@ requires = 'pyramid sqlalchemy cryptacular deform pyramid_deform ' \
     'beaker pyramid_beaker'.split()
 
 setup(name='horus',
-    version='0.9.8',
+    version='0.9.9',
     description='Generic user registration for pyramid',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[
