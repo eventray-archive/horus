@@ -528,7 +528,8 @@ class TestRegisterController(UnitTestBase):
         user = User.get_by_user_name(request, 'admin')
 
         assert user.is_activated == True
-        flash.assert_called_with('You have been registered, you may login now!', 'success')
+        flash.assert_called_with(
+            'You have been registered, you may log in now!', 'success')
 
     def test_registration_craps_out(self):
         from horus.views                import RegisterController
