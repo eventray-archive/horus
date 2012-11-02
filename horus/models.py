@@ -361,7 +361,6 @@ class UserGroupMixin(BaseModel):
                 onupdate='CASCADE',
                 ondelete='CASCADE'
             ),
-            primary_key=True,
         )
 
     def __repr__(self):
