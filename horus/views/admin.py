@@ -14,11 +14,11 @@ import deform
 
 class AdminController(BaseController):
     @view_config(
-            route_name='horus_admin_users_create',
+            route_name='admin_users_create',
             renderer='horus:templates/admin/create_user.mako'
     )
     @view_config(
-            route_name='horus_admin_users_edit',
+            route_name='admin_users_edit',
             renderer='horus:templates/admin/create_user.mako'
     )
     def create_user(self):
@@ -57,18 +57,18 @@ class AdminController(BaseController):
             self.request.session.flash(_('The user was created'), 'success')
 
             return HTTPFound(
-                location=self.request.route_url('horus_admin_users_index')
+                location=self.request.route_url('admin_users_index')
             )
 
     @view_config(
-            route_name='horus_admin',
+            route_name='admin',
             renderer='horus:templates/admin/index.mako'
     )
     def index(self):
         return {}
 
     @view_config(
-            route_name='horus_admin_users_index',
+            route_name='admin_users_index',
             renderer='horus:templates/admin/users_index.mako'
     )
     def users_index(self):
