@@ -10,8 +10,8 @@ class TestResources(UnitTestBase):
     def test_user_factory(self):
         from horus.resources import UserFactory
         from horus.tests.models import User
-        from horus.interfaces import IHorusUserClass
-        self.config.registry.registerUtility(User, IHorusUserClass)
+        from horus.interfaces import IUserClass
+        self.config.registry.registerUtility(User, IUserClass)
 
         user = User(username='sontek', email='sontek@gmail.com')
         user.set_password('foo')
