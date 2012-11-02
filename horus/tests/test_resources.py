@@ -21,7 +21,7 @@ class TestResources(UnitTestBase):
         request = testing.DummyRequest()
         factory = UserFactory(request)
 
-        fact_user = factory[user.pk]
+        fact_user = factory[user.id]
 
         assert factory.request == request
         assert user == fact_user

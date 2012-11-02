@@ -48,8 +48,7 @@ class BaseModel(object):
         )
 
     @declared_attr
-    def pk(self):
-        # We use "pk" instead of "id" because "id" is a python builtin.
+    def id(self):
         return sa.Column(sa.Integer, autoincrement=True, primary_key=True)
 
     def __json__(self, convert_date=True):
@@ -90,10 +89,10 @@ class BaseModel(object):
         return query
 
     @classmethod
-    def get_by_pk(cls, request, pk):
+    def get_by_id(cls, request, id):
         """Gets an object by its primary key."""
         session = get_session(request)
-        return session.query(cls).filter(cls.pk == pk).first()
+        return session.query(cls).filter(cls.id == id).first()
 
 
 class ActivationMixin(BaseModel):
@@ -190,10 +189,10 @@ class UserMixin(BaseModel):
         return sa.Column('password', sa.Unicode(256), nullable=False)
 
     @declared_attr
-    def activation_pk(self):
+    def activation_id(self):
         return sa.Column(
             sa.Integer,
-            sa.ForeignKey('%s.pk' % ActivationMixin.__tablename__)
+            sa.ForeignKey('%s.id' % ActivationMixin.__tablename__)
         )
 
     @declared_attr
@@ -205,7 +204,7 @@ class UserMixin(BaseModel):
 
     @property
     def is_activated(self):
-        return self.activation_pk == None
+        return self.activation_id == None
 
     def get_password(self):
         return self._password
@@ -275,7 +274,7 @@ class UserMixin(BaseModel):
     @classmethod
     def get_by_activation(cls, request, activation):
         session = get_session(request)
-        user = session.query(cls).filter(cls.activation_pk == activation.pk).first()
+        user = session.query(cls).filter(cls.activation_id == activation.id).first()
         return user
 
     @classmethod
@@ -305,7 +304,7 @@ class UserMixin(BaseModel):
     @property
     def __acl__(self):
         return [
-                (Allow, 'user:%s' % self.pk, 'access_user')
+                (Allow, 'user:%s' % self.id, 'access_user')
         ]
 
 
@@ -348,16 +347,16 @@ class GroupMixin(BaseModel):
 
 class UserGroupMixin(BaseModel):
     @declared_attr
-    def group_pk(self):
+    def group_id(self):
         return sa.Column(sa.Integer,
-            sa.ForeignKey('%s.pk' % GroupMixin.__tablename__)
+            sa.ForeignKey('%s.id' % GroupMixin.__tablename__)
         )
 
     @declared_attr
-    def user_pk(self):
+    def user_id(self):
         return sa.Column(
             sa.Integer,
-            sa.ForeignKey('%s.pk' % UserMixin.__tablename__,
+            sa.ForeignKey('%s.id' % UserMixin.__tablename__,
                 onupdate='CASCADE',
                 ondelete='CASCADE'
             ),
@@ -365,4 +364,4 @@ class UserGroupMixin(BaseModel):
         )
 
     def __repr__(self):
-        return '<UserGroup: %s, %s>' % (self.group_name, self.user_pk,)
+        return '<UserGroup: %s, %s>' % (self.group_name, self.user_id,)

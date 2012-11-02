@@ -601,7 +601,7 @@ class TestRegisterController(UnitTestBase):
             if key == 'code':
                 return user.activation.code
             else:
-                return user.pk
+                return user.id
 
         request.matchdict.get = get
 
@@ -646,7 +646,7 @@ class TestRegisterController(UnitTestBase):
             if key == 'code':
                 return user1.activation.code
             else:
-                return user1.pk
+                return user1.id
 
         request.matchdict.get = get
 
@@ -732,8 +732,8 @@ class TestRegisterController(UnitTestBase):
         def get(val, ret):
             if val == 'code':
                 return bad_act.code
-            elif val == 'user_pk':
-                return user.pk
+            elif val == 'user_id':
+                return user.id
 
         request.matchdict.get = get
 
@@ -1095,7 +1095,7 @@ class TestProfileController(UnitTestBase):
 
         request.matchdict = Mock()
         get = Mock()
-        get.return_value = user.pk
+        get.return_value = user.id
         request.matchdict.get = get
 
         view = ProfileController(request)
@@ -1104,7 +1104,7 @@ class TestProfileController(UnitTestBase):
 
         assert response.get('user', None) == user
 
-    def test_profile_bad_pk(self):
+    def test_profile_bad_id(self):
         from horus.views import ProfileController
         from horus.interfaces           import IHorusUserClass
         from horus.interfaces           import IHorusActivationClass
@@ -1167,7 +1167,7 @@ class TestProfileController(UnitTestBase):
 
         request.matchdict = Mock()
         get = Mock()
-        get.return_value = user.pk
+        get.return_value = user.id
         request.matchdict.get = get
 
         flash = Mock()
@@ -1218,13 +1218,13 @@ class TestProfileController(UnitTestBase):
 
         request.matchdict = Mock()
         get = Mock()
-        get.return_value = user.pk
+        get.return_value = user.id
         request.matchdict.get = get
 
         view = ProfileController(request)
         view.profile()
 
-        new_user = User.get_by_pk(request, user.pk)
+        new_user = User.get_by_id(request, user.id)
 
         assert new_user.email == 'sontek@gmail.com'
         assert crypt.check(user.password, 'temp' + user.salt)
@@ -1271,7 +1271,7 @@ class TestProfileController(UnitTestBase):
 
         request.matchdict = Mock()
         get = Mock()
-        get.return_value = user.pk
+        get.return_value = user.id
         request.matchdict.get = get
 
         flash = Mock()
@@ -1280,7 +1280,7 @@ class TestProfileController(UnitTestBase):
         view = ProfileController(request)
 
         view.edit_profile()
-        new_user = User.get_by_pk(request, user.pk)
+        new_user = User.get_by_id(request, user.id)
 
         assert new_user.email == 'sontek@gmail.com'
         assert not crypt.check(user.password, 'temp' + user.salt)

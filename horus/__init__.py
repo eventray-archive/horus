@@ -32,7 +32,7 @@ def groupfinder(userid, request):
         groups = []
         for group in user.groups:
             groups.append('group:%s' % group.name)
-        groups.append('user:%s' % user.pk)
+        groups.append('user:%s' % user.id)
     return groups
 
 

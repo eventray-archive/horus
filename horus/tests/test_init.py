@@ -71,7 +71,7 @@ class TestInitCase(UnitTestBase):
         results = groupfinder(1, request)
 
         assert 'group:foo' in results
-        assert 'user:%s' % (user1.pk) in results
+        assert 'user:%s' % (user1.id) in results
         assert len(results) == 2
 
     def test_group_finder_no_groups(self):
@@ -97,4 +97,4 @@ class TestInitCase(UnitTestBase):
         results = groupfinder(2, request)
 
         assert len(results) == 1
-        assert 'user:%s' % (user2.pk) in results
+        assert 'user:%s' % (user2.id) in results

@@ -34,7 +34,7 @@ class UserFactory(RootFactory):
         self.User = request.registry.getUtility(IHorusUserClass)
 
     def __getitem__(self, key):
-        user = self.User.get_by_pk(self.request, key)
+        user = self.User.get_by_id(self.request, key)
         if user:
             user.__parent__ = self
             user.__name__ = key

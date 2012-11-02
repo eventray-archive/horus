@@ -36,12 +36,12 @@ import deform
 import pystache
 
 
-def authenticated(request, pk):
+def authenticated(request, userid):
     """Sets the auth cookies and redirects to the page defined
     in horus.login_redirect, which defaults to a view named 'index'.
     """
     settings = request.registry.settings
-    headers = remember(request, pk)
+    headers = remember(request, userid)
     autologin = asbool(settings.get('horus.autologin', False))
 
     if not autologin:
@@ -64,7 +64,7 @@ def create_activation(request, user):
 
     body = pystache.render(_("Please activate your e-mail address by visiting {{ link }}"),
         {
-            'link': request.route_url('horus_activate', user_pk=user.pk, code=user.activation.code)
+            'link': request.route_url('activate', user_id=user.id, code=user.activation.code)
         }
     )
 
@@ -141,7 +141,7 @@ class AuthController(BaseController):
                         'error')
                     return {'form': self.form.render()}
 
-                return authenticated(self.request, user.pk)
+                return authenticated(self.request, user.id)
 
             self.request.session.flash(_('Invalid username or password.'), 'error')
 
@@ -343,20 +343,20 @@ class RegisterController(BaseController):
                     captured)
             )
             if autologin:
-                self.db.flush()  # in order to get the pk
-                return authenticated(self.request, user.pk)
+                self.db.flush()  # in order to get the id
+                return authenticated(self.request, user.id)
             else:  # not autologin: User must log in just after registering.
                 return HTTPFound(location=self.register_redirect_view)
 
     @view_config(route_name='horus_activate')
     def activate(self):
         code = self.request.matchdict.get('code', None)
-        user_pk = self.request.matchdict.get('user_pk', None)
+        user_id = self.request.matchdict.get('user_id', None)
 
         activation = self.Activation.get_by_code(self.request, code)
 
         if activation:
-            user = self.User.get_by_pk(self.request, user_pk)
+            user = self.User.get_by_id(self.request, user_id)
 
             if user.activation != activation:
                 return HTTPNotFound()
@@ -389,9 +389,9 @@ class ProfileController(BaseController):
     @view_config(route_name='horus_profile',
         renderer='horus:templates/profile.mako')
     def profile(self):
-        pk = self.request.matchdict.get('user_pk', None)
+        id = self.request.matchdict.get('user_id', None)
 
-        user = self.User.get_by_pk(self.request, pk)
+        user = self.User.get_by_id(self.request, id)
 
         if not user:
             return HTTPNotFound()
@@ -432,7 +432,7 @@ class ProfileController(BaseController):
             if email:
                 email_user = self.User.get_by_email(self.request, email)
                 if email_user:
-                    if email_user.pk != user.pk:
+                    if email_user.id != user.id:
                         self.request.session.flash(
                             _('That e-mail is already used.'), 'error')
                         return HTTPFound(location=self.request.url)
