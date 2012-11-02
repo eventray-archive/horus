@@ -236,7 +236,7 @@ class UserMixin(BaseModel):
         session = get_session(request)
 
         return session.query(cls).filter(
-                func.lower(cls.email) == email.lower()
+            func.lower(cls.email) == email.lower()
         ).first()
 
     @classmethod
