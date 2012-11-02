@@ -63,13 +63,9 @@ class BaseModel(object):
                 continue
             if not key.startswith('__') and not key.startswith('_sa_'):
                 obj = getattr(self, key)
-                if isinstance(obj, datetime) or isinstance(obj, date):
-                        if convert_date:
-                            props[key] = obj.isoformat()
-                        else:
-                            props[key] = getattr(self, key)
-                else:
-                    props[key] = getattr(self, key)
+                if isinstance(obj, datetime) or isinstance(obj, date) and convert_date:
+                    obj = obj.isoformat()
+                props[key] = obj
         return props
 
     @classmethod
