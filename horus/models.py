@@ -139,8 +139,8 @@ class ActivationMixin(BaseModel):
 
 class UserMixin(BaseModel):
     @declared_attr
-    def user_name(self):
-        """ Unique user name """
+    def username(self):
+        """ Unique username """
         return sa.Column(sa.Unicode(30), nullable=False, unique=True)
 
     @declared_attr
@@ -243,20 +243,20 @@ class UserMixin(BaseModel):
         ).first()
 
     @classmethod
-    def get_by_user_name(cls, request, user_name):
+    def get_by_username(cls, request, username):
         session = get_session(request)
 
         return session.query(cls).filter(
-            func.lower(cls.user_name) == user_name.lower(),
+            func.lower(cls.username) == username.lower()
         ).first()
 
     @classmethod
-    def get_by_user_name_or_email(cls, request, user_name, email):
+    def get_by_username_or_email(cls, request, username, email):
         session = get_session(request)
 
         return session.query(cls).filter(
             or_(
-                func.lower(cls.user_name) == user_name.lower(),
+                func.lower(cls.username) == username.lower(),
                 cls.email == email
             )
         ).first()
@@ -278,8 +278,8 @@ class UserMixin(BaseModel):
         return user
 
     @classmethod
-    def get_user(cls, request, user_name, password):
-        user = cls.get_by_user_name(request, user_name)
+    def get_user(cls, request, username, password):
+        user = cls.get_by_username(request, username)
 
         valid = cls.validate_user(user, password)
 
@@ -299,7 +299,7 @@ class UserMixin(BaseModel):
         return valid
 
     def __repr__(self):
-        return '<User: %s>' % self.user_name
+        return '<User: %s>' % self.username
 
     @property
     def __acl__(self):
@@ -325,7 +325,7 @@ class GroupMixin(BaseModel):
         return sa.orm.relationship(
             'User',
             secondary=UserGroupMixin.__tablename__,
-            # order_by='%s.user.user_name' % UserMixin.__tablename__,
+            # order_by='%s.user.username' % UserMixin.__tablename__,
             passive_deletes=True,
             passive_updates=True,
             backref=pluralize(GroupMixin.__tablename__),

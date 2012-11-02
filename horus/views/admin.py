@@ -43,7 +43,7 @@ class AdminController(BaseController):
 
             if isinstance(self.request.context, RootFactory):
                 user = self.User(
-                        user_name=captured['user_name'],
+                        username=captured['username'],
                         email=captured['email']
                 )
             else:

@@ -121,7 +121,7 @@ class AuthController(BaseController):
             except deform.ValidationFailure as e:
                 return {'form': e.render(), 'errors': e.error.children}
 
-            username = captured['User_name']
+            username = captured['Username']
             password = captured['Password']
 
             allow_email_auth = self.settings.get('horus.allow_email_auth', False)
@@ -233,7 +233,7 @@ class ForgotPasswordController(BaseController):
                         return {
                             'form': form.render(
                                 appstruct=dict(
-                                    User_name=user.user_name
+                                    Username=user.username
                                 )
                             )
                         }
@@ -297,17 +297,17 @@ class RegisterController(BaseController):
                 return {'form': e.render(), 'errors': e.error.children}
 
             email = captured['Email']
-            username = captured['User_name'].lower()
+            username = captured['Username'].lower()
             password = captured['Password']
 
-            user = self.User.get_by_user_name_or_email(self.request,
+            user = self.User.get_by_username_or_email(self.request,
                     username, email
             )
 
             autologin = asbool(self.settings.get('horus.autologin', False))
 
             if user:
-                if user.user_name == username:
+                if user.username == username:
                     self.request.session.flash(
                         _('That username is already used.'), 'error')
                 elif user.email == email:
@@ -318,9 +318,8 @@ class RegisterController(BaseController):
             activation = None
 
             try:
-                user = self.User(user_name=username, email=email)
-                user.set_password(password)
-
+                user = self.User(username=username, email=email,
+                                 password=password)
                 self.db.add(user)
 
                 if self.require_activation:
@@ -407,13 +406,13 @@ class ProfileController(BaseController):
             return HTTPNotFound()
 
         if self.request.method == 'GET':
-            username = user.user_name
+            username = user.username
             email = user.email
 
             return {
                     'form': self.form.render(
                         appstruct=dict(
-                            User_name=username,
+                            Username=username,
                             Email=email if email else '',
                         )
                     )
@@ -424,7 +423,7 @@ class ProfileController(BaseController):
                 captured = self.form.validate(controls)
             except deform.ValidationFailure as e:
                 # We pre-populate username
-                e.cstruct['User_name'] = user.user_name
+                e.cstruct['Username'] = user.username
                 return {'form': e.render(), 'errors': e.error.children}
 
             email = captured.get('Email', None)

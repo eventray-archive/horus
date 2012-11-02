@@ -32,7 +32,7 @@ class TestInitCase(UnitTestBase):
 #        from horus import SignUpRequestFactory
 #        from horus.tests.models import User
 #
-#        user1 = User(user_name='sontek', email='sontek@gmail.com')
+#        user1 = User(username='sontek', email='sontek@gmail.com')
 #        user1.set_password('foo')
 #        self.session.add(user1)
 #        self.session.flush()
@@ -57,7 +57,7 @@ class TestInitCase(UnitTestBase):
         from horus.tests.models import Group
 
         group = Group(name='foo', description='bar')
-        user1 = User(user_name='sontek', email='sontek@gmail.com')
+        user1 = User(username='sontek', email='sontek@gmail.com')
         user1.set_password('foo')
         group.users.append(user1)
 
@@ -80,8 +80,8 @@ class TestInitCase(UnitTestBase):
         from horus.tests.models import Group
 
         group = Group(name='foo', description='bar')
-        user1 = User(user_name='sontek', email='sontek@gmail.com')
-        user2 = User(user_name='sontek2', email='sontek2@gmail.com')
+        user1 = User(username='sontek', email='sontek@gmail.com')
+        user2 = User(username='sontek2', email='sontek2@gmail.com')
         user1.set_password('foo')
         user2.set_password('foo')
         group.users.append(user1)

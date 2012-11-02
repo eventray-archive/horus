@@ -13,7 +13,7 @@ class TestResources(UnitTestBase):
         from horus.interfaces import IHorusUserClass
         self.config.registry.registerUtility(User, IHorusUserClass)
 
-        user = User(user_name='sontek', email='sontek@gmail.com')
+        user = User(username='sontek', email='sontek@gmail.com')
         user.set_password('foo')
         self.session.add(user)
         self.session.commit()
