@@ -29,7 +29,7 @@ from horus.events           import NewRegistrationEvent
 from horus.events           import RegistrationActivatedEvent
 from horus.events           import PasswordResetEvent
 from horus.events           import ProfileUpdatedEvent
-from horus.models import _
+from horus.models           import _
 from hem.db                 import get_session
 
 import deform
