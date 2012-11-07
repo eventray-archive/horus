@@ -32,10 +32,16 @@ class BaseModel(object):
     """Base class which auto-generates tablename and surrogate
     primary key column.
     """
+    _idAttribute = 'id'
+
     __table_args__ = {
         'mysql_engine': 'InnoDB',
         'mysql_charset': 'utf8'
     }
+
+    @property
+    def id_value(self):
+        return getattr(self, self._idAttribute)
 
     @declared_attr
     def __tablename__(cls):
@@ -197,7 +203,11 @@ class UserMixin(BaseModel):
     def activation_id(self):
         return sa.Column(
             sa.Integer,
-            sa.ForeignKey('%s.id' % ActivationMixin.__tablename__)
+            sa.ForeignKey('%s.%s' % (
+                    ActivationMixin.__tablename__,
+                    self._idAttribute
+                )
+            )
         )
 
     @declared_attr
@@ -277,7 +287,11 @@ class UserMixin(BaseModel):
     @classmethod
     def get_by_activation(cls, request, activation):
         session = get_session(request)
-        user = session.query(cls).filter(cls.activation_id == activation.id).first()
+
+        user = session.query(cls).filter(
+            cls.activation_id == activation.id_value
+        ).first()
+
         return user
 
     @classmethod
@@ -307,7 +321,7 @@ class UserMixin(BaseModel):
     @property
     def __acl__(self):
         return [
-                (Allow, 'user:%s' % self.id, 'access_user')
+            (Allow, 'user:%s' % self.id_value, 'access_user')
         ]
 
 
@@ -352,14 +366,21 @@ class UserGroupMixin(BaseModel):
     @declared_attr
     def group_id(self):
         return sa.Column(sa.Integer,
-            sa.ForeignKey('%s.id' % GroupMixin.__tablename__)
+            sa.ForeignKey('%s.%s' % (
+                    GroupMixin.__tablename__,
+                    self._idAttribute
+                )
+            )
         )
 
     @declared_attr
     def user_id(self):
         return sa.Column(
             sa.Integer,
-            sa.ForeignKey('%s.id' % UserMixin.__tablename__,
+            sa.ForeignKey('%s.%s' % (
+                    UserMixin.__tablename__,
+                    self._idAttribute
+                ),
                 onupdate='CASCADE',
                 ondelete='CASCADE'
             ),

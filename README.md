@@ -105,6 +105,27 @@ config.add_view('horus.views.ProfileController', attr='profile',
 
 ```
 
+
+You can also override the primary key attribute on the fields if you would like
+by creating a new MixIn to use:
+
+class NullPkMixin(Base):
+    __abstract__ = True
+    _idAttribute = 'pk'
+
+    @declared_attr
+    def pk(self):
+        return Base.pk
+
+    @declared_attr
+    def id(self):
+        return None
+
+class User(NullPkMixin, UserMixin):
+    pass
+
+
+
 Development
 ===========
 
