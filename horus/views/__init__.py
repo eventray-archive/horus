@@ -136,7 +136,7 @@ class AuthController(BaseController):
         if user:
             if not self.allow_inactive_login and self.require_activation:
                 if not user.is_activated:
-                    raise HTTPBadRequest({'errors':
+                    raise HTTPBadRequest({'inactive':
                         _(
                             'Your account is not active, please check your'
                             + ' e-mail.'
@@ -145,7 +145,7 @@ class AuthController(BaseController):
 
                 return user
 
-        raise HTTPBadRequest({'errors':
+        raise HTTPBadRequest({'invalid':
             _(
                 'Invalidate username or password'
             )
