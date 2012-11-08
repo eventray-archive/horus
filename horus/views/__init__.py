@@ -30,6 +30,8 @@ from horus.events           import RegistrationActivatedEvent
 from horus.events           import PasswordResetEvent
 from horus.events           import ProfileUpdatedEvent
 from horus.models           import _
+
+from horus.httpexceptions   import HTTPBadRequest
 from hem.db                 import get_session
 
 import deform
@@ -106,6 +108,49 @@ class AuthController(BaseController):
 
         self.form = form(self.schema)
 
+    def check_credentials(self):
+        try:
+            controls = self.request.POST.items()
+            captured = self.form.validate(controls)
+        except deform.ValidationFailure as e:
+            return {'form': e.render(), 'errors': e.error.children}
+
+        username = captured['Username']
+        password = captured['Password']
+
+        allow_email_auth = self.settings.get('horus.allow_email_auth', False)
+
+        user = self.User.get_user(self.request, username, password)
+
+        if allow_email_auth:
+            if not user:
+                user = self.User.get_by_email_password(username,
+                        password)
+
+        return user, captured
+
+    @view_config(route_name='login', xhr=True, renderer='json')
+    def login_ajax(self):
+        user, captured = self.check_credentials()
+
+        if user:
+            if not self.allow_inactive_login and self.require_activation:
+                if not user.is_activated:
+                    raise HTTPBadRequest({'errors':
+                        _(
+                            'Your account is not active, please check your'
+                            + ' e-mail.'
+                        )
+                    })
+
+                return user
+
+        raise HTTPBadRequest({'errors':
+            _(
+                'Invalidate username or password'
+            )
+        })
+
 
     @view_config(route_name='login', renderer='horus:templates/login.mako')
     def login(self):
@@ -115,23 +160,8 @@ class AuthController(BaseController):
 
             return {'form': self.form.render()}
         elif self.request.method == 'POST':
-            try:
-                controls = self.request.POST.items()
-                captured = self.form.validate(controls)
-            except deform.ValidationFailure as e:
-                return {'form': e.render(), 'errors': e.error.children}
 
-            username = captured['Username']
-            password = captured['Password']
-
-            allow_email_auth = self.settings.get('horus.allow_email_auth', False)
-
-            user = self.User.get_user(self.request, username, password)
-
-            if allow_email_auth:
-                if not user:
-                    user = self.User.get_by_email_password(username,
-                            password)
+            user, captured = self.check_credentials()
 
             if user:
                 if not self.allow_inactive_login and self.require_activation \

@@ -63,7 +63,7 @@ class BaseModel(object):
         for use in json.
         """
         props = {}
-        blacklist = ['password']
+        blacklist = ['password', '_password']
         for key in self.__dict__:
             if key in blacklist:
                 continue
