@@ -2,7 +2,7 @@
 
 from __future__ import (absolute_import, division, print_function,
     unicode_literals)
-from pyramid.compat             import text_type
+
 from pyramid.i18n               import TranslationStringFactory
 from pyramid.security           import Allow
 from datetime                   import datetime
@@ -140,6 +140,9 @@ class ActivationMixin(BaseModel):
             self.valid_until = datetime.utcnow() + timedelta(days=3)
 
 
+def default_security_code():
+    return generate_random_string(12)
+
 class UserMixin(BaseModel):
     @declared_attr
     def username(self):
@@ -159,7 +162,11 @@ class UserMixin(BaseModel):
     @declared_attr
     def security_code(self):
         """Can be used for API calls or password reset."""
-        return sa.Column(sa.Unicode(256), nullable=True)
+        return sa.Column(
+            sa.Unicode(256),
+            nullable=True,
+            default=default_security_code
+        )
 
     @declared_attr
     def last_login_date(self):
