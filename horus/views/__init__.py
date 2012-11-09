@@ -30,10 +30,11 @@ from horus.events           import RegistrationActivatedEvent
 from horus.events           import PasswordResetEvent
 from horus.events           import ProfileUpdatedEvent
 from horus.models           import _
-
+from horus.exceptions       import AuthenticationFailure
 from horus.httpexceptions   import HTTPBadRequest
 from hem.db                 import get_session
 
+import colander
 import deform
 import pystache
 
@@ -121,49 +122,50 @@ class AuthController(BaseController):
 
         self.form = form(self.schema)
 
-    def check_credentials(self):
-        try:
-            controls = self.request.POST.items()
-            captured = self.form.validate(controls)
-        except deform.ValidationFailure as e:
-            return {'form': e.render(), 'errors': e.error.children}
-
-        username = captured['Username']
-        password = captured['Password']
-
+    def check_credentials(self, username, password):
         allow_email_auth = self.settings.get('horus.allow_email_auth', False)
 
         user = self.User.get_user(self.request, username, password)
 
-        if allow_email_auth:
-            if not user:
-                user = self.User.get_by_email_password(username,
-                        password)
+        if allow_email_auth and not user:
+            user = self.User.get_by_email_password(username, password)
 
-        return user, captured
+        if not user:
+            raise AuthenticationFailure(_('Invalid username or password.'))
+
+        if not self.allow_inactive_login and self.require_activation \
+                and not user.is_activated:
+            raise AuthenticationFailure(
+                _('Your account is not active, please check your e-mail.'))
+
+        return user
 
     @view_config(route_name='login', xhr=True, renderer='json')
     def login_ajax(self):
-        user, captured = self.check_credentials()
+        try:
+            cstruct = self.request.json_body
+        except ValueError as e:
+            raise HTTPBadRequest({'invalid': str(e)})
 
-        if user:
-            if not self.allow_inactive_login and self.require_activation:
-                if not user.is_activated:
-                    raise HTTPBadRequest({'inactive':
-                        _(
-                            'Your account is not active, please check your'
-                            + ' e-mail.'
-                        )
-                    })
+        try:
+            captured = self.schema.deserialize(cstruct)
+        except colander.Invalid as e:
+            raise HTTPBadRequest({'invalid': e.asdict()})
 
-                return user
+        username = captured['Username']
+        password = captured['Password']
 
-        raise HTTPBadRequest({'invalid':
-            _(
-                'Invalidate username or password'
-            )
-        })
+        try:
+            self.check_credentials(username, password)
+        except AuthenticationFailure as e:
+            raise HTTPBadRequest({
+                'status': 'failure',
+                'reason': e,
+            })
 
+        return {
+            'status': 'okay'
+        }
 
     @view_config(route_name='login', accept='text/html',
                  renderer='horus:templates/login.mako')
@@ -174,22 +176,28 @@ class AuthController(BaseController):
 
             return {'form': self.form.render()}
         elif self.request.method == 'POST':
+            try:
+                controls = self.request.POST.items()
+                captured = self.form.validate(controls)
+            except deform.ValidationFailure as e:
+                return {
+                    'form': e.render(),
+                    'errors': e.error.children
+                }
 
-            user, captured = self.check_credentials()
+            username = captured['Username']
+            password = captured['Password']
 
-            if user:
-                if not self.allow_inactive_login and self.require_activation \
-                        and not user.is_activated:
-                    self.request.session.flash(
-                        _('Your account is not active, please check your e-mail.'),
-                        'error')
-                    return {'form': self.form.render()}
+            try:
+                user = self.check_credentials(username, password)
+            except AuthenticationFailure as e:
+                self.request.session.flash(str(e), 'error')
+                return {
+                    'form': self.form.render(appstruct=captured),
+                    'errors': [e]
+                }
 
-                return authenticated(self.request, user.id)
-
-            self.request.session.flash(_('Invalid username or password.'), 'error')
-
-            return {'form': self.form.render(appstruct=captured)}
+            return authenticated(self.request, user.id)
 
     @view_config(permission='view', route_name='logout')
     def logout(self):
