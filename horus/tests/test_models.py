@@ -123,6 +123,20 @@ class TestUser(UnitTestBase):
 
         assert user == new_user
 
+    def test_get_valid_user_by_security_code(self):
+        from horus.tests.models import User
+
+        user = User(username='sontek', email='sontek@gmail.com')
+        user.password = 'temp'
+        self.session.add(user)
+        self.session.commit()
+
+        request = testing.DummyRequest()
+
+        new_user = User.get_by_security_code(request, user.security_code)
+
+        assert user == new_user
+
     def test_get_all_users(self):
         from horus.tests.models import User
 

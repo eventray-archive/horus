@@ -165,6 +165,7 @@ class UserMixin(BaseModel):
         return sa.Column(
             sa.Unicode(256),
             nullable=True,
+            unique=True,
             default=default_security_code
         )
 
@@ -297,6 +298,16 @@ class UserMixin(BaseModel):
 
         user = session.query(cls).filter(
             cls.activation_id == activation.id_value
+        ).first()
+
+        return user
+
+    @classmethod
+    def get_by_security_code(cls, request, security_code):
+        session = get_session(request)
+
+        user = session.query(cls).filter(
+            cls.security_code == security_code
         ).first()
 
         return user
