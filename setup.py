@@ -39,7 +39,7 @@ requires = [
     , 'pyramid_mailer'
     , 'pyramid_beaker'
     , 'pyramid_deform'
-
+    , 'simplejson'
 ]
 
 setup(name='horus',
