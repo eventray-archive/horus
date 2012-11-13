@@ -15,12 +15,12 @@ import deform
 @view_defaults(permission='group:admin')
 class AdminController(BaseController):
     @view_config(
-            route_name='admin_users_create',
-            renderer='horus:templates/admin/create_user.mako'
+        route_name='admin_users_create',
+        renderer='horus:templates/admin/create_user.mako'
     )
     @view_config(
-            route_name='admin_users_edit',
-            renderer='horus:templates/admin/create_user.mako'
+        route_name='admin_users_edit',
+        renderer='horus:templates/admin/create_user.mako'
     )
     def create_user(self):
         schema = AdminUserSchema()
@@ -33,7 +33,7 @@ class AdminController(BaseController):
             else:
                 return dict(
                     form=form,
-                    appstruct = self.request.context.__json__()
+                    appstruct=self.request.context.__json__()
                 )
         else:
             try:
@@ -44,8 +44,8 @@ class AdminController(BaseController):
 
             if isinstance(self.request.context, RootFactory):
                 user = self.User(
-                        username=captured['username'],
-                        email=captured['email']
+                    username=captured['username'],
+                    email=captured['email']
                 )
             else:
                 user = self.request.context
@@ -62,15 +62,15 @@ class AdminController(BaseController):
             )
 
     @view_config(
-            route_name='admin',
-            renderer='horus:templates/admin/index.mako'
+        route_name='admin',
+        renderer='horus:templates/admin/index.mako'
     )
     def index(self):
         return {}
 
     @view_config(
-            route_name='admin_users_index',
-            renderer='horus:templates/admin/users_index.mako'
+        route_name='admin_users_index',
+        renderer='horus:templates/admin/users_index.mako'
     )
     def users_index(self):
         return dict(users=self.User.get_all(self.request))

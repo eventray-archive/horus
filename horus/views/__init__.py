@@ -49,9 +49,10 @@ def authenticated(request, userid):
     if not autologin:
         request.session.flash(_('Logged in successfully.'), 'success')
 
-    login_redirect_view = route_url(settings.get('horus.login_redirect', 'index'), request)
+    login_redirect_route = settings.get('horus.login_redirect', 'index')
+    location = route_url(login_redirect_route, request)
 
-    return HTTPFound(location=login_redirect_view, headers=headers)
+    return HTTPFound(location=location, headers=headers)
 
 
 def create_activation(request, user):
@@ -64,9 +65,11 @@ def create_activation(request, user):
 
     db.flush()
 
-    body = pystache.render(_("Please activate your e-mail address by visiting {{ link }}"),
+    body = pystache.render(
+        _("Please activate your e-mail address by visiting {{ link }}"),
         {
-            'link': request.route_url('activate', user_id=user.id, code=user.activation.code)
+            'link': request.route_url('activate', user_id=user.id,
+                                      code=user.activation.code)
         }
     )
 
@@ -101,10 +104,20 @@ class AuthController(BaseController):
 
         form = request.registry.getUtility(ILoginForm)
 
-        self.login_redirect_view = route_url(self.settings.get('horus.login_redirect', 'index'), request)
-        self.logout_redirect_view = route_url(self.settings.get('horus.logout_redirect', 'index'), request)
-        self.require_activation = asbool(self.settings.get('horus.require_activation', True))
-        self.allow_inactive_login = asbool(self.settings.get('horus.allow_inactive_login', False))
+        self.login_redirect_view = route_url(
+            self.settings.get('horus.login_redirect', 'index'),
+            request
+        )
+        self.logout_redirect_view = route_url(
+            self.settings.get('horus.logout_redirect', 'index'),
+            request
+        )
+        self.require_activation = asbool(
+            self.settings.get('horus.require_activation', True)
+        )
+        self.allow_inactive_login = asbool(
+            self.settings.get('horus.allow_inactive_login', False)
+        )
 
         self.form = form(self.schema)
 
@@ -152,7 +165,8 @@ class AuthController(BaseController):
         })
 
 
-    @view_config(route_name='login', renderer='horus:templates/login.mako')
+    @view_config(route_name='login', accept='text/html',
+                 renderer='horus:templates/login.mako')
     def login(self):
         if self.request.method == 'GET':
             if self.request.user:
@@ -193,10 +207,17 @@ class ForgotPasswordController(BaseController):
     def __init__(self, request):
         super(ForgotPasswordController, self).__init__(request)
 
-        self.forgot_password_redirect_view = route_url(self.settings.get('horus.forgot_password_redirect', 'index'), request)
-        self.reset_password_redirect_view = route_url(self.settings.get('horus.reset_password_redirect', 'index'), request)
+        self.forgot_password_redirect_view = route_url(
+            self.settings.get('horus.forgot_password_redirect', 'index'),
+            request
+        )
+        self.reset_password_redirect_view = route_url(
+            self.settings.get('horus.reset_password_redirect', 'index'),
+            request
+        )
 
-    @view_config(route_name='forgot_password', renderer='horus:templates/forgot_password.mako')
+    @view_config(route_name='forgot_password',
+                 renderer='horus:templates/forgot_password.mako')
     def forgot_password(self):
         schema = self.request.registry.getUtility(IForgotPasswordSchema)
         schema = schema().bind(request=self.request)
@@ -227,23 +248,29 @@ class ForgotPasswordController(BaseController):
 
             if user:
                 mailer = get_mailer(self.request)
-                body = pystache.render(_("Someone has tried to reset your password, if this was you click here: {{ link }}"),
+                body = pystache.render(
+                    _("Someone has tried to reset your password, "
+                      "if this was you click here: {{ link }}"),
                     {
-                        'link': route_url('reset_password', self.request, code=user.activation.code)
+                        'link': route_url('reset_password', self.request,
+                                          code=user.activation.code)
                     }
                 )
 
                 subject = _("Do you want to reset your password?")
 
-                message = Message(subject=subject, recipients=[user.email], body=body)
+                message = Message(subject=subject, recipients=[user.email],
+                                  body=body)
                 mailer.send(message)
 
         # we don't want to say "E-mail not registered" or anything like that
         # because it gives spammers context
-        self.request.session.flash(_('Please check your e-mail to reset your password.'), 'success')
+        self.request.session.flash(
+            _('Please check your e-mail to reset your password.'), 'success')
         return HTTPFound(location=self.reset_password_redirect_view)
 
-    @view_config(route_name='reset_password', renderer='horus:templates/reset_password.mako')
+    @view_config(route_name='reset_password',
+                 renderer='horus:templates/reset_password.mako')
     def reset_password(self):
         schema = self.request.registry.getUtility(IResetPasswordSchema)
         schema = schema().bind(request=self.request)
@@ -260,13 +287,13 @@ class ForgotPasswordController(BaseController):
 
             if user:
                 if self.request.method == 'GET':
-                        return {
-                            'form': form.render(
-                                appstruct=dict(
-                                    Username=user.username
-                                )
+                    return {
+                        'form': form.render(
+                            appstruct=dict(
+                                Username=user.username
                             )
-                        }
+                        )
+                    }
 
                 elif self.request.method == 'POST':
                     try:
@@ -285,9 +312,11 @@ class ForgotPasswordController(BaseController):
                         PasswordResetEvent(self.request, user, password)
                     )
 
-                    self.request.session.flash(_('Your password has been reset!'), 'success')
+                    self.request.session.flash(
+                        _('Your password has been reset!'), 'success')
 
-                    return HTTPFound(location=self.reset_password_redirect_view)
+                    location = self.reset_password_redirect_view
+                    return HTTPFound(location=location)
 
         return HTTPNotFound()
 
@@ -312,7 +341,8 @@ class RegisterController(BaseController):
         if self.require_activation:
             self.mailer = get_mailer(request)
 
-    @view_config(route_name='register', renderer='horus:templates/register.mako')
+    @view_config(route_name='register',
+                 renderer='horus:templates/register.mako')
     def register(self):
         if self.request.method == 'GET':
             if self.request.user:
@@ -329,8 +359,10 @@ class RegisterController(BaseController):
             username = captured['Username'].lower()
             password = captured['Password']
 
-            user = self.User.get_by_username_or_email(self.request,
-                    username, email
+            user = self.User.get_by_username_or_email(
+                self.request,
+                username,
+                email
             )
 
             autologin = asbool(self.settings.get('horus.autologin', False))
@@ -367,8 +399,7 @@ class RegisterController(BaseController):
                 return {'form': self.form.render()}
 
             self.request.registry.notify(
-                NewRegistrationEvent(self.request, user, activation,
-                    captured)
+                NewRegistrationEvent(self.request, user, activation, captured)
             )
 
             if autologin:
@@ -399,7 +430,8 @@ class RegisterController(BaseController):
                     RegistrationActivatedEvent(self.request, user, activation)
                 )
 
-                self.request.session.flash(_('Your e-mail address has been verified.'), 'success')
+                self.request.session.flash(
+                    _('Your e-mail address has been verified.'), 'success')
                 return HTTPFound(location=self.activate_redirect_view)
 
         return HTTPNotFound()
@@ -427,7 +459,7 @@ class ProfileController(BaseController):
         return {'user': user}
 
     @view_config(permission='access_user', route_name='edit_profile',
-        renderer='horus:templates/edit_profile.mako')
+                 renderer='horus:templates/edit_profile.mako')
     def edit_profile(self):
         user = self.request.context
 
@@ -439,13 +471,13 @@ class ProfileController(BaseController):
             email = user.email
 
             return {
-                    'form': self.form.render(
-                        appstruct=dict(
-                            Username=username,
-                            Email=email if email else '',
-                        )
+                'form': self.form.render(
+                    appstruct=dict(
+                        Username=username,
+                        Email=email if email else '',
                     )
-                }
+                )
+            }
         elif self.request.method == 'POST':
             try:
                 controls = self.request.POST.items()
@@ -474,7 +506,7 @@ class ProfileController(BaseController):
                 user.password = password
 
             self.request.session.flash(_('Profile successfully updated.'),
-                'success')
+                                       'success')
 
             self.db.add(user)
 
