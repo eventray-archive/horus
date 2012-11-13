@@ -101,9 +101,9 @@ class TestAuthController(UnitTestBase):
 
         assert errors[0].node.name == 'csrf_token'
         assert errors[0].msg == 'Required'
-        assert errors[1].node.name == 'Username'
+        assert errors[1].node.name == 'username'
         assert errors[1].msg == 'Required'
-        assert errors[2].node.name == 'Password'
+        assert errors[2].node.name == 'password'
         assert errors[2].msg == 'Required'
 
     def test_csrf_invalid_fails(self):
@@ -150,8 +150,8 @@ class TestAuthController(UnitTestBase):
 
         request = self.get_csrf_request(post={
                 'submit': True,
-                'Username': 'admin',
-                'Password': 'test123',
+                'username': 'admin',
+                'password': 'test123',
             }, request_method='POST')
 
         flash = Mock()
@@ -185,8 +185,8 @@ class TestAuthController(UnitTestBase):
 
         request = self.get_csrf_request(post={
                 'submit': True,
-                'Username': 'sontek',
-                'Password': 'foo',
+                'username': 'sontek',
+                'password': 'foo',
             }, request_method='POST')
 
         view = AuthController(request)
@@ -215,8 +215,8 @@ class TestAuthController(UnitTestBase):
 
         request = self.get_csrf_request(post={
                 'submit': True,
-                'Username': 'sontek',
-                'Password': 'foo',
+                'username': 'sontek',
+                'password': 'foo',
             }, request_method='POST')
 
         flash = Mock()
@@ -396,12 +396,12 @@ class TestRegisterController(UnitTestBase):
         self.config.add_route('index', '/')
 
         request = self.get_csrf_request(post={
-            'Username': 'admin',
-            'Password': {
-                'Password': 'test123',
-                'Password-confirm': 'test123',
+            'username': 'admin',
+            'password': {
+                'password': 'test123',
+                'password-confirm': 'test123',
             },
-            'Email': 'sontek@gmail.com'
+            'email': 'sontek@gmail.com'
         }, request_method='POST')
 
         request.user = Mock()
@@ -463,12 +463,12 @@ class TestRegisterController(UnitTestBase):
         self.session.flush()
 
         request = self.get_csrf_request(post={
-            'Username': 'sontek',
-            'Password': {
-                'Password': 'test123',
-                'Password-confirm': 'test123',
+            'username': 'sontek',
+            'password': {
+                'password': 'test123',
+                'password-confirm': 'test123',
             },
-            'Email': 'sontek@gmail.com'
+            'email': 'sontek@gmail.com'
         }, request_method='POST')
 
         flash = Mock()
@@ -507,12 +507,12 @@ class TestRegisterController(UnitTestBase):
         self.config.add_subscriber(handle_registration, NewRegistrationEvent)
 
         request = self.get_csrf_request(post={
-            'Username': 'admin',
-            'Password': {
-                'Password': 'test123',
-                'Password-confirm': 'test123',
+            'username': 'admin',
+            'password': {
+                'password': 'test123',
+                'password-confirm': 'test123',
             },
-            'Email': 'sontek@gmail.com'
+            'email': 'sontek@gmail.com'
         }, request_method='POST')
 
         flash = Mock()
@@ -554,12 +554,12 @@ class TestRegisterController(UnitTestBase):
         self.config.add_route('index', '/')
 
         request = self.get_csrf_request(post={
-            'Username': 'admin',
-            'Password': {
-                'Password': 'test123',
-                'Password-confirm': 'test123',
+            'username': 'admin',
+            'password': {
+                'password': 'test123',
+                'password-confirm': 'test123',
             },
-            'Email': 'sontek@gmail.com'
+            'email': 'sontek@gmail.com'
         }, request_method='POST')
 
         flash = Mock()
@@ -803,7 +803,7 @@ class TestForgotPasswordController(UnitTestBase):
         self.session.flush()
 
         request = self.get_csrf_request(post={
-            'Email': 'sontek@gmail.com'
+            'email': 'sontek@gmail.com'
         }, request_method='POST')
 
         request.user = None
@@ -838,7 +838,7 @@ class TestForgotPasswordController(UnitTestBase):
         self.session.flush()
 
         request = self.get_csrf_request(post={
-            'Email': 'sontek'
+            'email': 'sontek'
         }, request_method='POST')
 
         request.user = None
@@ -913,9 +913,9 @@ class TestForgotPasswordController(UnitTestBase):
         self.session.flush()
 
         request = self.get_csrf_request(post={
-            'Password': {
-                'Password': 'test123',
-                'Password-confirm': 'test123',
+            'password': {
+                'password': 'test123',
+                'password-confirm': 'test123',
             },
         }, request_method='POST')
 
@@ -1208,7 +1208,7 @@ class TestProfileController(UnitTestBase):
         self.config.add_subscriber(handle_profile_updated, ProfileUpdatedEvent)
 
         request = self.get_csrf_request(post={
-            'Email': 'sontek@gmail.com',
+            'email': 'sontek@gmail.com',
         }, request_method='POST')
 
         request.user = user
@@ -1260,10 +1260,10 @@ class TestProfileController(UnitTestBase):
             ProfileUpdatedEvent)
 
         request = self.get_csrf_request(post={
-            'Email': 'sontek@gmail.com',
-            'Password': {
-                'Password': 'test123',
-                'Password-confirm': 'test123',
+            'email': 'sontek@gmail.com',
+            'password': {
+                'password': 'test123',
+                'password-confirm': 'test123',
             },
         }, request_method='POST')
 

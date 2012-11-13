@@ -53,11 +53,12 @@ class TestViews(IntegrationTestBase):
 
         csrf = res.form.fields['csrf_token'][0].value
 
-        res = self.app.post(str('/login'),
+        res = self.app.post(
+            str('/login'),
             {
                 'submit': True,
-                'Username': 'sontek',
-                'Password': 'temp',
+                'username': 'sontek',
+                'password': 'temp',
                 'csrf_token': csrf
             }
         )
@@ -78,11 +79,12 @@ class TestViews(IntegrationTestBase):
 
         csrf = res.form.fields['csrf_token'][0].value
 
-        res = self.app.post(str('/login'),
+        res = self.app.post(
+            str('/login'),
             {
                 'submit': True,
-                'Username': 'sontek',
-                'Password': 'temp',
+                'username': 'sontek',
+                'password': 'temp',
                 'csrf_token': csrf
             }
         )

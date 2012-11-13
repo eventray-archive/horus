@@ -152,8 +152,8 @@ class AuthController(BaseController):
         except colander.Invalid as e:
             raise HTTPBadRequest({'invalid': e.asdict()})
 
-        username = captured['Username']
-        password = captured['Password']
+        username = captured['username']
+        password = captured['password']
 
         try:
             self.check_credentials(username, password)
@@ -185,8 +185,8 @@ class AuthController(BaseController):
                     'errors': e.error.children
                 }
 
-            username = captured['Username']
-            password = captured['Password']
+            username = captured['username']
+            password = captured['password']
 
             try:
                 user = self.check_credentials(username, password)
@@ -246,7 +246,7 @@ class ForgotPasswordController(BaseController):
             except deform.ValidationFailure as e:
                 return {'form': e.render(), 'errors': e.error.children}
 
-            email = captured['Email']
+            email = captured['email']
 
             user = self.User.get_by_email(self.request, email)
             activation = self.Activation()
@@ -298,7 +298,7 @@ class ForgotPasswordController(BaseController):
                     return {
                         'form': form.render(
                             appstruct=dict(
-                                Username=user.username
+                                username=user.username
                             )
                         )
                     }
@@ -310,7 +310,7 @@ class ForgotPasswordController(BaseController):
                     except deform.ValidationFailure as e:
                         return {'form': e.render(), 'errors': e.error.children}
 
-                    password = captured['Password']
+                    password = captured['password']
 
                     user.password = password
                     self.db.add(user)
@@ -363,9 +363,9 @@ class RegisterController(BaseController):
             except deform.ValidationFailure as e:
                 return {'form': e.render(), 'errors': e.error.children}
 
-            email = captured['Email']
-            username = captured['Username'].lower()
-            password = captured['Password']
+            email = captured['email']
+            username = captured['username'].lower()
+            password = captured['password']
 
             user = self.User.get_by_username_or_email(
                 self.request,
@@ -481,8 +481,8 @@ class ProfileController(BaseController):
             return {
                 'form': self.form.render(
                     appstruct=dict(
-                        Username=username,
-                        Email=email if email else '',
+                        username=username,
+                        email=email if email else '',
                     )
                 )
             }
@@ -492,10 +492,10 @@ class ProfileController(BaseController):
                 captured = self.form.validate(controls)
             except deform.ValidationFailure as e:
                 # We pre-populate username
-                e.cstruct['Username'] = user.username
+                e.cstruct['username'] = user.username
                 return {'form': e.render(), 'errors': e.error.children}
 
-            email = captured.get('Email', None)
+            email = captured.get('email', None)
 
             if email:
                 email_user = self.User.get_by_email(self.request, email)
@@ -508,7 +508,7 @@ class ProfileController(BaseController):
 
                 user.email = email
 
-            password = captured.get('Password')
+            password = captured.get('password')
 
             if password:
                 user.password = password
