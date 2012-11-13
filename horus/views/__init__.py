@@ -417,9 +417,9 @@ class ProfileController(BaseController):
 
     @view_config(route_name='profile', renderer='horus:templates/profile.mako')
     def profile(self):
-        id = self.request.matchdict.get('user_id', None)
+        user_id = self.request.matchdict.get('user_id', None)
 
-        user = self.User.get_by_id(self.request, id)
+        user = self.User.get_by_id(self.request, user_id)
 
         if not user:
             return HTTPNotFound()
