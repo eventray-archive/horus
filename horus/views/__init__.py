@@ -31,6 +31,7 @@ from horus.events           import PasswordResetEvent
 from horus.events           import ProfileUpdatedEvent
 from horus.models           import _
 from horus.exceptions       import AuthenticationFailure
+from horus.exceptions       import RegistrationFailure
 from horus.httpexceptions   import HTTPBadRequest
 from hem.db                 import get_session
 
@@ -354,6 +355,25 @@ class RegisterController(BaseController):
         if self.require_activation:
             self.mailer = get_mailer(request)
 
+    def create_user(self, email, username, password):
+        user = self.User.get_by_username_or_email(
+            self.request,
+            username,
+            email
+        )
+
+        if user:
+            if user.username == username:
+                raise RegistrationFailure(
+                    _('That username is already used.'))
+            elif user.email == email:
+                raise RegistrationFailure(
+                    _('That e-mail is already used.'))
+
+        user = self.User(username=username, email=email, password=password)
+        self.db.add(user)
+        return user
+
     @view_config(route_name='register',
                  renderer='horus:templates/register.mako')
     def register(self):
@@ -372,44 +392,25 @@ class RegisterController(BaseController):
             username = captured['username'].lower()
             password = captured['password']
 
-            user = self.User.get_by_username_or_email(
-                self.request,
-                username,
-                email
-            )
+            try:
+                user = self.create_user(email, username, password)
+            except AuthenticationFailure as e:
+                self.request.session.flash(str(e), 'error')
 
             autologin = asbool(self.settings.get('horus.autologin', False))
 
-            if user:
-                if user.username == username:
-                    self.request.session.flash(
-                        _('That username is already used.'), 'error')
-                elif user.email == email:
-                    self.request.session.flash(
-                        _('That e-mail is already used.'), 'error')
-                return {'form': self.form.render(self.request.POST)}
-
             activation = None
-
-            try:
-                user = self.User(username=username, email=email,
-                                 password=password)
-                self.db.add(user)
-
-                if self.require_activation:
-                    # SEND EMAIL ACTIVATION
-                    create_activation(self.request, user)
+            if self.require_activation:
+                # SEND EMAIL ACTIVATION
+                create_activation(self.request, user)
+                self.request.session.flash(
+                    _('Please check your e-mail for an activation link.'),
+                    'success')
+            else:
+                if not autologin:
                     self.request.session.flash(
-                        _('Please check your e-mail for an activation link.'),
+                        _('You have been registered, you may log in now!'),
                         'success')
-                else:
-                    if not autologin:
-                        self.request.session.flash(
-                            _('You have been registered, you may log in now!'),
-                            'success')
-            except Exception as exc:  # TODO Catch finer-grained exceptions
-                self.request.session.flash(exc.args[0], 'error')
-                return {'form': self.form.render()}
 
             self.request.registry.notify(
                 NewRegistrationEvent(self.request, user, activation, captured)
