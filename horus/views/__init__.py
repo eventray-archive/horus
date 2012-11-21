@@ -160,7 +160,7 @@ class AuthController(BaseController):
         except AuthenticationFailure as e:
             raise HTTPBadRequest({
                 'status': 'failure',
-                'reason': e,
+                'reason': e.message,
             })
 
         # We pass the user back as well so the authentication
