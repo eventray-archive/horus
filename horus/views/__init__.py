@@ -156,15 +156,21 @@ class AuthController(BaseController):
         password = captured['password']
 
         try:
-            self.check_credentials(username, password)
+            user = self.check_credentials(username, password)
         except AuthenticationFailure as e:
             raise HTTPBadRequest({
                 'status': 'failure',
                 'reason': e,
             })
 
+        # We pass the user back as well so the authentication
+        # can use its security code or any other information stored
+        # on the user
+        user_json = user.__json__(self.request)
+
         return {
             'status': 'okay'
+            , 'user': user_json
         }
 
     @view_config(route_name='login', renderer='horus:templates/login.mako')

@@ -58,7 +58,7 @@ class BaseModel(object):
     def id(self):
         return sa.Column(sa.Integer, autoincrement=True, primary_key=True)
 
-    def __json__(self, convert_date=True):
+    def __json__(self, request, convert_date=True):
         """Converts all the properties of the object into a dict
         for use in json.
         """
