@@ -227,7 +227,10 @@ class UserMixin(BaseModel):
 
     @property
     def is_activated(self):
-        return self.activation_id == None
+        if self.activation_id == None:
+            return True
+
+        return False
 
     def _get_password(self):
         return self._password
