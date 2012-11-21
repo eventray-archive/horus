@@ -140,7 +140,7 @@ class AuthController(BaseController):
 
         return user
 
-    @view_config(route_name='login', xhr=True, renderer='json')
+    @view_config(route_name='login', accept="application/json", renderer='json')
     def login_ajax(self):
         try:
             cstruct = self.request.json_body
@@ -167,8 +167,7 @@ class AuthController(BaseController):
             'status': 'okay'
         }
 
-    @view_config(route_name='login', accept='text/html',
-                 renderer='horus:templates/login.mako')
+    @view_config(route_name='login', renderer='horus:templates/login.mako')
     def login(self):
         if self.request.method == 'GET':
             if self.request.user:
