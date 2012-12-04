@@ -441,13 +441,14 @@ class TestRegisterController(UnitTestBase):
         assert 'There was a problem with your submission' in response['form']
 
     def test_register_existing_user(self):
-        from horus.views import RegisterController
-        from pyramid_mailer.mailer import DummyMailer
-        from pyramid_mailer.interfaces import IMailer
+        from horus.views                import RegisterController
+        from pyramid_mailer.mailer      import DummyMailer
+        from pyramid_mailer.interfaces  import IMailer
         from horus.interfaces           import IUserClass
         from horus.tests.models         import User
-        from horus.interfaces   import IActivationClass
-        from horus.tests.models import Activation
+        from horus.interfaces           import IActivationClass
+        from horus.tests.models         import Activation
+        from horus.exceptions           import RegistrationFailure
         self.config.registry.registerUtility(Activation, IActivationClass)
 
         self.config.registry.registerUtility(User, IUserClass)
@@ -475,9 +476,7 @@ class TestRegisterController(UnitTestBase):
         request.session.flash = flash
 
         controller = RegisterController(request)
-        controller.register()
-
-        flash.assert_called_with('That username is already used.', 'error')
+        self.assertRaises(RegistrationFailure, controller.register)
 
     def test_register_no_email_validation(self):
         from horus.views import RegisterController
@@ -567,9 +566,8 @@ class TestRegisterController(UnitTestBase):
 
         request.user = Mock()
         controller = RegisterController(request)
-        controller.register()
 
-        flash.assert_called_with('I broke!', 'error')
+        self.assertRaises(Exception, controller.register)
 
     def test_activate(self):
         from horus.views import RegisterController

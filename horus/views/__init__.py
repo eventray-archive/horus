@@ -141,7 +141,12 @@ class AuthController(BaseController):
 
         return user
 
-    @view_config(route_name='login', accept="application/json", renderer='json')
+    @view_config(
+            route_name='login'
+            , xhr=True
+            , accept="application/json"
+            , renderer='json'
+        )
     def login_ajax(self):
         try:
             cstruct = self.request.json_body

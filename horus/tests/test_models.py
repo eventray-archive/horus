@@ -26,7 +26,7 @@ class TestModels(UnitTestBase):
         model.id = 1
         model.start_date = datetime.now()
 
-        assert model.__json__() == {'id': 1, 'start_date': model.start_date.isoformat()}
+        assert model.__json__(testing.DummyRequest()) == {'id': 1, 'start_date': model.start_date.isoformat()}
 
 
 class TestActivation(UnitTestBase):

@@ -39,12 +39,8 @@ requires = [
     , 'pyramid_mailer'
     , 'pyramid_beaker'
     , 'pyramid_deform'
+    , 'six'
 ]
-PY2 = sys.version_info[0] == 2
-if PY2:
-    requires.extend([
-        'simplejson',  # does not install under Python 3 which already has json
-    ])
 
 setup(name='horus',
     version='0.9.10',

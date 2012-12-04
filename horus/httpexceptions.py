@@ -4,16 +4,13 @@ from __future__ import (absolute_import, division, print_function,
     unicode_literals)
 from pyramid import httpexceptions as exc
 from pyramid.response import Response
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 
 class JSONError(exc.HTTPError):
     def __init__(self, errors, status=400):
         body = {'status': 'error', 'errors': errors}
-        Response.__init__(self, json.dumps(body, use_decimal=True))
+        Response.__init__(self, json.dumps(body))
         self.status = status
         self.content_type = 'application/json'
 
