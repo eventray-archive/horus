@@ -5,7 +5,7 @@ from __future__ import (absolute_import, division, print_function,
 import colander
 import deform
 
-from pyramid_deform import CSRFSchema
+from hem.schemas import CSRFSchema
 
 
 class LoginSchema(CSRFSchema):

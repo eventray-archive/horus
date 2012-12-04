@@ -6,7 +6,17 @@ from horus.tests import IntegrationTestBase
 from pyramid import testing
 from mock import patch
 from mock import Mock
+import re
+import six
 
+def clean_byte_string(string):
+    regex = "^b'(.+)'$"
+    match = re.search(regex, string)
+
+    if match:
+        return match.group(1)
+
+    return string
 
 class TestViews(IntegrationTestBase):
     def test_index(self):
@@ -53,6 +63,9 @@ class TestViews(IntegrationTestBase):
 
         csrf = res.form.fields['csrf_token'][0].value
 
+        if six.PY3:
+            csrf = clean_byte_string(csrf)
+
         res = self.app.post(
             str('/login'),
             {
@@ -78,6 +91,9 @@ class TestViews(IntegrationTestBase):
         res = self.app.get('/login')
 
         csrf = res.form.fields['csrf_token'][0].value
+
+        if six.PY3:
+            csrf = clean_byte_string(csrf)
 
         res = self.app.post(
             str('/login'),

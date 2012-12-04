@@ -43,7 +43,7 @@ requires = [
 ]
 
 setup(name='horus',
-    version='0.9.10',
+    version='0.9.11',
     description='Generic user registration for pyramid',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[
@@ -51,6 +51,7 @@ setup(name='horus',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
@@ -65,8 +66,5 @@ setup(name='horus',
     install_requires=requires,
     tests_require=requires + ['pytest', 'mock', 'webtest', 'pytest-cov', 'psycopg2'],
     cmdclass={'test': PyTest},
-    test_suite='horus',
-    dependency_links=[
-        'https://github.com/eventray/hem/tarball/master#egg=hem-dev',
-    ]
+    test_suite='horus'
 )
