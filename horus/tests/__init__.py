@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+    unicode_literals)
 import unittest
 from webtest                import TestApp
 from sqlalchemy             import engine_from_config
@@ -14,11 +18,10 @@ from mock                   import Mock
 from horus.tests.models     import Base
 from horus.tests.models     import User
 from horus.tests.models     import Activation
-from horus.interfaces       import IHorusUserClass
-from horus.interfaces       import IHorusActivationClass
+from horus.interfaces       import IUserClass
+from horus.interfaces       import IActivationClass
 from pkg_resources          import resource_filename
 from hem.interfaces         import IDBSession
-
 import os
 
 here = os.path.dirname(__file__)
@@ -26,6 +29,7 @@ here = os.path.dirname(__file__)
 settings = appconfig('config:' + resource_filename(__name__, 'test.ini'))
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
+
 
 class BaseTestCase(unittest.TestCase):
     @classmethod
@@ -45,8 +49,8 @@ class BaseTestCase(unittest.TestCase):
         self.session = self.Session(bind=connection)
 
         self.config.registry.registerUtility(self.session, IDBSession)
-        self.config.registry.registerUtility(Activation, IHorusActivationClass)
-        self.config.registry.registerUtility(User, IHorusUserClass)
+        self.config.registry.registerUtility(Activation, IActivationClass)
+        self.config.registry.registerUtility(User, IUserClass)
 
         Base.metadata.bind=connection
 
@@ -57,6 +61,8 @@ class BaseTestCase(unittest.TestCase):
         testing.tearDown()
         self.trans.rollback()
         self.session.close()
+        self.connection.close()
+
 
 class UnitTestBase(BaseTestCase):
     def get_csrf_request(self, post=None, request_method='GET'):
@@ -65,7 +71,7 @@ class UnitTestBase(BaseTestCase):
         if not post:
             post = {}
 
-        if not u'csrf_token' in post.keys():
+        if not 'csrf_token' in post.keys():
             post.update({
                 'csrf_token': csrf
             })
@@ -81,6 +87,7 @@ class UnitTestBase(BaseTestCase):
 
         return request
 
+
 class IntegrationTestBase(unittest.TestCase):
     def main(self, global_config, **settings):
         settings['su.using_tm'] = True
@@ -88,8 +95,8 @@ class IntegrationTestBase(unittest.TestCase):
         config = global_config
         config.add_settings(settings)
 
-        self.config.registry.registerUtility(Activation, IHorusActivationClass)
-        self.config.registry.registerUtility(User, IHorusUserClass)
+        self.config.registry.registerUtility(Activation, IActivationClass)
+        self.config.registry.registerUtility(User, IUserClass)
 
         def index(request):
             return Response('index!')
@@ -99,7 +106,6 @@ class IntegrationTestBase(unittest.TestCase):
 
         authz_policy = ACLAuthorizationPolicy()
         config.set_authorization_policy(authz_policy)
-
 
         authn_policy = AuthTktAuthenticationPolicy('secret')
         config.set_authentication_policy(authn_policy)
@@ -131,7 +137,7 @@ class IntegrationTestBase(unittest.TestCase):
         # begin a non-ORM transaction
         self.trans = connection.begin()
 
-        Base.metadata.bind=connection
+        Base.metadata.bind = connection
 
     def tearDown(self):
         # rollback - everything that happened with the

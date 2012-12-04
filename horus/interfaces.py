@@ -1,37 +1,53 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+    unicode_literals)
 from zope.interface import Interface
 
-class IHorusUserClass(Interface):
+
+class IUserClass(Interface):
     pass
 
-class IHorusActivationClass(Interface):
+
+class IActivationClass(Interface):
     pass
 
-class IHorusLoginSchema(Interface):
+
+class ILoginSchema(Interface):
     pass
 
-class IHorusLoginForm(Interface):
+
+class ILoginForm(Interface):
     pass
 
-class IHorusRegisterSchema(Interface):
+
+class IRegisterSchema(Interface):
     pass
 
-class IHorusRegisterForm(Interface):
+
+class IRegisterForm(Interface):
     pass
 
-class IHorusForgotPasswordForm(Interface):
+
+class IForgotPasswordForm(Interface):
     pass
 
-class IHorusForgotPasswordSchema(Interface):
+
+class IForgotPasswordSchema(Interface):
     pass
 
-class IHorusResetPasswordForm(Interface):
+
+class IResetPasswordForm(Interface):
     pass
 
-class IHorusResetPasswordSchema(Interface):
+
+class IResetPasswordSchema(Interface):
     pass
 
-class IHorusProfileForm(Interface):
+
+class IProfileForm(Interface):
     pass
 
-class IHorusProfileSchema(Interface):
+
+class IProfileSchema(Interface):
     pass
