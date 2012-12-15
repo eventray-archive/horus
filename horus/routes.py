@@ -28,3 +28,7 @@ def includeme(config):
                      '/admin/users/{user_id}/edit',
                      factory=UserFactory,
                      traverse="/{user_id}")
+
+    config.add_static_view('static', 'static', cache_max_age=3600)
+
+
