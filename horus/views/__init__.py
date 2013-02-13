@@ -368,12 +368,13 @@ class RegisterController(BaseController):
         )
 
         if user:
-            if user.username == username:
-                raise RegistrationFailure(
-                    _('That username is already used.'))
-            elif user.email == email:
+            # XXX offload this logic to the model
+            if user.email.lower() == email.lower():
                 raise RegistrationFailure(
                     _('That e-mail is already used.'))
+            else:
+                raise RegistrationFailure(
+                    _('That username is already used.'))
 
         user = self.User(username=username, email=email, password=password)
         self.db.add(user)
