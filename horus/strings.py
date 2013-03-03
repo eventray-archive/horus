@@ -23,8 +23,16 @@ class UIStringsBase(object):  # TODO Continue building
 
     reset_password_email_must_exist = _('We have no user with the email "{}". '
             "Try correcting this address or trying another.")
-    reset_password_email_body = _("Someone has tried to reset your password. "
-        "If it was you, click here:\n{{ link }}")
+    reset_password_email_body = _('''\
+Hello, {username}!
+
+Someone requested resetting your password. If it was you, click here:
+{link}
+
+If you don't want to change your password, please ignore this email message.
+
+Regards,
+{domain}\n''')
     reset_password_email_subject = _("Reset your password")
     # You don't want to say "E-mail not registered" or anything like that
     # because it gives spammers context:

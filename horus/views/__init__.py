@@ -240,39 +240,43 @@ class ForgotPasswordController(BaseController):
     @view_config(route_name='forgot_password',
                  renderer='horus:templates/forgot_password.mako')
     def forgot_password(self):
-        schema = self.request.registry.getUtility(IForgotPasswordSchema)
-        schema = schema().bind(request=self.request)
+        req = self.request
+        schema = req.registry.getUtility(IForgotPasswordSchema)
+        schema = schema().bind(request=req)
 
-        form = self.request.registry.getUtility(IForgotPasswordForm)
+        form = req.registry.getUtility(IForgotPasswordForm)
         form = form(schema)
 
-        if self.request.method == 'GET':
-            if self.request.user:
+        if req.method == 'GET':
+            if req.user:
                 return HTTPFound(location=self.forgot_password_redirect_view)
             else:
                 return {'form': form.render()}
 
         # From here on, we know it's a POST. Let's validate the form
-        controls = self.request.POST.items()
+        controls = req.POST.items()
         try:
             captured = form.validate(controls)
         except deform.ValidationFailure as e:
             # This catches if the email does not exist, too.
             return {'form': e.render(), 'errors': e.error.children}
 
-        user = self.User.get_by_email(self.request, captured['email'])
+        user = self.User.get_by_email(req, captured['email'])
         activation = self.Activation()
         self.db.add(activation)
         user.activation = activation
         Str = self.Str
 
-        mailer = get_mailer(self.request)
-        body = pystache.render(Str.reset_password_email_body,
-            {'link': route_url('reset_password', self.request,
-                                  code=user.activation.code)})
+        # TODO: Generate msg in a separate method so subclasses can override
+        mailer = get_mailer(req)
+        username = getattr(user, 'short_name', '') or \
+            getattr(user, 'full_name', '') or \
+            getattr(user, 'username', '') or user.email
+        body = Str.reset_password_email_body.format(
+            link=route_url('reset_password', req, code=user.activation.code),
+            username=username, domain=req.application_url)
         subject = Str.reset_password_email_subject
-        message = Message(subject=subject, recipients=[user.email],
-                          body=body)
+        message = Message(subject=subject, recipients=[user.email], body=body)
         mailer.send(message)
 
         self.request.session.flash(Str.reset_password_email_sent, 'success')
