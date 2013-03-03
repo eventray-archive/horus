@@ -232,12 +232,10 @@ class ForgotPasswordController(BaseController):
 
         self.forgot_password_redirect_view = route_url(
             self.settings.get('horus.forgot_password_redirect', 'index'),
-            request
-        )
+            request)
         self.reset_password_redirect_view = route_url(
             self.settings.get('horus.reset_password_redirect', 'index'),
-            request
-        )
+            request)
 
     @view_config(route_name='forgot_password',
                  renderer='horus:templates/forgot_password.mako')
@@ -251,45 +249,33 @@ class ForgotPasswordController(BaseController):
         if self.request.method == 'GET':
             if self.request.user:
                 return HTTPFound(location=self.forgot_password_redirect_view)
+            else:
+                return {'form': form.render()}
 
-            return {'form': form.render()}
+        # From here on, we know it's a POST. Let's validate the form
+        controls = self.request.POST.items()
+        try:
+            captured = form.validate(controls)
+        except deform.ValidationFailure as e:
+            # This catches if the email does not exist, too.
+            return {'form': e.render(), 'errors': e.error.children}
 
-        elif self.request.method == 'POST':
-            try:
-                controls = self.request.POST.items()
-                captured = form.validate(controls)
-            except deform.ValidationFailure as e:
-                return {'form': e.render(), 'errors': e.error.children}
+        user = self.User.get_by_email(self.request, captured['email'])
+        activation = self.Activation()
+        self.db.add(activation)
+        user.activation = activation
+        Str = self.Str
 
-            email = captured['email']
+        mailer = get_mailer(self.request)
+        body = pystache.render(Str.reset_password_email_body,
+            {'link': route_url('reset_password', self.request,
+                                  code=user.activation.code)})
+        subject = Str.reset_password_email_subject
+        message = Message(subject=subject, recipients=[user.email],
+                          body=body)
+        mailer.send(message)
 
-            user = self.User.get_by_email(self.request, email)
-            activation = self.Activation()
-            self.db.add(activation)
-
-            user.activation = activation
-
-            if user:
-                mailer = get_mailer(self.request)
-                body = pystache.render(
-                    _("Someone has tried to reset your password. "
-                      "If it was you, click here:\n{{ link }}"),
-                    {
-                        'link': route_url('reset_password', self.request,
-                                          code=user.activation.code)
-                    }
-                )
-
-                subject = _("Reset your password")
-
-                message = Message(subject=subject, recipients=[user.email],
-                                  body=body)
-                mailer.send(message)
-
-        # we don't want to say "E-mail not registered" or anything like that
-        # because it gives spammers context
-        self.request.session.flash(_('Please check your e-mail to finish '
-            'resetting your password.'), 'success')
+        self.request.session.flash(Str.reset_password_email_sent, 'success')
         return HTTPFound(location=self.reset_password_redirect_view)
 
     @view_config(route_name='reset_password',
