@@ -39,11 +39,11 @@ requires = [
     , 'pyramid_mailer'
     , 'pyramid_beaker'
     , 'pyramid_deform'
-    , 'six'
+    , 'bag'
 ]
 
 setup(name='horus',
-    version='0.9.13',
+    version='0.9.14dev',
     description='Generic user registration for pyramid',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[
