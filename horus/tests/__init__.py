@@ -52,7 +52,7 @@ class BaseTestCase(unittest.TestCase):
         self.config.registry.registerUtility(Activation, IActivationClass)
         self.config.registry.registerUtility(User, IUserClass)
 
-        Base.metadata.bind=connection
+        Base.metadata.bind = connection
 
     def tearDown(self):
         # rollback - everything that happened with the

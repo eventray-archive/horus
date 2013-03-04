@@ -13,6 +13,8 @@ from pyramid.settings       import asbool
 from pyramid_mailer         import get_mailer
 from pyramid_mailer.message import Message
 
+from bag.web.pyramid.flash_msg import FlashMessage
+from hem.db                 import get_session
 from horus.interfaces       import IUserClass
 from horus.interfaces       import IActivationClass
 from horus.interfaces       import IUIStrings
@@ -34,7 +36,6 @@ from horus.models           import _
 from horus.exceptions       import AuthenticationFailure
 from horus.exceptions       import RegistrationFailure
 from horus.httpexceptions   import HTTPBadRequest
-from hem.db                 import get_session
 
 import colander
 import deform
@@ -50,7 +51,8 @@ def authenticated(request, userid):
     autologin = asbool(settings.get('horus.autologin', False))
 
     if not autologin:
-        request.session.flash(_('You are now logged in.'), 'success')
+        Str = request.registry.getUtility(IUIStrings)
+        FlashMessage(request, Str.authenticated, kind='success')
 
     login_redirect_route = settings.get('horus.login_redirect', 'index')
     location = route_url(login_redirect_route, request)
@@ -206,7 +208,7 @@ class AuthController(BaseController):
             try:
                 user = self.check_credentials(username, password)
             except AuthenticationFailure as e:
-                self.request.session.flash(str(e), 'error')
+                FlashMessage(self.request, str(e), kind='error')
                 return {
                     'form': self.form.render(appstruct=captured),
                     'errors': [e]
@@ -220,7 +222,7 @@ class AuthController(BaseController):
         horus.logout_redirect, which defaults to a view named 'index'.
         """
         self.request.session.invalidate()
-        self.request.session.flash(self.Str.logout, 'success')
+        FlashMessage(self.request, self.Str.logout, kind='success')
         headers = forget(self.request)
 
         return HTTPFound(location=self.logout_redirect_view, headers=headers)
@@ -279,7 +281,8 @@ class ForgotPasswordController(BaseController):
         message = Message(subject=subject, recipients=[user.email], body=body)
         mailer.send(message)
 
-        self.request.session.flash(Str.reset_password_email_sent, 'success')
+        FlashMessage(self.request, Str.reset_password_email_sent,
+            kind='success')
         return HTTPFound(location=self.reset_password_redirect_view)
 
     @view_config(route_name='reset_password',
@@ -325,8 +328,8 @@ class ForgotPasswordController(BaseController):
                         PasswordResetEvent(self.request, user, password)
                     )
 
-                    self.request.session.flash(
-                        _('Your password has been reset!'), 'success')
+                    FlashMessage(self.request, self.Str.reset_password_done,
+                        kind='success')
 
                     location = self.reset_password_redirect_view
                     return HTTPFound(location=location)
@@ -395,7 +398,7 @@ class RegisterController(BaseController):
             try:
                 user = self.create_user(email, username, password)
             except RegistrationFailure as e:
-                self.request.session.flash(str(e), 'error')
+                FlashMessage(self.request, str(e), kind='error')
                 return HTTPFound(location=self.request.url)
 
             autologin = asbool(self.settings.get('horus.autologin', False))
@@ -404,14 +407,12 @@ class RegisterController(BaseController):
             if self.require_activation:
                 # SEND EMAIL ACTIVATION
                 create_activation(self.request, user)
-                self.request.session.flash(
-                    _('Please check your e-mail for an activation link.'),
-                    'success')
+                FlashMessage(self.request, self.Str.activation_check_email,
+                    kind='success')
             else:
                 if not autologin:
-                    self.request.session.flash(
-                        _('You have been registered. You may log in now!'),
-                        'success')
+                    FlashMessage(self.request, self.Str.registration_done,
+                        kind='success')
 
             self.request.registry.notify(
                 NewRegistrationEvent(self.request, user, activation, captured)
@@ -445,8 +446,8 @@ class RegisterController(BaseController):
                     RegistrationActivatedEvent(self.request, user, activation)
                 )
 
-                self.request.session.flash(
-                    _('Your e-mail address has been verified.'), 'success')
+                FlashMessage(self.request, self.Str.activation_email_verified,
+                    kind='success')
                 return HTTPFound(location=self.activate_redirect_view)
 
         return HTTPNotFound()
@@ -509,8 +510,8 @@ class ProfileController(BaseController):
 
                 if email_user:
                     if email_user.id != user.id:
-                        self.request.session.flash(
-                            _('That e-mail is already used.'), 'error')
+                        FlashMessage(self.request,
+                            _('That e-mail is already used.'), kind='error')
                         return HTTPFound(location=self.request.url)
 
                 user.email = email
@@ -520,8 +521,8 @@ class ProfileController(BaseController):
             if password:
                 user.password = password
 
-            self.request.session.flash(_('Profile successfully updated.'),
-                                       'success')
+            FlashMessage(self.request, self.Str.edit_profile_done,
+                kind='success')
 
             self.db.add(user)
 

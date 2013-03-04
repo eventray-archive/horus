@@ -14,13 +14,24 @@ class UIStringsBase(object):  # TODO Continue building
 
     TODO: Document this!
     '''
+    activation_check_email = \
+        _('Please check your e-mail for an activation link.')
+    activation_email_verified = _('Your e-mail address has been verified.')
+
+    admin_create_user_done = _('The user has been created.')
+
+    authenticated = _('You are now logged in.')
     logout = _('You have logged out.')
+
+    edit_profile_done = _('Your profile has been updated.')
 
     registration_email_exists = _("Sorry, an account with this "
         "e-mail already exists. Try logging in instead.")
     registration_username_exists = _("Sorry, an account with this "
         "username already exists.")
+    registration_done = _('You have been registered. You may log in now!')
 
+    reset_password_done = _('Your password has been reset!')
     reset_password_email_must_exist = _('We have no user with the email "{}". '
             "Try correcting this address or trying another.")
     reset_password_email_body = _('''\

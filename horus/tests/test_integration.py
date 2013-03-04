@@ -9,14 +9,14 @@ from mock import Mock
 import re
 import six
 
+
 def clean_byte_string(string):
     regex = "^b'(.+)'$"
     match = re.search(regex, string)
-
     if match:
         return match.group(1)
-
     return string
+
 
 class TestViews(IntegrationTestBase):
     def test_index(self):
@@ -35,12 +35,14 @@ class TestViews(IntegrationTestBase):
         self.assertEqual(res.status_int, 200)
 
     def test_login_redirects_if_logged_in(self):
+        self.config.include('bag.web.pyramid.flash_msg')
         request = testing.DummyRequest()
         from horus.views import AuthController
         with patch.object(AuthController, 'request', request) as request:
             request.user = Mock()
             res = self.app.get('/login').follow()
-            #TODO: Patch index request as well so that it redirects to dashboard
+            # TODO: Patch index request as well so that it redirects to the
+            # dashboard
             assert b'index' in res.body
 
     def test_empty_login(self):
