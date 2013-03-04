@@ -35,7 +35,6 @@ class TestViews(IntegrationTestBase):
         self.assertEqual(res.status_int, 200)
 
     def test_login_redirects_if_logged_in(self):
-        self.config.include('bag.web.pyramid.flash_msg')
         request = testing.DummyRequest()
         from horus.views import AuthController
         with patch.object(AuthController, 'request', request) as request:

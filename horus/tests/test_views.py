@@ -554,9 +554,6 @@ class TestRegisterController(UnitTestBase):
             'email': 'sontek@gmail.com'
         }, request_method='POST')
 
-        flash = Mock()
-        request.session.flash = flash
-
         request.user = Mock()
         controller = RegisterController(request)
 
@@ -917,9 +914,6 @@ class TestForgotPasswordController(UnitTestBase):
 
         request.user = None
 
-        flash = Mock()
-        request.session.flash = flash
-
         def handle_password_reset(event):
             request = event.request
             session = request.registry.getUtility(IDBSession)
@@ -971,9 +965,6 @@ class TestForgotPasswordController(UnitTestBase):
 
         request.user = None
 
-        flash = Mock()
-        request.session.flash = flash
-
         view = ForgotPasswordController(request)
         response = view.reset_password()
 
@@ -1011,9 +1002,6 @@ class TestForgotPasswordController(UnitTestBase):
         request.matchdict.get = get
 
         request.user = None
-
-        flash = Mock()
-        request.session.flash = flash
 
         view = ForgotPasswordController(request)
 
@@ -1082,9 +1070,6 @@ class TestProfileController(UnitTestBase):
         request = testing.DummyRequest()
         request.user = Mock()
 
-        flash = Mock()
-        request.session.flash = flash
-
         request.matchdict = Mock()
         get = Mock()
         get.return_value = user.id
@@ -1117,9 +1102,6 @@ class TestProfileController(UnitTestBase):
 
         request = testing.DummyRequest()
         request.user = Mock()
-
-        flash = Mock()
-        request.session.flash = flash
 
         request.matchdict = Mock()
         get = Mock()
@@ -1162,9 +1144,6 @@ class TestProfileController(UnitTestBase):
         get.return_value = user.id
         request.matchdict.get = get
 
-        flash = Mock()
-        request.session.flash = flash
-
         view = ProfileController(request)
 
         response = view.edit_profile()
@@ -1204,9 +1183,6 @@ class TestProfileController(UnitTestBase):
         }, request_method='POST')
 
         request.user = user
-
-        flash = Mock()
-        request.session.flash = flash
 
         request.matchdict = Mock()
         get = Mock()
@@ -1265,9 +1241,6 @@ class TestProfileController(UnitTestBase):
         get = Mock()
         get.return_value = user.id
         request.matchdict.get = get
-
-        flash = Mock()
-        request.session.flash = flash
 
         view = ProfileController(request)
 
