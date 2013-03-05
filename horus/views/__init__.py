@@ -212,7 +212,7 @@ class AuthController(BaseController):
                     'form': self.form.render(appstruct=captured),
                     'errors': [e]
                 }
-
+            self.request.user = user  # Please keep this line, my app needs it
             return authenticated(self.request, user.id)
 
     @view_config(permission='view', route_name='logout')

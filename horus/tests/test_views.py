@@ -79,7 +79,7 @@ class TestAuthController(UnitTestBase):
         assert response.status_int == 302
 
     def test_login_fails_empty(self):
-        """ Make sure we can't login with empty credentials"""
+        """Make sure we can't log in with empty credentials."""
         from horus.views import AuthController
         from horus.interfaces   import IUserClass
         from horus.tests.models import User
