@@ -2,6 +2,7 @@
 
 from __future__ import (absolute_import, division, print_function,
     unicode_literals)
+import re
 import colander as c
 import deform
 import deform.widget as w
@@ -40,6 +41,13 @@ def unique_username(node, value):
         raise c.Invalid(node, Str.registration_username_exists)
 
 
+def unix_username(node, value):  # TODO This is currently not used
+    '''Colander validator that ensures the username is alphanumeric.'''
+    if not ALPHANUM.match(value):
+        raise c.Invalid(node, _("Contains unacceptable characters."))
+ALPHANUM = re.compile(r'^[a-zA-Z0-9_.-]+$')
+
+
 class LoginSchema(CSRFSchema):
     username = c.SchemaNode(c.String())
     password = c.SchemaNode(c.String(), validator=c.Length(min=2),
@@ -47,12 +55,17 @@ class LoginSchema(CSRFSchema):
 
 
 class RegisterSchema(CSRFSchema):
-    username = c.SchemaNode(c.String(), validator=unique_username)
+    username = c.SchemaNode(c.String(), title=_('User name'),
+            description=_("Name with which you will log in"),
+            validator=unique_username)
     email = c.SchemaNode(c.String(), title=_('Email'),
         validator=c.All(c.Email(), unique_email),
+        description=_("Example: joe@example.com"),
         widget=w.TextInputWidget(size=40, maxlength=260, type='email'))
     password = c.SchemaNode(c.String(), validator=c.Length(min=2),
-        widget=deform.widget.CheckedPasswordWidget())
+        widget=deform.widget.CheckedPasswordWidget(),
+        description=_("Your password must be harder than a "
+            "dictionary word or proper name!"))  # TODO Good password validator
 
 
 class ForgotPasswordSchema(CSRFSchema):
