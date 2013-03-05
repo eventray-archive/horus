@@ -34,7 +34,6 @@ from horus.events           import PasswordResetEvent
 from horus.events           import ProfileUpdatedEvent
 from horus.models           import _
 from horus.exceptions       import AuthenticationFailure
-from horus.exceptions       import RegistrationFailure
 from horus.httpexceptions   import HTTPBadRequest
 
 import colander
