@@ -25,10 +25,10 @@ class UIStringsBase(object):  # TODO Continue building
 
     edit_profile_done = _('Your profile has been updated.')
 
-    registration_email_exists = _("Sorry, an account with this "
-        "e-mail already exists. Try logging in instead.")
+    registration_email_exists = _("Sorry, an account with the email {} "
+        "already exists. Try logging in instead.")
     registration_username_exists = _("Sorry, an account with this "
-        "username already exists.")
+        "username already exists. Please enter another one.")
     registration_done = _('You have been registered. You may log in now!')
 
     reset_password_done = _('Your password has been reset!')

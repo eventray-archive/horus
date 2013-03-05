@@ -357,26 +357,6 @@ class RegisterController(BaseController):
         if self.require_activation:
             self.mailer = get_mailer(request)
 
-    def create_user(self, email, username, password):
-        user = self.User.get_by_username_or_email(
-            self.request,
-            username,
-            email
-        )
-
-        if user:
-            # XXX offload this logic to the model
-            # TODO better yet, create colander validators for this
-            if user.email.lower() == email.lower():
-                raise RegistrationFailure(self.Str.registration_email_exists)
-            else:
-                raise RegistrationFailure(
-                    self.Str.registration_username_exists)
-
-        user = self.User(username=username, email=email, password=password)
-        self.db.add(user)
-        return user
-
     @view_config(route_name='register',
                  renderer='horus:templates/register.mako')
     def register(self):
@@ -390,16 +370,12 @@ class RegisterController(BaseController):
                 captured = self.form.validate(controls)
             except deform.ValidationFailure as e:
                 return {'form': e.render(), 'errors': e.error.children}
-
+            # With the form validated, we know email and username are unique
             email = captured['email']
             username = captured['username'].lower()
             password = captured['password']
-
-            try:
-                user = self.create_user(email, username, password)
-            except RegistrationFailure as e:
-                FlashMessage(self.request, str(e), kind='error')
-                return HTTPFound(location=self.request.url)
+            user = self.User(username=username, email=email, password=password)
+            self.db.add(user)
 
             autologin = asbool(self.settings.get('horus.autologin', False))
 
@@ -416,8 +392,7 @@ class RegisterController(BaseController):
 
             self.request.registry.notify(
                 NewRegistrationEvent(self.request, user, activation, captured)
-            )
-
+                )
             if autologin:
                 self.db.flush()  # in order to get the id
                 return authenticated(self.request, user.id)

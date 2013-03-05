@@ -11,6 +11,35 @@ from .interfaces import IUserClass, IUIStrings
 from .models import _
 
 
+def email_exists(node, val):
+    '''Colander validator that ensures a User exists with the email.'''
+    req = node.bindings['request']
+    User = req.registry.getUtility(IUserClass)
+    exists = get_session(req).query(User).filter(User.email.ilike(val)).count()
+    if not exists:
+        Str = req.registry.getUtility(IUIStrings)
+        raise c.Invalid(node, Str.reset_password_email_must_exist.format(val))
+
+
+def unique_email(node, val):
+    '''Colander validator that ensures the email does not exist.'''
+    req = node.bindings['request']
+    User = req.registry.getUtility(IUserClass)
+    other = get_session(req).query(User).filter(User.email.ilike(val)).first()
+    if other:
+        S = req.registry.getUtility(IUIStrings)
+        raise c.Invalid(node, S.registration_email_exists.format(other.email))
+
+
+def unique_username(node, value):
+    '''Colander validator that ensures the username does not exist.'''
+    req = node.bindings['request']
+    User = req.registry.getUtility(IUserClass)
+    if get_session(req).query(User).filter(User.username == value).count():
+        Str = req.registry.getUtility(IUIStrings)
+        raise c.Invalid(node, Str.registration_username_exists)
+
+
 class LoginSchema(CSRFSchema):
     username = c.SchemaNode(c.String())
     password = c.SchemaNode(c.String(), validator=c.Length(min=2),
@@ -18,20 +47,12 @@ class LoginSchema(CSRFSchema):
 
 
 class RegisterSchema(CSRFSchema):
-    username = c.SchemaNode(c.String())
-    email = c.SchemaNode(c.String(), validator=c.Email())
+    username = c.SchemaNode(c.String(), validator=unique_username)
+    email = c.SchemaNode(c.String(), title=_('Email'),
+        validator=c.All(c.Email(), unique_email),
+        widget=w.TextInputWidget(size=40, maxlength=260, type='email'))
     password = c.SchemaNode(c.String(), validator=c.Length(min=2),
         widget=deform.widget.CheckedPasswordWidget())
-
-
-def email_exists(node, val):
-    '''Colander validator that ensures a User exists with the email.'''
-    req = node.bindings['request']
-    Str = req.registry.getUtility(IUIStrings)
-    User = req.registry.getUtility(IUserClass)
-    exists = get_session(req).query(User).filter(User.email.ilike(val)).count()
-    if not exists:
-        raise c.Invalid(node, Str.reset_password_email_must_exist.format(val))
 
 
 class ForgotPasswordSchema(CSRFSchema):

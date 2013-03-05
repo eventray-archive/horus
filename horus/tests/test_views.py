@@ -446,7 +446,6 @@ class TestRegisterController(UnitTestBase):
         from horus.tests.models         import User
         from horus.interfaces           import IActivationClass
         from horus.tests.models         import Activation
-        from horus.exceptions           import RegistrationFailure
         self.config.registry.registerUtility(Activation, IActivationClass)
 
         self.config.registry.registerUtility(User, IUserClass)
@@ -471,10 +470,9 @@ class TestRegisterController(UnitTestBase):
         }, request_method='POST')
 
         view = RegisterController(request)
-        with patch('horus.views.FlashMessage') as FlashMessage:
-            view.register()
-            FlashMessage.assert_called_with(request,
-                view.Str.registration_email_exists, kind="error")
+        adict = view.register()
+        assert isinstance(adict, dict)
+        assert adict['errors']
 
     def test_register_no_email_validation(self):
         from horus.views import RegisterController
