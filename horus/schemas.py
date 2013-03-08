@@ -62,10 +62,10 @@ class RegisterSchema(CSRFSchema):
         validator=c.All(c.Email(), unique_email),
         description=_("Example: joe@example.com"),
         widget=w.TextInputWidget(size=40, maxlength=260, type='email'))
-    password = c.SchemaNode(c.String(), validator=c.Length(min=2),
+    password = c.SchemaNode(c.String(), validator=c.Length(min=4),
         widget=deform.widget.CheckedPasswordWidget(),
         description=_("Your password must be harder than a "
-            "dictionary word or proper name!"))  # TODO Good password validator
+            "dictionary word or proper name!"))
 
 
 class ForgotPasswordSchema(CSRFSchema):

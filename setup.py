@@ -5,7 +5,6 @@ from __future__ import (absolute_import, division, print_function,
     unicode_literals)
 import os
 import sys
-
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
@@ -27,19 +26,19 @@ README = ''  # open(os.path.join(here, 'README.md')).read()
 CHANGES = ''  # open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
-    'sqlalchemy'
-    , 'cryptacular'
-    , 'deform'
-    , 'transaction'
-    , 'zope.sqlalchemy'
-    , 'pystache'
-    , 'hem'
-    , 'beaker'
-    , 'pyramid'
-    , 'pyramid_mailer'
-    , 'pyramid_beaker'
-    , 'pyramid_deform'
-    , 'bag'
+    'sqlalchemy',
+    'zope.sqlalchemy',
+    'transaction',
+    'cryptacular',
+    'deform',
+    'pystache',
+    'hem',
+    'beaker',
+    'pyramid',
+    'pyramid_mailer',
+    'pyramid_beaker',
+    'pyramid_deform',
+    'bag>=0.3.3',
 ]
 
 setup(name='horus',
@@ -64,7 +63,8 @@ setup(name='horus',
     include_package_data=True,
     zip_safe=False,
     install_requires=requires,
-    tests_require=requires + ['pytest', 'mock', 'webtest', 'pytest-cov', 'psycopg2'],
+    tests_require=requires + ['pytest', 'mock', 'webtest', 'pytest-cov',
+        'psycopg2'],
     cmdclass={'test': PyTest},
-    test_suite='horus'
+    test_suite='horus',
 )

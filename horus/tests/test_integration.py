@@ -76,7 +76,6 @@ class TestViews(IntegrationTestBase):
                 'csrf_token': csrf
             }
         )
-
         assert res.status_int == 302
 
     def test_inactive_login(self):
