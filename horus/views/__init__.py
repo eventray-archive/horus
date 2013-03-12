@@ -363,40 +363,44 @@ class RegisterController(BaseController):
             if self.request.user:
                 return HTTPFound(location=self.register_redirect_view)
             return {'form': self.form.render()}
-        elif self.request.method == 'POST':
-            try:
-                controls = self.request.POST.items()
-                captured = self.form.validate(controls)
-            except deform.ValidationFailure as e:
-                return {'form': e.render(), 'errors': e.error.children}
-            # With the form validated, we know email and username are unique
-            email = captured['email']
-            username = captured['username'].lower()
-            password = captured['password']
-            user = self.User(username=username, email=email, password=password)
-            self.db.add(user)
+        elif self.request.method != 'POST':
+            return
+        # If the request is a POST:
+        controls = self.request.POST.items()
+        try:
+            captured = self.form.validate(controls)
+        except deform.ValidationFailure as e:
+            return {'form': e.render(), 'errors': e.error.children}
+        # With the form validated, we know email and username are unique.
+        del captured['csrf_token']
+        user = self.register_user(captured)
 
-            autologin = asbool(self.settings.get('horus.autologin', False))
+        autologin = asbool(self.settings.get('horus.autologin', False))
 
-            activation = None
-            if self.require_activation:
-                # SEND EMAIL ACTIVATION
-                create_activation(self.request, user)
-                FlashMessage(self.request, self.Str.activation_check_email,
-                    kind='success')
-            else:
-                if not autologin:
-                    FlashMessage(self.request, self.Str.registration_done,
-                        kind='success')
+        if self.require_activation:
+            # SEND EMAIL ACTIVATION
+            create_activation(self.request, user)
+            FlashMessage(self.request, self.Str.activation_check_email,
+                kind='success')
+        elif not autologin:
+            FlashMessage(self.request, self.Str.registration_done,
+                kind='success')
 
-            self.request.registry.notify(
-                NewRegistrationEvent(self.request, user, activation, captured)
-                )
-            if autologin:
-                self.db.flush()  # in order to get the id
-                return authenticated(self.request, user.id)
-            else:  # not autologin: User must log in just after registering.
-                return HTTPFound(location=self.register_redirect_view)
+        self.request.registry.notify(NewRegistrationEvent(
+            self.request, user, None, controls))
+        if autologin:
+            self.db.flush()  # in order to get the id
+            return authenticated(self.request, user.id)
+        else:  # not autologin: user must log in just after registering.
+            return HTTPFound(location=self.register_redirect_view)
+
+    def register_user(self, controls):
+        '''To change how the user is persisted, override this method.'''
+        # This generic method must work with any custom User class and any
+        # custom registration form:
+        user = self.User(**controls)
+        self.db.add(user)
+        return user
 
     @view_config(route_name='activate')
     def activate(self):

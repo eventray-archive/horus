@@ -56,8 +56,8 @@ class LoginSchema(CSRFSchema):
 
 class RegisterSchema(CSRFSchema):
     username = c.SchemaNode(c.String(), title=_('User name'),
-            description=_("Name with which you will log in"),
-            validator=unique_username)
+        description=_("Name with which you will log in"),
+        validator=unique_username)
     email = c.SchemaNode(c.String(), title=_('Email'),
         validator=c.All(c.Email(), unique_email),
         description=_("Example: joe@example.com"),
