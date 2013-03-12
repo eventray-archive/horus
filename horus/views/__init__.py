@@ -345,9 +345,9 @@ class RegisterController(BaseController):
         form = request.registry.getUtility(IRegisterForm)
         self.form = form(self.schema)
 
-        self.register_redirect_view = route_url(
+        self.after_register_url = route_url(
             self.settings.get('horus.register_redirect', 'index'), request)
-        self.activate_redirect_view = route_url(
+        self.after_activate_url = route_url(
             self.settings.get('horus.activate_redirect', 'index'), request)
 
         self.require_activation = asbool(
@@ -361,10 +361,11 @@ class RegisterController(BaseController):
     def register(self):
         if self.request.method == 'GET':
             if self.request.user:
-                return HTTPFound(location=self.register_redirect_view)
+                return HTTPFound(location=self.after_register_url)
             return {'form': self.form.render()}
         elif self.request.method != 'POST':
             return
+
         # If the request is a POST:
         controls = self.request.POST.items()
         try:
@@ -373,7 +374,7 @@ class RegisterController(BaseController):
             return {'form': e.render(), 'errors': e.error.children}
         # With the form validated, we know email and username are unique.
         del captured['csrf_token']
-        user = self.register_user(captured)
+        user = self.persist_user(captured)
 
         autologin = asbool(self.settings.get('horus.autologin', False))
 
@@ -392,10 +393,10 @@ class RegisterController(BaseController):
             self.db.flush()  # in order to get the id
             return authenticated(self.request, user.id)
         else:  # not autologin: user must log in just after registering.
-            return HTTPFound(location=self.register_redirect_view)
+            return HTTPFound(location=self.after_register_url)
 
-    def register_user(self, controls):
-        '''To change how the user is persisted, override this method.'''
+    def persist_user(self, controls):
+        '''To change how the user is stored, override this method.'''
         # This generic method must work with any custom User class and any
         # custom registration form:
         user = self.User(**controls)
@@ -417,16 +418,15 @@ class RegisterController(BaseController):
 
             if user:
                 self.db.delete(activation)
-                self.db.add(user)
+                # self.db.add(user)  # not necessary
                 self.db.flush()
 
                 self.request.registry.notify(
-                    RegistrationActivatedEvent(self.request, user, activation)
-                )
+                    RegistrationActivatedEvent(self.request, user, activation))
 
                 FlashMessage(self.request, self.Str.activation_email_verified,
                     kind='success')
-                return HTTPFound(location=self.activate_redirect_view)
+                return HTTPFound(location=self.after_activate_url)
 
         return HTTPNotFound()
 

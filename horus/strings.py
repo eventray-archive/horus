@@ -15,7 +15,8 @@ class UIStringsBase(object):  # TODO Continue building
     TODO: Document this!
     '''
     activation_check_email = \
-        _('Please check your e-mail for an activation link.')
+        _("Thank you for registering! Please check your e-mail now. You can "
+            "continue by clicking the activation link we have sent you.")
     activation_email_verified = _('Your e-mail address has been verified.')
 
     admin_create_user_done = _('The user has been created.')
