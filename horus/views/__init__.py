@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function,
-    unicode_literals)
+                        unicode_literals)
 from pyramid.view           import view_config
 from pyramid.url            import route_url
 from pyramid.security       import remember
@@ -420,14 +420,11 @@ class RegisterController(BaseController):
                 self.db.delete(activation)
                 # self.db.add(user)  # not necessary
                 self.db.flush()
-
+                FlashMessage(self.request, self.Str.activation_email_verified,
+                             kind='success')
                 self.request.registry.notify(
                     RegistrationActivatedEvent(self.request, user, activation))
-
-                FlashMessage(self.request, self.Str.activation_email_verified,
-                    kind='success')
                 return HTTPFound(location=self.after_activate_url)
-
         return HTTPNotFound()
 
 
