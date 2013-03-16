@@ -323,13 +323,10 @@ class ForgotPasswordController(BaseController):
                     self.db.add(user)
                     self.db.delete(activation)
 
-                    self.request.registry.notify(
-                        PasswordResetEvent(self.request, user, password)
-                    )
-
                     FlashMessage(self.request, self.Str.reset_password_done,
                         kind='success')
-
+                    self.request.registry.notify(PasswordResetEvent(
+                        self.request, user, password))
                     location = self.reset_password_redirect_view
                     return HTTPFound(location=location)
 
