@@ -16,8 +16,9 @@ class UIStringsBase(object):  # TODO Continue building
     '''
     activation_check_email = \
         _("Thank you for registering! Please check your e-mail now. You can "
-            "continue by clicking the activation link we have sent you.")
-    activation_email_verified = _('Your e-mail address has been verified.')
+          "continue by clicking the activation link we have sent you.")
+    activation_email_verified = _("Your e-mail address has been verified. "
+                                  "Thank you!")
 
     admin_create_user_done = _('The user has been created.')
 
@@ -27,7 +28,7 @@ class UIStringsBase(object):  # TODO Continue building
     edit_profile_done = _('Your profile has been updated.')
 
     registration_email_exists = _("Sorry, an account with the email {} "
-        "already exists. Try logging in instead.")
+                                  "already exists. Try logging in instead.")
     registration_username_exists = _("Sorry, an account with this "
         "username already exists. Please enter another one.")
     registration_done = _('You have been registered. You may log in now!')
@@ -48,7 +49,7 @@ Regards,
     reset_password_email_subject = _("Reset your password")
     # You don't want to say "E-mail not registered" or anything like that
     # because it gives spammers context:
-    reset_password_email_sent = _('Please check your e-mail to finish '
-        'resetting your password.')
+    reset_password_email_sent = _("Please check your e-mail to finish "
+                                  "resetting your password.")
 
 __doc__ = UIStringsBase.__doc__
