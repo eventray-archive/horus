@@ -134,7 +134,7 @@ class AuthController(BaseController):
         user = self.User.get_user(self.request, username, password)
 
         if allow_email_auth and not user:
-            user = self.User.get_by_email_password(username, password)
+            user = self.User.get_by_email_password(self.request, username, password)
 
         if not user:
             raise AuthenticationFailure(_('Invalid username or password.'))

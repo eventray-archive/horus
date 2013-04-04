@@ -293,7 +293,7 @@ class UserMixin(BaseModel):
         user = cls.get_by_email(request, email)
 
         if user:
-            valid = cls.validate_user(request, user, password)
+            valid = cls.validate_user(user, password)
 
             if valid:
                 return user
