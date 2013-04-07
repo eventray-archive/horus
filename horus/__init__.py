@@ -23,9 +23,12 @@ from horus.interfaces       import IResetPasswordSchema
 from horus.interfaces       import IProfileForm
 from horus.interfaces       import IProfileSchema
 from horus.lib              import get_user
+from horus                  import models
 from horus.strings          import UIStringsBase
+
 from hem.config             import get_class_from_config
 
+import inspect
 
 def groupfinder(userid, request):
     user = request.user
@@ -38,6 +41,20 @@ def groupfinder(userid, request):
     return groups
 
 
+def scan(config, module):
+    module = inspect.getmodule(module)
+
+    model_mappings = {
+       models.UserMixin: IUserClass,
+       models.ActivationMixin: IActivationClass,
+    }
+
+    for name, obj in inspect.getmembers(module):
+        for mixin, interface in model_mappings.iteritems():
+            if isinstance(obj, type) and issubclass(obj, mixin):
+                config.registry.registerUtility(obj, interface)
+
+
 def includeme(config):
     settings = config.registry.settings
     # str('user') returns a bytestring under Python 2 and a
@@ -46,15 +63,25 @@ def includeme(config):
     config.set_root_factory(RootFactory)
     config.include('bag.web.pyramid.flash_msg')
 
+    config.add_directive('scan_horus', scan)
+
     if not config.registry.queryUtility(IUserClass):
-        user_class = get_class_from_config(settings, 'horus.user_class')
-        config.registry.registerUtility(user_class, IUserClass)
+        try:
+            user_class = get_class_from_config(settings, 'horus.user_class')
+            config.registry.registerUtility(user_class, IUserClass)
+        except:
+            # maybe they are using scan?
+            pass
 
     if not config.registry.queryUtility(IActivationClass):
-        activation_class = get_class_from_config(settings,
-                'horus.activation_class')
-        config.registry.registerUtility(activation_class,
-                IActivationClass)
+        try:
+            activation_class = get_class_from_config(settings,
+                    'horus.activation_class')
+            config.registry.registerUtility(activation_class,
+                    IActivationClass)
+        except:
+            # maybe they are using scan?
+            pass
 
     defaults = [
         (IUIStrings, UIStringsBase),
