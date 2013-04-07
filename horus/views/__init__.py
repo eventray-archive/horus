@@ -41,6 +41,13 @@ import deform
 import pystache
 
 
+def get_config_route(request, config_key):
+    settings = request.registry.settings
+    try:
+        return request.route_url(settings[config_key])
+    except KeyError:
+        return settings[config_key]
+
 def authenticated(request, userid):
     """Sets the auth cookies and redirects to the page defined
     in horus.login_redirect, which defaults to a view named 'index'.
@@ -53,8 +60,7 @@ def authenticated(request, userid):
         Str = request.registry.getUtility(IUIStrings)
         FlashMessage(request, Str.authenticated, kind='success')
 
-    login_redirect_route = settings.get('horus.login_redirect', 'index')
-    location = route_url(login_redirect_route, request)
+    location = get_config_route(request, 'horus.login_redirect')
 
     return HTTPFound(location=location, headers=headers)
 
@@ -111,14 +117,16 @@ class AuthController(BaseController):
 
         form = request.registry.getUtility(ILoginForm)
 
-        self.login_redirect_view = route_url(
-            self.settings.get('horus.login_redirect', 'index'),
-            request
+        self.login_redirect_view = get_config_route(
+            request,
+            'horus.login_redirect'
         )
-        self.logout_redirect_view = route_url(
-            self.settings.get('horus.logout_redirect', 'index'),
-            request
+
+        self.logout_redirect_view = get_config_route(
+            request,
+            'horus.logout_redirect'
         )
+
         self.require_activation = asbool(
             self.settings.get('horus.require_activation', True)
         )

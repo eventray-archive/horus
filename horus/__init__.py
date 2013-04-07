@@ -50,9 +50,14 @@ def scan(config, module):
     }
 
     for name, obj in inspect.getmembers(module):
-        for mixin, interface in model_mappings.iteritems():
-            if isinstance(obj, type) and issubclass(obj, mixin):
-                config.registry.registerUtility(obj, interface)
+        if inspect.isclass(obj):
+            # don't register the horus mixins
+            if obj.__module__ == 'horus.models':
+                continue
+
+            for mixin, interface in model_mappings.iteritems():
+                if isinstance(obj, type) and issubclass(obj, mixin):
+                    config.registry.registerUtility(obj, interface)
 
 
 def includeme(config):
