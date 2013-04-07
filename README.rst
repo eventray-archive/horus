@@ -23,6 +23,11 @@ Minimal integration
   file `horus/tests/models.py
   <https://github.com/eventray/horus/blob/master/horus/tests/models.py>`_.
 
+  or you can use the horus scaffold script::
+
+  $ horus_scaffold development.ini > auth_models.py
+
+
 - Include horus inside your ``main()`` function like this::
 
     # Include horus

@@ -48,7 +48,8 @@ from horus.models import ActivationMixin
 class %(class_name)s(%(mixin)s, %(base)s):
     pass
 """
-        if inspect.isclass(obj) and issubclass(obj, BaseModel):
+        if inspect.isclass(obj) and issubclass(obj, BaseModel) \
+            and obj != BaseModel:
             class_name =  obj.__name__.replace('Mixin', '')
             mixin = obj.__name__
             #TODO: Allow them to define their base class in commandline
