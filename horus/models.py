@@ -6,6 +6,7 @@ try:
     from urllib.parse import urlencode  # Python 3
 except ImportError:
     from urllib import urlencode  # Python 2
+
 from pyramid.compat             import text_type as unicode
 from pyramid.i18n               import TranslationStringFactory
 from pyramid.security           import Allow
@@ -412,3 +413,11 @@ class UserGroupMixin(BaseModel):
 
     def __repr__(self):
         return '<UserGroup: %s, %s>' % (self.group_name, self.user_id,)
+
+__all__ = [
+    k for k, v in locals().items()
+
+    if (
+        isinstance(v, type) and issubclass(v, BaseModel)
+    )
+]

@@ -63,6 +63,10 @@ setup(name='horus',
     include_package_data=True,
     zip_safe=False,
     install_requires=requires,
+    entry_points="""\
+    [console_scripts]
+    horus_scaffold = horus.scripts.scaffold:main
+    """,
     tests_require=requires + ['pytest', 'mock', 'webtest', 'pytest-cov',
         'psycopg2'],
     cmdclass={'test': PyTest},
