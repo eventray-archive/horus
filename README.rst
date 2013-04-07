@@ -49,10 +49,6 @@ Minimal integration
     config.include('horus')
     config.scan_horus(auth_models)
 
-- Create tables. Maybe even run the console script to set up the database:
-
-    $ su_setup <your app config.ini>
-
 - Configure ``horus.login_redirect`` and ``horus.logout_redirect``
   (in your .ini configuration file) to set the redirection routes.
 
