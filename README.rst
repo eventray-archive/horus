@@ -25,8 +25,10 @@ Minimal integration
 
   or you can use the horus scaffold script::
 
-  $ horus_scaffold development.ini > auth_models.py
+    $ horus_scaffold development.ini > auth_models.py
 
+  Then all you need to do is tell the class where to find your declarative
+  base you and are good to go!
 
 - Include horus inside your ``main()`` function like this::
 
@@ -39,6 +41,13 @@ Minimal integration
     registry.registerUtility(User, IHorusUserClass)
     registry.registerUtility(Activation, IHorusActivationClass)
     config.include('horus')
+
+  If you don't want to register your classes manually you can do::
+
+    from myapp import auth_models
+
+    config.include('horus')
+    config.scan_horus(auth_models)
 
 - Create tables. Maybe even run the console script to set up the database:
 
