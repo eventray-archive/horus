@@ -13,7 +13,6 @@ from pyramid.settings       import asbool
 from pyramid_mailer         import get_mailer
 from pyramid_mailer.message import Message
 
-from bag.web.pyramid.flash_msg import FlashMessage
 from hem.db                 import get_session
 from horus.interfaces       import IUserClass
 from horus.interfaces       import IActivationClass
@@ -32,6 +31,7 @@ from horus.events           import NewRegistrationEvent
 from horus.events           import RegistrationActivatedEvent
 from horus.events           import PasswordResetEvent
 from horus.events           import ProfileUpdatedEvent
+from horus.lib              import FlashMessage
 from horus.models           import _
 from horus.exceptions       import AuthenticationFailure
 from horus.httpexceptions   import HTTPBadRequest
@@ -43,6 +43,7 @@ import pystache
 
 def get_config_route(request, config_key):
     settings = request.registry.settings
+
     try:
         return request.route_url(settings[config_key])
     except KeyError:

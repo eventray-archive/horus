@@ -3,7 +3,6 @@
 from __future__ import (absolute_import, division, print_function,
     unicode_literals)
 import deform
-from bag.web.pyramid.flash_msg import FlashMessage
 from pyramid.view           import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound
 from horus.views            import BaseController

@@ -38,7 +38,6 @@ requires = [
     'pyramid_mailer',
     'pyramid_beaker',
     'pyramid_deform',
-    'bag>=0.3.3',
 ]
 
 setup(name='horus',

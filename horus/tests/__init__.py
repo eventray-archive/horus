@@ -94,7 +94,6 @@ class IntegrationTestBase(unittest.TestCase):
 
         config = global_config
         config.add_settings(settings)
-        config.include('bag.web.pyramid.flash_msg')
 
         config.registry.registerUtility(Activation, IActivationClass)
         config.registry.registerUtility(User, IUserClass)

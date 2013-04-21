@@ -18,9 +18,12 @@ class TestAuthController(UnitTestBase):
         from horus.strings      import UIStringsBase
         from horus.tests.models import User
         from horus.tests.models import Activation
+
         self.config.registry.registerUtility(Activation, IActivationClass)
 
         self.config.add_route('index', '/')
+        self.config.registry.settings['horus.login_redirect'] = 'index'
+        self.config.registry.settings['horus.logout_redirect'] = 'index'
 
         request = testing.DummyRequest()
 
@@ -50,6 +53,8 @@ class TestAuthController(UnitTestBase):
 
         self.config.registry.registerUtility(User, IUserClass)
         self.config.add_route('index', '/')
+        self.config.registry.settings['horus.login_redirect'] = 'index'
+        self.config.registry.settings['horus.logout_redirect'] = 'index'
         self.config.include('horus')
 
         request = testing.DummyRequest()
@@ -70,6 +75,8 @@ class TestAuthController(UnitTestBase):
         self.config.registry.registerUtility(User, IUserClass)
         self.config.add_route('index', '/')
         self.config.include('horus')
+        self.config.registry.settings['horus.login_redirect'] = 'index'
+        self.config.registry.settings['horus.logout_redirect'] = 'index'
 
         request = testing.DummyRequest()
         request.user = Mock()
@@ -90,6 +97,8 @@ class TestAuthController(UnitTestBase):
         self.config.registry.registerUtility(User, IUserClass)
         self.config.add_route('index', '/')
         self.config.include('horus')
+        self.config.registry.settings['horus.login_redirect'] = 'index'
+        self.config.registry.settings['horus.logout_redirect'] = 'index'
 
         request = testing.DummyRequest(post={
             'submit': True,
@@ -118,6 +127,8 @@ class TestAuthController(UnitTestBase):
         self.config.registry.registerUtility(User, IUserClass)
         self.config.add_route('index', '/')
         self.config.include('horus')
+        self.config.registry.settings['horus.login_redirect'] = 'index'
+        self.config.registry.settings['horus.logout_redirect'] = 'index'
 
         request = self.get_csrf_request(post={
                     'submit': True,
@@ -147,6 +158,8 @@ class TestAuthController(UnitTestBase):
         self.config.registry.registerUtility(User, IUserClass)
         self.config.add_route('index', '/')
         self.config.include('horus')
+        self.config.registry.settings['horus.login_redirect'] = 'index'
+        self.config.registry.settings['horus.logout_redirect'] = 'index'
 
         request = self.get_csrf_request(post={
                 'submit': True,
@@ -169,6 +182,8 @@ class TestAuthController(UnitTestBase):
         self.config.registry.registerUtility(Activation, IActivationClass)
 
         self.config.registry.registerUtility(User, IUserClass)
+        self.config.registry.settings['horus.login_redirect'] = 'index'
+        self.config.registry.settings['horus.logout_redirect'] = 'index'
 
         admin = User(username='sontek', email='sontek@gmail.com')
         admin.password = 'foo'
@@ -210,6 +225,8 @@ class TestAuthController(UnitTestBase):
         from horus.views import AuthController
         self.config.add_route('index', '/')
         self.config.include('horus')
+        self.config.registry.settings['horus.login_redirect'] = 'index'
+        self.config.registry.settings['horus.logout_redirect'] = 'index'
 
         request = self.get_csrf_request(post={
                 'submit': True,
@@ -235,6 +252,8 @@ class TestAuthController(UnitTestBase):
         self.config.registry.registerUtility(User, IUserClass)
         self.config.add_route('index', '/')
         self.config.include('horus')
+        self.config.registry.settings['horus.login_redirect'] = 'index'
+        self.config.registry.settings['horus.logout_redirect'] = 'index'
         request = testing.DummyRequest()
 
         invalidate = Mock()
@@ -368,6 +387,8 @@ class TestRegisterController(UnitTestBase):
         self.config.registry.registerUtility(DummyMailer(), IMailer)
 
         self.config.add_route('index', '/')
+        self.config.registry.settings['horus.login_redirect'] = 'index'
+        self.config.registry.settings['horus.logout_redirect'] = 'index'
 
         request = testing.DummyRequest()
         request.user = Mock()

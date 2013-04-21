@@ -23,8 +23,11 @@ from horus.interfaces       import IResetPasswordSchema
 from horus.interfaces       import IProfileForm
 from horus.interfaces       import IProfileSchema
 from horus.lib              import get_user
+from horus.lib              import render_flash_messages_from_queues
 from horus                  import models
 from horus.strings          import UIStringsBase
+from pyramid.events         import BeforeRender
+
 
 from hem.config             import get_class_from_config
 
@@ -66,7 +69,6 @@ def includeme(config):
     # unicode string under Python 3, which is what we need:
     config.set_request_property(get_user, str('user'), reify=True)
     config.set_root_factory(RootFactory)
-    config.include('bag.web.pyramid.flash_msg')
 
     config.add_directive('scan_horus', scan)
 
@@ -109,5 +111,13 @@ def includeme(config):
     for form in forms:
         if not config.registry.queryUtility(form):
             config.registry.registerUtility(SubmitForm, form)
+
+
+    def on_before_render(event):
+        fn = render_flash_messages_from_queues
+        event['render_flash_messages'] = lambda: fn(event['request'])
+
+    config.add_subscriber(on_before_render, BeforeRender)
+
     config.include('horus.routes')
     config.scan(ignore=str('horus.tests'))
