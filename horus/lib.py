@@ -53,6 +53,16 @@ class FlashMessage(object):
     A flash message that renders in Twitter Bootstrap 2.1 style.
     To register a message, simply instantiate it.
     """
+    __slots__ = ('kind', 'plain', 'rich')
+
+    def __getstate__(self):
+        '''Because we are using __slots__, pickling needs this method.'''
+        return {'kind': self.kind, 'plain': self.plain, 'rich': self.rich}
+
+    def __setstate__(self, state):
+        self.kind = state.get('kind')
+        self.plain = state.get('plain')
+        self.rich = state.get('rich')
     KINDS = set(['error', 'warning', 'info', 'success'])
 
     def __init__(self, request, plain=None, rich=None, kind='warning',
