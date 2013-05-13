@@ -27,7 +27,7 @@ from horus.lib              import render_flash_messages_from_queues
 from horus                  import models
 from horus.strings          import UIStringsBase
 from pyramid.events         import BeforeRender
-
+from pyramid.path           import DottedNameResolver
 
 from hem.config             import get_class_from_config
 
@@ -45,6 +45,8 @@ def groupfinder(userid, request):
 
 
 def scan(config, module):
+    r = DottedNameResolver()
+    module = r.maybe_resolve(module)
     module = inspect.getmodule(module)
 
     model_mappings = {
@@ -58,7 +60,7 @@ def scan(config, module):
             if obj.__module__ == 'horus.models':
                 continue
 
-            for mixin, interface in model_mappings.iteritems():
+            for mixin, interface in model_mappings.items():
                 if isinstance(obj, type) and issubclass(obj, mixin):
                     config.registry.registerUtility(obj, interface)
 
