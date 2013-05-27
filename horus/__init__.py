@@ -69,7 +69,7 @@ def includeme(config):
     settings = config.registry.settings
     # str('user') returns a bytestring under Python 2 and a
     # unicode string under Python 3, which is what we need:
-    config.set_request_property(get_user, str('user'), reify=True)
+    config.add_request_method(get_user, str('user'), reify=True)
     config.set_root_factory(RootFactory)
 
     config.add_directive('scan_horus', scan)

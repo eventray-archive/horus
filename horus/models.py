@@ -100,7 +100,8 @@ class BaseModel(object):
     def get_by_id(cls, request, id):
         """Gets an object by its primary key."""
         session = get_session(request)
-        return session.query(cls).filter(cls.id == id).first()
+        pk = getattr(cls, cls._idAttribute)
+        return session.query(cls).filter(pk == id).first()
 
 
 class ActivationMixin(BaseModel):
