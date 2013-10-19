@@ -63,7 +63,7 @@ setup(
     ],
     author='John Anderson',
     author_email='sontek@gmail.com',
-    url='https://github.com/sontek/horus',
+    url='https://github.com/eventray/horus',
     keywords='pyramid',
     license='BSD',
     packages=find_packages(),
