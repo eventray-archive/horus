@@ -149,6 +149,7 @@ class ActivationMixin(BaseModel):
 def default_security_code():
     return generate_random_string(12)
 
+
 class UserMixin(BaseModel):
     @declared_attr
     def username(self):
@@ -233,7 +234,7 @@ class UserMixin(BaseModel):
 
     @property
     def is_activated(self):
-        if self.activation_id == None:
+        if self.activation_id is None:
             return True
 
         return False
@@ -417,7 +418,6 @@ class UserGroupMixin(BaseModel):
 
 __all__ = [
     k for k, v in locals().items()
-
     if (
         isinstance(v, type) and issubclass(v, BaseModel)
     )

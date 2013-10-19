@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function,
-    unicode_literals)
+                        unicode_literals)
 import os
 import sys
 from setuptools import setup, find_packages
@@ -16,7 +16,7 @@ class PyTest(TestCommand):
         self.test_suite = True
 
     def run_tests(self):
-        #import here, cause outside the eggs aren't loaded
+        # Import here, because outside the eggs aren't loaded
         import pytest
         result = pytest.main(self.test_args)
         sys.exit(result)
@@ -41,7 +41,8 @@ requires = [
     'pyramid_mako',
 ]
 
-setup(name='horus',
+setup(
+    name='horus',
     version='0.9.14dev',
     description='Generic user registration for pyramid',
     long_description=README + '\n\n' + CHANGES,
