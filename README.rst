@@ -1,9 +1,13 @@
-Horus step-by-step integration checklist
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Introduction to *horus*
+~~~~~~~~~~~~~~~~~~~~~~~
 
-*Horus* is a Pyramid web application that provides user registration,
-login, logout and change password functionality. You can easily plug it
-into your own Pyramid web app. Here is how.
+*horus* provides generic user registration for the Pyramid web framework,
+if your web app uses sqlalchemy.
+
+It is a pluggable web application that provides user registration,
+login, logout and change password functionality. *horus* follows a policy of
+minimal interference, so your app can mostly keep its existing models.
+
 
 Minimal integration
 ===================
@@ -23,34 +27,50 @@ Minimal integration
   file `horus/tests/models.py
   <https://github.com/eventray/horus/blob/master/horus/tests/models.py>`_.
 
-  or you can use the horus scaffold script::
+  Alternatively, use the horus scaffold script::
 
-    $ horus_scaffold development.ini > auth_models.py
+    horus_scaffold development.ini > your_app/auth_models.py
 
   Then all you need to do is tell the class where to find your declarative
   base you and are good to go!
 
 - Include horus inside your ``main()`` function like this::
 
-    # Include horus
+    # Tell horus which SQLAlchemy scoped session to use:
     from hem.interfaces import IDBSession
-    from horus.interfaces import IUserClass, IActivationClass
-    # Tell horus which SQLAlchemy session to use:
+    registry = config.registry
     registry.registerUtility(my_sqlalchemy_scoped_session, IDBSession)
+
+    config.include('horus')
+    config.scan_horus(auth_models_package_or_module)
+
+  With the above ``config.scan_horus()`` call, you need to edit your .ini
+  configuration file and tell horus which model classes to use like this:
+
+      horus.user_class = my_app.models:User
+      horus.activation_class = my_app.models:Activation
+
+  As an alternative to ``config.scan_horus()`` plus that configuration,
+  you can register the classes explicitly if you so prefer. This must be
+  done above ``config.include('horus')``::
+
     # Tell horus which models to use:
+    from horus.interfaces import IUserClass, IActivationClass
     registry.registerUtility(User, IUserClass)
     registry.registerUtility(Activation, IActivationClass)
-    config.include('horus')
-
-  If you don't want to register your classes manually you can do::
-
-    from myapp import auth_models
 
     config.include('horus')
-    config.scan_horus(auth_models)
 
 - Configure ``horus.login_redirect`` and ``horus.logout_redirect``
   (in your .ini configuration file) to set the redirection routes.
+
+- If you haven't done so yet, configure an HTTP session factory according to
+  the Sessions chapter of the Pyramid documentation.
+
+- Create your database and tables. Maybe even an initial user.
+
+- Be sure to pass an ``authentication_policy`` argument in the
+  ``config = Configurator(...)`` call. Refer to Pyramid docs for details.
 
 - By now the login form should appear at /login, but /register shouldn't.
 
@@ -62,7 +82,7 @@ Minimal integration
 - The /register form should appear, though ugly. Now you have a choice
   regarding user activation by email:
 
-  - You may just disable it by setting, in your .ini file:
+  - You may just disable it by setting, in your .ini file::
 
         horus.require_activation = False
 
@@ -72,6 +92,7 @@ Minimal integration
 
 - If you are using pyramid_tm or the ZopeTransactionManager, your minimal
   integration is done. (The pages are ugly, but working. Keep reading...)
+
 
 Need to session.commit()?
 =========================
@@ -84,7 +105,8 @@ All you have to do is subscribe to the extension events and
 commit the session yourself. This also gives you the chance to
 do some extra processing::
 
-    from horus.events import (PasswordResetEvent, NewRegistrationEvent,
+    from horus.events import (
+        PasswordResetEvent, NewRegistrationEvent,
         RegistrationActivatedEvent, ProfileUpdatedEvent)
 
     def handle_request(event):
@@ -97,11 +119,12 @@ do some extra processing::
     self.config.add_subscriber(handle_request, RegistrationActivatedEvent)
     self.config.add_subscriber(handle_request, ProfileUpdatedEvent)
 
+
 Changing the forms
 ==================
 
-If you would like to modify any of the forms in pyramid signup, you just need
-to register the new deform class to use in the registry.
+If you would like to modify any of the forms, you just need
+to register the new deform class to be used.
 
 The interfaces you have available to override from horus.interfaces are:
 
@@ -114,6 +137,7 @@ The interfaces you have available to override from horus.interfaces are:
 This is how you would do it (*MyForm* being a custom deform Form class)::
 
     config.registry.registerUtility(MyForm, IHorusLoginForm)
+
 
 Changing the templates
 ======================
@@ -148,20 +172,45 @@ templating language, just override the view configuration::
     config.add_view('horus.views.ProfileController', attr='profile',
         route_name='profile', renderer='yourapp:templates/profile.jinja2')
 
+
+Changing the primary key column name
+====================================
+
+If you wish to override the primary key attribute name, you can do so
+by creating a new mixin class::
+
+    class NullPkMixin(Base):
+        abstract = True
+        _idAttribute = 'pk'
+
+        @declared_attr
+        def pk(self):
+            return Base.pk
+
+        @declared_attr
+        def id(self):
+            return None
+
+    class User(NullPkMixin, UserMixin):
+        pass
+
+
 horus development
 =================
+
+See https://github.com/eventray/horus
 
 If you would like to help make any changes to horus, you can run its
 unit tests with py.test:
 
-    $ py.test
+    py.test
 
-To check test coverage:
+To check test coverage::
 
-    $ py.test --cov-report term-missing --cov horus
+    py.test --cov-report term-missing --cov horus
 
-The tests can also be run in parallel:
+The tests can also be run in parallel::
 
-    $ py.test -n4
+    py.test -n4
 
 We are using this build server: http://travis-ci.org/#!/eventray/horus
