@@ -9,6 +9,16 @@ from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
 
+def content_of(*files):
+    import codecs
+    here = os.path.abspath(os.path.dirname(__file__))
+    content = []
+    for f in files:
+        with codecs.open(os.path.join(here, f), encoding='utf-8') as stream:
+            content.append(stream.read())
+    return '\n'.join(content)
+
+
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -20,10 +30,6 @@ class PyTest(TestCommand):
         import pytest
         result = pytest.main(self.test_args)
         sys.exit(result)
-
-here = os.path.abspath(os.path.dirname(__file__))
-README = ''  # open(os.path.join(here, 'README.md')).read()
-CHANGES = ''  # open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
     'sqlalchemy',
@@ -45,7 +51,7 @@ setup(
     name='horus',
     version='0.9.14dev',
     description='Generic user registration for pyramid',
-    long_description=README + '\n\n' + CHANGES,
+    long_description=content_of('README.rst'),
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
