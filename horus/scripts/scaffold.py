@@ -2,16 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function,
-    unicode_literals)
+                        unicode_literals)
+import inspect
 import os
 import sys
-
-from pyramid.paster import (
-    get_appsettings,
-    setup_logging,
-)
-
-import inspect
+from pyramid.paster import get_appsettings, setup_logging
 import horus.models
 from horus.models import BaseModel
 
@@ -32,7 +27,7 @@ def main(argv=sys.argv):  # pragma: no cover
     base_scaffold = \
 """
 from __future__ import (absolute_import, division, print_function,
-    unicode_literals)
+                        unicode_literals)
 
 from horus.models import GroupMixin
 from horus.models import UserMixin
@@ -52,7 +47,7 @@ class %(class_name)s(%(mixin)s, %(base)s):
             and obj != BaseModel:
             class_name =  obj.__name__.replace('Mixin', '')
             mixin = obj.__name__
-            #TODO: Allow them to define their base class in commandline
+            # TODO: Allow them to define their base class in commandline
             base = 'Base'
             final = model_snippet % {
                 'class_name': class_name,
@@ -62,7 +57,7 @@ class %(class_name)s(%(mixin)s, %(base)s):
             snippets.append(final)
 
     scaffold = '\n'.join(snippets)
-    print(scaffold)
+    print(scaffold, end='')
 
 if __name__ == "__main__":  # pragma: no cover
     main()
