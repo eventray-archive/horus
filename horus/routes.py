@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function,
-    unicode_literals)
+                        unicode_literals)
 from horus.resources import UserFactory
 
 
@@ -14,6 +14,7 @@ def includeme(config):
                      factory=UserFactory)
     config.add_route('forgot_password', '/forgot_password')
     config.add_route('reset_password', '/reset_password/{code}')
+
     config.add_route('profile', '/profile/{user_id}',
                      factory=UserFactory,
                      traverse="/{user_id}")
@@ -30,4 +31,4 @@ def includeme(config):
                      traverse="/{user_id}")
 
     config.add_static_view(name='horus-static', path='horus:static',
-        cache_max_age=3600)
+                           cache_max_age=3600)

@@ -135,9 +135,7 @@ class AuthController(BaseController):
         self.allow_inactive_login = asbool(
             self.settings.get('horus.allow_inactive_login', False)
         )
-
-        login_button = self.settings.get('horus.login_button', _('Log in'))
-        self.form = form(self.schema, buttons=(login_button,))
+        self.form = form(self.schema, buttons=(self.Str.login_button,))
 
     def check_credentials(self, username, password):
         allow_email_auth = self.settings.get('horus.allow_email_auth', False)
