@@ -1,6 +1,6 @@
 <html>
   <body>
-    ${render_flash_messages()}
+    ${render_flash_messages()|n}
     <h1>Reset Password</h1>
     ${form|n}
   </body>
