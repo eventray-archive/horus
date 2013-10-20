@@ -136,7 +136,8 @@ class AuthController(BaseController):
             self.settings.get('horus.allow_inactive_login', False)
         )
 
-        self.form = form(self.schema)
+        login_button = self.settings.get('horus.login_button', _('Log in'))
+        self.form = form(self.schema, buttons=(login_button,))
 
     def check_credentials(self, username, password):
         allow_email_auth = self.settings.get('horus.allow_email_auth', False)
@@ -193,8 +194,8 @@ class AuthController(BaseController):
         if self.request.method == 'GET':
             if self.request.user:
                 return HTTPFound(location=self.login_redirect_view)
-
             return {'form': self.form.render()}
+
         elif self.request.method == 'POST':
             try:
                 controls = self.request.POST.items()
