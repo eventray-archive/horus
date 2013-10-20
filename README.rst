@@ -173,6 +173,18 @@ templating language, just override the view configuration::
         route_name='profile', renderer='yourapp:templates/profile.jinja2')
 
 
+Changing strings
+================
+
+Take a look at `this class
+<https://github.com/eventray/horus/blob/master/horus/strings.py>`_.
+This is where we store all the strings in horus.
+If you'd like to change one or two messages, simply subclass this, then do::
+
+    from horus.interfaces import IUIStrings
+    config.registry.registerUtility(MyStringsClass, IUIStrings)
+
+
 Changing the primary key column name
 ====================================
 

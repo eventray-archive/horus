@@ -11,8 +11,6 @@ from .models import _
 class UIStringsBase(object):  # TODO Continue building
     '''A class containing all GUI strings in the application, such that
     user apps can simply subclass and change whatever text they want.
-
-    TODO: Document this!
     '''
     activation_check_email = \
         _("Thank you for registering! Please check your e-mail now. You can "
