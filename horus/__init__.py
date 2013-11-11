@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function,
-    unicode_literals)
+                        unicode_literals)
 from horus.schemas          import LoginSchema
 from horus.schemas          import RegisterSchema
 from horus.schemas          import ForgotPasswordSchema
@@ -33,6 +33,7 @@ from hem.config             import get_class_from_config
 
 import inspect
 
+
 def groupfinder(userid, request):
     user = request.user
     groups = None
@@ -50,8 +51,8 @@ def scan(config, module):
     module = inspect.getmodule(module)
 
     model_mappings = {
-       models.UserMixin: IUserClass,
-       models.ActivationMixin: IActivationClass,
+        models.UserMixin: IUserClass,
+        models.ActivationMixin: IActivationClass,
     }
 
     for name, obj in inspect.getmembers(module):
@@ -113,7 +114,6 @@ def includeme(config):
     for form in forms:
         if not config.registry.queryUtility(form):
             config.registry.registerUtility(SubmitForm, form)
-
 
     def on_before_render(event):
         fn = render_flash_messages_from_queues

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function,
-    unicode_literals)
+                        unicode_literals)
 import deform
 
 
@@ -26,7 +26,7 @@ class BootstrapForm(BaseForm):
 
         for child in self.children:
             if isinstance(child.widget, deform.widget.TextInputWidget) or \
-                isinstance(child.widget, deform.widget.TextAreaWidget):
+                    isinstance(child.widget, deform.widget.TextAreaWidget):
 
                 if not child.widget.css_class:
                     child.widget.css_class = ''

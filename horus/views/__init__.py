@@ -49,6 +49,7 @@ def get_config_route(request, config_key):
     except KeyError:
         return settings[config_key]
 
+
 def authenticated(request, userid):
     """Sets the auth cookies and redirects to the page defined
     in horus.login_redirect, which defaults to a view named 'index'.
@@ -134,8 +135,7 @@ class AuthController(BaseController):
         self.allow_inactive_login = asbool(
             self.settings.get('horus.allow_inactive_login', False)
         )
-
-        self.form = form(self.schema)
+        self.form = form(self.schema, buttons=(self.Str.login_button,))
 
     def check_credentials(self, username, password):
         allow_email_auth = self.settings.get('horus.allow_email_auth', False)
@@ -143,7 +143,8 @@ class AuthController(BaseController):
         user = self.User.get_user(self.request, username, password)
 
         if allow_email_auth and not user:
-            user = self.User.get_by_email_password(self.request, username, password)
+            user = self.User.get_by_email_password(
+                self.request, username, password)
 
         if not user:
             raise AuthenticationFailure(_('Invalid username or password.'))
@@ -152,15 +153,10 @@ class AuthController(BaseController):
                 and not user.is_activated:
             raise AuthenticationFailure(
                 _('Your account is not active, please check your e-mail.'))
-
         return user
 
-    @view_config(
-            route_name='login'
-            , xhr=True
-            , accept="application/json"
-            , renderer='json'
-        )
+    @view_config(route_name='login', xhr=True, accept="application/json",
+                 renderer='json')
     def login_ajax(self):
         try:
             cstruct = self.request.json_body
@@ -188,18 +184,16 @@ class AuthController(BaseController):
         # on the user
         user_json = user.__json__(self.request)
 
-        return {
-            'status': 'okay'
-            , 'user': user_json
-        }
+        return {'status': 'okay',
+                'user': user_json}
 
     @view_config(route_name='login', renderer='horus:templates/login.mako')
     def login(self):
         if self.request.method == 'GET':
             if self.request.user:
                 return HTTPFound(location=self.login_redirect_view)
-
             return {'form': self.form.render()}
+
         elif self.request.method == 'POST':
             try:
                 controls = self.request.POST.items()
@@ -234,7 +228,6 @@ class AuthController(BaseController):
         self.request.session.invalidate()
         FlashMessage(self.request, self.Str.logout, kind='success')
         headers = forget(self.request)
-
         return HTTPFound(location=self.logout_redirect_view, headers=headers)
 
 
@@ -335,12 +328,11 @@ class ForgotPasswordController(BaseController):
                     self.db.delete(activation)
 
                     FlashMessage(self.request, self.Str.reset_password_done,
-                        kind='success')
+                                 kind='success')
                     self.request.registry.notify(PasswordResetEvent(
                         self.request, user, password))
                     location = self.reset_password_redirect_view
                     return HTTPFound(location=location)
-
         return HTTPNotFound()
 
 
@@ -390,10 +382,10 @@ class RegisterController(BaseController):
             # SEND EMAIL ACTIVATION
             create_activation(self.request, user)
             FlashMessage(self.request, self.Str.activation_check_email,
-                kind='success')
+                         kind='success')
         elif not autologin:
             FlashMessage(self.request, self.Str.registration_done,
-                kind='success')
+                         kind='success')
 
         self.request.registry.notify(NewRegistrationEvent(
             self.request, user, None, controls))
@@ -505,7 +497,7 @@ class ProfileController(BaseController):
                 user.password = password
 
             FlashMessage(self.request, self.Str.edit_profile_done,
-                kind='success')
+                         kind='success')
 
             self.db.add(user)
 

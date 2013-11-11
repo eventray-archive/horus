@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function,
-    unicode_literals)
+                        unicode_literals)
 import deform
 from pyramid.view           import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound
+from horus.lib              import FlashMessage
 from horus.views            import BaseController
 from horus.schemas          import AdminUserSchema
 from horus.forms            import HorusForm
@@ -55,7 +56,7 @@ class AdminController(BaseController):
             self.db.add(user)
 
             FlashMessage(self.request, self.Str.admin_create_user_done,
-                'success')
+                         'success')
 
             return HTTPFound(
                 location=self.request.route_url('admin_users_index')

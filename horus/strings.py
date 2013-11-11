@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function,
-    unicode_literals)
+                        unicode_literals)
 from zope.interface import implementer
 from .interfaces import IUIStrings
 from .models import _
@@ -11,8 +11,6 @@ from .models import _
 class UIStringsBase(object):  # TODO Continue building
     '''A class containing all GUI strings in the application, such that
     user apps can simply subclass and change whatever text they want.
-
-    TODO: Document this!
     '''
     activation_check_email = \
         _("Thank you for registering! Please check your e-mail now. You can "
@@ -23,6 +21,7 @@ class UIStringsBase(object):  # TODO Continue building
     admin_create_user_done = _('The user has been created.')
 
     authenticated = _('You are now logged in.')
+    login_button = _('Log in')
     logout = _('You have logged out.')
 
     edit_profile_done = _('Your profile has been updated.')
