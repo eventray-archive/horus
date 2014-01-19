@@ -331,7 +331,7 @@ class UserMixin(BaseModel):
         if not user:
             return None
 
-        if user.password == None:
+        if user.password is None:
             valid = False
         else:
             valid = crypt.check(user.password, password + user.salt)
@@ -388,11 +388,11 @@ class GroupMixin(BaseModel):
 class UserGroupMixin(BaseModel):
     @declared_attr
     def group_id(self):
-        return sa.Column(sa.Integer,
+        return sa.Column(
+            sa.Integer,
             sa.ForeignKey('%s.%s' % (
-                    GroupMixin.__tablename__,
-                    self._idAttribute
-                )
+                GroupMixin.__tablename__,
+                self._idAttribute)
             )
         )
 
@@ -400,13 +400,10 @@ class UserGroupMixin(BaseModel):
     def user_id(self):
         return sa.Column(
             sa.Integer,
-            sa.ForeignKey('%s.%s' % (
-                    UserMixin.__tablename__,
-                    self._idAttribute
-                ),
-                onupdate='CASCADE',
-                ondelete='CASCADE'
-            ),
+            sa.ForeignKey('%s.%s' % (UserMixin.__tablename__,
+                                     self._idAttribute),
+                          onupdate='CASCADE',
+                          ondelete='CASCADE'),
         )
 
     def __repr__(self):

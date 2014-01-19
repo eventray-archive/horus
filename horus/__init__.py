@@ -2,34 +2,34 @@
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
-from horus.schemas          import LoginSchema
-from horus.schemas          import RegisterSchema
-from horus.schemas          import ForgotPasswordSchema
-from horus.schemas          import ResetPasswordSchema
-from horus.schemas          import ProfileSchema
-from horus.forms            import SubmitForm
-from horus.resources        import RootFactory
-from horus.interfaces       import IUIStrings
-from horus.interfaces       import IUserClass
-from horus.interfaces       import IActivationClass
-from horus.interfaces       import ILoginForm
-from horus.interfaces       import ILoginSchema
-from horus.interfaces       import IRegisterForm
-from horus.interfaces       import IRegisterSchema
-from horus.interfaces       import IForgotPasswordForm
-from horus.interfaces       import IForgotPasswordSchema
-from horus.interfaces       import IResetPasswordForm
-from horus.interfaces       import IResetPasswordSchema
-from horus.interfaces       import IProfileForm
-from horus.interfaces       import IProfileSchema
-from horus.lib              import get_user
-from horus.lib              import render_flash_messages_from_queues
-from horus                  import models
-from horus.strings          import UIStringsBase
-from pyramid.events         import BeforeRender
-from pyramid.path           import DottedNameResolver
+from horus.schemas import LoginSchema
+from horus.schemas import RegisterSchema
+from horus.schemas import ForgotPasswordSchema
+from horus.schemas import ResetPasswordSchema
+from horus.schemas import ProfileSchema
+from horus.forms import SubmitForm
+from horus.resources import RootFactory
+from horus.interfaces import IUIStrings
+from horus.interfaces import IUserClass
+from horus.interfaces import IActivationClass
+from horus.interfaces import ILoginForm
+from horus.interfaces import ILoginSchema
+from horus.interfaces import IRegisterForm
+from horus.interfaces import IRegisterSchema
+from horus.interfaces import IForgotPasswordForm
+from horus.interfaces import IForgotPasswordSchema
+from horus.interfaces import IResetPasswordForm
+from horus.interfaces import IResetPasswordSchema
+from horus.interfaces import IProfileForm
+from horus.interfaces import IProfileSchema
+from horus.lib import get_user
+from horus.lib import render_flash_messages_from_queues
+from horus import models
+from horus.strings import UIStringsBase
+from pyramid.events import BeforeRender
+from pyramid.path import DottedNameResolver
 
-from hem.config             import get_class_from_config
+from hem.config import get_class_from_config
 
 import inspect
 
@@ -86,9 +86,9 @@ def includeme(config):
     if not config.registry.queryUtility(IActivationClass):
         try:
             activation_class = get_class_from_config(settings,
-                    'horus.activation_class')
+                                                     'horus.activation_class')
             config.registry.registerUtility(activation_class,
-                    IActivationClass)
+                                            IActivationClass)
         except:
             # maybe they are using scan?
             pass
