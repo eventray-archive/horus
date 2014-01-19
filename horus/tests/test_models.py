@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function,
-    unicode_literals)
-from horus.tests        import UnitTestBase
+                        unicode_literals)
+from horus.tests import UnitTestBase
 from horus.tests.models import Base
-from pyramid            import testing
-from sqlalchemy.types   import DateTime
+from pyramid import testing
+from sqlalchemy.types import DateTime
 
-from sqlalchemy         import Column
+from sqlalchemy import Column
 
-from datetime           import datetime
+from datetime import datetime
 
 
 class TestModel(Base):
@@ -26,25 +26,17 @@ class TestModels(UnitTestBase):
         model.id = 1
         model.start_date = datetime.now()
 
-        assert model.__json__(testing.DummyRequest()) == {'id': 1, 'start_date': model.start_date.isoformat()}
+        data = {'id': 1, 'start_date': model.start_date.isoformat()}
+        assert model.__json__(testing.DummyRequest()) == data
 
 
 class TestActivation(UnitTestBase):
-    def test_create_activation_without_valid_until(self):
-        from horus.tests.models import Activation
-
-        activation1 = Activation()
-
-        assert activation1.code != None
-        assert activation1.valid_until > datetime.utcnow()
-
     def test_create_activation_with_valid_until(self):
         from horus.tests.models import Activation
 
         dt = datetime.utcnow()
-        activation1 = Activation(valid_until=dt)
-
-        assert activation1.code != None
+        activation1 = Activation()
+        activation1.valid_until = dt
         assert activation1.valid_until == dt
 
     def test_get_activation(self):
@@ -95,7 +87,7 @@ class TestUser(UnitTestBase):
         self.session.flush()
 
         assert user1.password != 'password'
-        assert user1.salt != None
+        assert user1.salt is not None
 
     def test_acl(self):
         from horus.tests.models import User
