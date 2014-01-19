@@ -7,20 +7,20 @@ try:
 except ImportError:
     from urllib import urlencode  # Python 2
 
-from pyramid.compat             import text_type as unicode
-from pyramid.i18n               import TranslationStringFactory
-from pyramid.security           import Allow
-from datetime                   import datetime
-from datetime                   import timedelta
-from datetime                   import date
+from pyramid.compat import text_type as unicode
+from pyramid.i18n import TranslationStringFactory
+from pyramid.security import Allow
+from datetime import datetime
+from datetime import timedelta
+from datetime import date
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.ext.hybrid      import hybrid_property
-from sqlalchemy                 import or_
-from sqlalchemy                 import func
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import or_
+from sqlalchemy import func
 
-from hem.text                   import generate_random_string
-from hem.text                   import pluralize
-from hem.db                     import get_session
+from hem.text import generate_random_string
+from hem.text import pluralize
+from hem.db import get_session
 
 import cryptacular.bcrypt
 import re
@@ -104,6 +104,10 @@ class BaseModel(object):
         return session.query(cls).filter(pk == id).first()
 
 
+def three_days_from_now():
+    return datetime.utcnow() + timedelta(days=3)
+
+
 class ActivationMixin(BaseModel):
     """Handles activations/password reset items for users.
 
@@ -116,34 +120,26 @@ class ActivationMixin(BaseModel):
     @declared_attr
     def code(self):
         """A random hash that is valid only once."""
-        return sa.Column(sa.Unicode(30), nullable=False, unique=True)
+        return sa.Column(sa.Unicode(30), nullable=False,
+                         unique=True,
+                         default=generate_random_string)
 
     @declared_attr
     def valid_until(self):
         """How long will the activation key last"""
-        return sa.Column(sa.DateTime, nullable=False)
+        return sa.Column(sa.DateTime, nullable=False,
+                         default=three_days_from_now)
 
     @declared_attr
     def created_by(self):
         """The system that generated the activation key"""
-        return sa.Column(sa.Unicode(30), nullable=False)
+        return sa.Column(sa.Unicode(30), nullable=False,
+                         default='web')
 
     @classmethod
     def get_by_code(cls, request, code):
         session = get_session(request)
         return session.query(cls).filter(cls.code == code).first()
-
-    def __init__(self, created_by='web', valid_until=None):
-        """Create a new activation. *valid_until* is a datetime.
-        It defaults to 3 days from current day.
-        """
-        self.code = generate_random_string(12)
-        self.created_by = created_by
-
-        if valid_until:
-            self.valid_until = valid_until
-        else:
-            self.valid_until = datetime.utcnow() + timedelta(days=3)
 
 
 def default_security_code():
