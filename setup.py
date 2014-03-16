@@ -49,7 +49,7 @@ requires = [
 
 setup(
     name='horus',
-    version='0.9.14dev',
+    version='0.9.15',
     description='Generic user registration for pyramid',
     long_description=content_of('README.rst'),
     classifiers=[  # http://pypi.python.org/pypi?:action=list_classifiers
