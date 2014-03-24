@@ -2,6 +2,8 @@
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+import logging
+
 from pyramid.view import view_config
 from pyramid.url import route_url
 from pyramid.security import remember
@@ -34,11 +36,15 @@ from horus.events import ProfileUpdatedEvent
 from horus.lib import FlashMessage
 from horus.models import _
 from horus.exceptions import AuthenticationFailure
+from horus.exceptions import FormValidationFailure
 from horus.httpexceptions import HTTPBadRequest
 
 import colander
 import deform
 import pystache
+
+
+LOG = logging.getLogger(__name__)
 
 
 def get_config_route(request, config_key):
@@ -92,6 +98,33 @@ def create_activation(request, user):
     message = Message(subject=subject, recipients=[user.email], body=body)
     mailer = get_mailer(request)
     mailer.send(message)
+
+
+def render_form(request, form, appstruct=None, **kw):
+    settings = request.registry.settings
+    retail = asbool(settings.get('horus.deform_retail', False))
+
+    if appstruct is not None:
+        form.set_appstruct(appstruct)
+
+    if not retail:
+        form = form.render()
+
+    result = {'form': form}
+    result.update(kw)
+    return result
+
+
+def validate_form(controls, form):
+    try:
+        captured = form.validate(controls)
+    except deform.ValidationFailure as e:
+        # NOTE(jkoelker) normally this is superfluous, but if the app is
+        #                debug logging, then log that we "ate" the exception
+        LOG.debug('Form validation failed', exc_info=True)
+        raise FormValidationFailure(form, e)
+
+    return captured
 
 
 class BaseController(object):
@@ -192,17 +225,15 @@ class AuthController(BaseController):
         if self.request.method == 'GET':
             if self.request.user:
                 return HTTPFound(location=self.login_redirect_view)
-            return {'form': self.form.render()}
+            return render_form(self.request, self.form)
 
         elif self.request.method == 'POST':
+            controls = self.request.POST.items()
+
             try:
-                controls = self.request.POST.items()
-                captured = self.form.validate(controls)
-            except deform.ValidationFailure as e:
-                return {
-                    'form': e.render(),
-                    'errors': e.error.children
-                }
+                captured = validate_form(controls, self.form)
+            except FormValidationFailure as e:
+                return e.result(self.request)
 
             username = captured['username']
             password = captured['password']
@@ -211,10 +242,8 @@ class AuthController(BaseController):
                 user = self.check_credentials(username, password)
             except AuthenticationFailure as e:
                 FlashMessage(self.request, str(e), kind='error')
-                return {
-                    'form': self.form.render(appstruct=captured),
-                    'errors': [e]
-                }
+                return render_form(self.request, self.form, captured,
+                                   errors=[e])
 
             self.request.user = user  # Please keep this line, my app needs it
 
@@ -256,15 +285,15 @@ class ForgotPasswordController(BaseController):
             if req.user:
                 return HTTPFound(location=self.forgot_password_redirect_view)
             else:
-                return {'form': form.render()}
+                return render_form(req, form)
 
         # From here on, we know it's a POST. Let's validate the form
         controls = req.POST.items()
+
         try:
-            captured = form.validate(controls)
-        except deform.ValidationFailure as e:
-            # This catches if the email does not exist, too.
-            return {'form': e.render(), 'errors': e.error.children}
+            captured = validate_form(controls, form)
+        except FormValidationFailure as e:
+            return e.result(req)
 
         user = self.User.get_by_email(req, captured['email'])
         activation = self.Activation()
@@ -306,20 +335,16 @@ class ForgotPasswordController(BaseController):
 
             if user:
                 if self.request.method == 'GET':
-                    return {
-                        'form': form.render(
-                            appstruct=dict(
-                                username=user.username
-                            )
-                        )
-                    }
+                    appstruct = {'username': user.username}
+                    return render_form(self.request, form, appstruct)
 
                 elif self.request.method == 'POST':
+                    controls = self.request.POST.items()
+
                     try:
-                        controls = self.request.POST.items()
-                        captured = form.validate(controls)
-                    except deform.ValidationFailure as e:
-                        return {'form': e.render(), 'errors': e.error.children}
+                        captured = validate_form(controls, form)
+                    except FormValidationFailure as e:
+                        return e.result(self.request)
 
                     password = captured['password']
 
@@ -362,16 +387,19 @@ class RegisterController(BaseController):
         if self.request.method == 'GET':
             if self.request.user:
                 return HTTPFound(location=self.after_register_url)
-            return {'form': self.form.render()}
+
+            return render_form(self.request, self.form)
+
         elif self.request.method != 'POST':
             return
 
         # If the request is a POST:
         controls = self.request.POST.items()
+
         try:
-            captured = self.form.validate(controls)
-        except deform.ValidationFailure as e:
-            return {'form': e.render(), 'errors': e.error.children}
+            captured = validate_form(controls, self.form)
+        except FormValidationFailure as e:
+            return e.result(self.request)
 
         # With the form validated, we know email and username are unique.
         del captured['csrf_token']
@@ -462,22 +490,18 @@ class ProfileController(BaseController):
             username = user.username
             email = user.email
 
-            return {
-                'form': self.form.render(
-                    appstruct=dict(
-                        username=username,
-                        email=email if email else '',
-                    )
-                )
-            }
+            appstruct = {'username': username,
+                         'email': email if email else ''}
+            return render_form(self.request, self.form, appstruct)
+
         elif self.request.method == 'POST':
+            controls = self.request.POST.items()
+
             try:
-                controls = self.request.POST.items()
-                captured = self.form.validate(controls)
-            except deform.ValidationFailure as e:
+                captured = validate_form(controls, self.form)
+            except FormValidationFailure as e:
                 # We pre-populate username
-                e.cstruct['username'] = user.username
-                return {'form': e.render(), 'errors': e.error.children}
+                return e.result(self.request, username=user.username)
 
             email = captured.get('email', None)
 
