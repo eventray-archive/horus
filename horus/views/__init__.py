@@ -299,6 +299,8 @@ class ForgotPasswordController(BaseController):
         activation = self.Activation()
         self.db.add(activation)
         user.activation = activation
+        self.db.flush()
+        
         Str = self.Str
 
         # TODO: Generate msg in a separate method so subclasses can override
