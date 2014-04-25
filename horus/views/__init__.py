@@ -299,7 +299,7 @@ class ForgotPasswordController(BaseController):
         activation = self.Activation()
         self.db.add(activation)
         user.activation = activation
-        self.db.flush()
+        self.db.flush() # initialize activation.code
         
         Str = self.Str
 
