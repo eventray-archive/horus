@@ -33,7 +33,7 @@ class AdminController(BaseController):
             else:
                 return dict(
                     form=form,
-                    appstruct=self.request.context.__json__()
+                    appstruct=self.request.context.__json__(self.request)
                 )
         else:
             try:
