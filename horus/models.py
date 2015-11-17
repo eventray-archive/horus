@@ -407,7 +407,7 @@ class UserGroupMixin(BaseModel):
         )
 
     def __repr__(self):
-        return '<UserGroup: %s, %s>' % (self.group_name, self.user_id,)
+        return '<UserGroup: %s, %s>' % (self.group_id, self.user_id,)
 
 __all__ = [
     k for k, v in locals().items()

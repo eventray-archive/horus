@@ -330,3 +330,13 @@ class TestGroup(UnitTestBase):
         group = Group.get_by_id(request, group2.id)
 
         assert group.name == 'employees'
+
+class TestUserGroup(UnitTestBase):
+
+    def test_init(self):
+        from horus.tests.models import UserGroup
+        user_group = UserGroup(group_id=1, user_id=1)
+
+        assert repr(user_group) == '<UserGroup: 1, 1>'
+        assert user_group.group_id == 1
+        assert user_group.user_id == 1
